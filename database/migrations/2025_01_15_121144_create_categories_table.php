@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('parent_id');
             $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->integer('ordinal');
-            $table->boolean('is_active')->default(1);
-            $table->timestamp('deleted_at');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -16,10 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->string('icon');
             $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->integer('ordinal');
-            $table->boolean('is_active')->default(1);
-            $table->timestamps();
+            $table->softDeletes();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
