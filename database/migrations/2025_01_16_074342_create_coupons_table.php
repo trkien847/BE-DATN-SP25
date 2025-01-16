@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('coupons', function (Blueprint $table) {
             $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
-            $table->id();
+            $table->string('code')->unique();
+            $table->string('title');
+            $table->string('description');
+            $table->enum('discount_type',['co_dinh','phan_tram'])->default('phan_tram');
+            $table->decimal('discount_value',10,2);
+            $table->integer('usage_limit');
+            $table->integer('usage_count');
+            $table->boolean('is_expired')->default(1);
+            $table->boolean('is_active')->default(1);
+            $table->timestamp('start_date');
+            $table->timestamp('end_date');
+            $table->timestamp('deleted_at');
             $table->timestamps();
         });
     }
