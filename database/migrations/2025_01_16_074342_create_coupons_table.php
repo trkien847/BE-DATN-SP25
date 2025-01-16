@@ -23,8 +23,8 @@ return new class extends Migration
             $table->boolean('is_expired')->default(1);
             $table->boolean('is_active')->default(1);
             $table->timestamp('start_date');
-            $table->timestamp('end_date');
-            $table->timestamp('deleted_at');
+            $table->timestamp('end_date')->nullable();
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }

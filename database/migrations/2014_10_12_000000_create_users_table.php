@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('role',['Admin','user']);
             $table->enum('status',['Online','Offline']);
             $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('verified_at');
+            $table->timestamp('verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
