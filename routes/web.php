@@ -15,3 +15,11 @@ Route::get('/', function () {
 // })
 Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
 Route::post('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+
+
+Route::get('/admin/orders', function () {
+  return view('admin.order_management.order');
+});
+Route::get('/admin/products', function () {
+  return view('admin.products.productList');
+});
