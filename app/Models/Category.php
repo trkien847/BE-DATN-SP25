@@ -23,4 +23,9 @@ class Category extends Model implements Transformable
      * @var array
      */
     protected $fillable = ['name'];
+
+    public function categoryTypes()
+    {
+        return $this->hasMany(CategoryType::class, 'category_id');
+    }
 }

@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
   return view('welcome');
 });
-// Route::prefix('admin')->name('admin.')->group(function(){
-//   Route::get('/categories',)
-// })
+
 Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
-Route::post('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+Route::post('/admin/categories/store', [CategoryController::class, 'store'])->name('categories.store');
+Route::get('/admin/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
