@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Brands;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\Storage;
 class BrandController extends Controller
 {
     /**
@@ -39,6 +39,7 @@ class BrandController extends Controller
 
         // Handle the logo upload
         if ($request->hasFile('logo')) {
+            // Lưu logo vào thư mục 'logos' trong thư mục public
             $logoPath = $request->file('logo')->store('logos', 'public');
         }
 
@@ -46,7 +47,7 @@ class BrandController extends Controller
         Brand::create([
             'name' => $request->input('name'),
             'slug' => null, // Slug will be generated automatically in the model
-            'logo' => $logoPath ?? null,
+            'logo' => $logoPath ?? null, // Chỉ lưu đường dẫn logo nếu có
             'is_active' => $request->input('is_active', true),
         ]);
 
@@ -54,13 +55,11 @@ class BrandController extends Controller
         return redirect()->route('brands.list')->with('success', 'Brand created successfully!');
     }
 
+
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        
-    }
+    public function show(string $id) {}
 
     /**
      * Show the form for editing the specified resource.
@@ -78,20 +77,21 @@ class BrandController extends Controller
     {
         $brand = Brand::findOrFail($id); // Tìm thương hiệu theo ID
         $brand->update($request->only(['name', 'slug', 'is_active'])); // Cập nhật thương hiệu
-    
+
         // Nếu có file logo, xử lý upload và lưu logo
         if ($request->hasFile('logo')) {
             // Xóa logo cũ nếu có
-            if ($brand->logo && \Storage::exists('public/' . $brand->logo)) {
-                \Storage::delete('public/' . $brand->logo);
+            if ($brand->logo && Storage::exists('public/' . $brand->logo)) {
+                Storage::delete('public/' . $brand->logo);
             }
-            // Lưu logo mới
+            // Lưu logo mới vào thư mục 'logos' trong thư mục public
             $brand->logo = $request->file('logo')->store('logos', 'public');
             $brand->save();
         }
-    
+
         return redirect()->route('brands.list')->with('success', 'Brand updated successfully!');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -101,12 +101,12 @@ class BrandController extends Controller
         $brand = Brand::findOrFail($id); // Tìm thương hiệu theo ID
 
         // Xóa logo nếu có
-        if ($brand->logo && \Storage::exists('public/' . $brand->logo)) {
-            \Storage::delete('public/' . $brand->logo); // Xóa logo khỏi storage
+        if ($brand->logo && Storage::exists('public/' . $brand->logo)) {
+            Storage::delete('public/' . $brand->logo); // Xóa logo khỏi storage
         }
-    
+
         $brand->delete(); // Xóa thương hiệu
-    
+
         return redirect()->route('brands.list')->with('success', 'Brand deleted successfully!');
     }
 }
