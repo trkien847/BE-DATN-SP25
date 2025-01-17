@@ -40,7 +40,8 @@ Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'ind
 
 Route::get('/admin/orders', function () {
   return view('admin.order_management.order');
-});
+})->name('order.list');
+// product
 Route::get('/admin/products', function () {
   return view('admin.products.productList');
-});
+})->name('products.list');
