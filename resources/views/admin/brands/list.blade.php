@@ -65,6 +65,4 @@
             </div> <!-- end card body -->
         </div> <!-- end card -->
     </div> <!-- end col -->
-    @include('admin.categories.modal.add')
-    @include('sweetalert::alert')
 @endsection

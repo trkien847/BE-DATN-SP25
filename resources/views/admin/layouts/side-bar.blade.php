@@ -40,7 +40,6 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('categories.list') }}">
-                <a class="nav-link" href="/admin/categories">
                     <span class="nav-icon">
                         <iconify-icon icon="carbon:categories"></iconify-icon>
                     </span>
