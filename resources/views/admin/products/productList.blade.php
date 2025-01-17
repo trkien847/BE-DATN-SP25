@@ -1,122 +1,164 @@
-@extends('admin.layout')
-@section('titlepage','')
+@extends('admin.layouts.layout')
 
 @section('content')
-<style>
-.pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-}
 
-.pagination a {
-    margin: 0 5px;
-    padding: 5px 10px;
-    text-decoration: none;
-    background-color: #316b7d;
-    color: #fff;
-    border-radius: 3px;
-}
-.pagination li {
-    list-style-type: none;
-}
-</style>
-<main>
-    <div class="container-fluid px-4">
-      <h1 class="mt-4">List products</h1>
-      <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Dashboard</li>
-      </ol>
+<!-- Include Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
-      <!-- Data -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <i class="fas fa-table me-1"></i>
-          List categories
-        </div>
-        {{-- <form action="index.php?act=list_pro" method="post">
-            <select class="form-select" name="category_id" id="">
-                <option value="0">Chon danh muc</option>
-                @foreach($categories as $c)
-                    <option value="{{ $c->id }}">{{ $c->name }}</option>
-                @endforeach
-            </select>
-          <input class="btn btn-primary" type="submit" name="listok" value="GO">
-        </form> --}}
-        <div class="card-body">
-                        {{-- Hiển thị thông báo --}}
-        @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+<!-- Title Section -->
+{{-- <div class="container my-1">
+  <div class="text-center">
+    <h1 class="text-uppercase text-primary my-1">Quản Lý Sản Phẩm</h1>
+    <p class="text-muted my-1">Dễ dàng quản lý danh sách sản phẩm và cập nhật thông tin.</p>
+  </div>
+</div> --}}
 
-    @if (session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-    @endif
-          <table id="datatablesSimple">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Category name</th>
-                <th>Product name</th>
-                <th>Image</th>
-                <th>Price</th>
-                <th>Discount</th>
-                <th>Quantity</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-                @foreach($products as $item)
-                 <tr>
-                    <td>{{ $item->idProduct }}</td>
-                    <td>{{ $item->category->name }}</td>
-                    <td>{{ $item->name }}</td>
-                    <td><img src="{{ asset('upload/'.$item->img)  }}" width="200" height="150" alt=""></td>
-                    <td>{{ number_format($item->price,0,'.',',')}} $</td>
-                    <td>{{ number_format($item->discount,0,'.',',') }} %</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td class="{{ $item->is_type == true ? 'text-success' : 'text-danger' }}">
-                        {{ $item->is_type == true ? 'Display' : 'Hidden' }}
-                      </td>
-                    <td>
-                    <a href="" class="btn btn-warning">
-                    <!-- Thêm nút update -->
-                      <form action="{{ route('admin.products.productUpdateForm', $item->id) }}" method="GET">
-                          <button type="submit">
-                                    Edit
-                         </button>
-                     </form>
-                    </a>
-                     <!-- Thêm nút delete -->
-                     <a href="" class="btn btn-danger">
-                        <form action="{{ route('admin.products.productDestroy', $item->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                                    {{-- Sử dụng @method('DELETE') trong đoạn mã nhằm mục đích gửi một yêu cầu HTTP DELETE từ form HTML.  --}}
-                                    <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')">
-                                        Delete
-                                    </button>
-                         </form>
-                     </a>
-                    </td>
-                  </tr>
-                  @endforeach
-            </tbody>
-          </table>
-          <div class="d-flex justify-content-center">
-            {{ $products->links('pagination::default') }}
-         </div>
-          <a href="{{ route('admin.products.viewProAdd') }}">
-            <input type="submit" class="btn btn-primary" name="them" value="ADD">
-          </a>
-        </div>
+<!-- Product Table Section -->
+<div class="container" >
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
+    <button class="btn btn-success btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
+      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+    </button>
+  </div>
+
+  <div class="table-responsive rounded shadow">
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="table-dark">
+        <tr class="text-center">
+          <th scope="col">Mã SP</th>
+          <th scope="col">Tên Sản Phẩm</th>
+          <th scope="col">Giá</th>
+          <th scope="col">Ảnh</th>
+          <th scope="col">Số Lượng</th>
+          <th scope="col">Mô Tả</th>
+          <th scope="col">Giá Nhập</th>
+          <th scope="col">Giá Bán</th>
+          <th scope="col">Trạng Thái</th>
+          <th scope="col">Nhà Cung Cấp</th>
+          <th scope="col">Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SP001</td>
+          <td>Sản Phẩm A</td>
+          <td>500 VND</td>
+          <td><img src="https://locatelvenezuela.vtexassets.com/arquivos/ids/177850/2014458.jpg?v=638222833141170000" class="img-thumbnail" alt="Product Image" width="100px" height="100px"></td>
+          <td>10</td>
+          <td>Mô tả ngắn gọn...</td>
+          <td>500 VND</td>
+          <td>1,000 VND</td>
+          <td><span class="badge bg-success">Còn Hàng</span></td>
+          <td>Nhà Cung Cấp A</td>
+          <td>
+            <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i>Sửa</button>
+            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i>Xóa</button>
+          </td>
+        </tr>
+        <tr>
+          <td>SP001</td>
+          <td>Sản Phẩm A</td>
+          <td>500 VND</td>
+          <td><img src="https://cdn.medigoapp.com/product/Habroxol600_83644bd3ae.jpg" class="img-thumbnail" alt="Product Image" width="100px" height="100px"></td>
+          <td>0</td>
+          <td>Mô tả ngắn gọn...</td>
+          <td>500 VND</td>
+          <td>1,000 VND</td>
+          <td><span class="badge bg-danger">Hết Hàng</span></td>
+          <td>Nhà Cung Cấp A</td>
+          <td>
+            <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i>Sửa</button>
+            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i>Xóa</button>
+          </td>
+        </tr>
+        <tr>
+          <td>SP001</td>
+          <td>Sản Phẩm A</td>
+          <td>500 VND</td>
+          <td><img src="https://th.bing.com/th/id/OIP.7Qmb42bfeqlSgDd4jinPFQHaHa?pid=ImgDet&w=179&h=179&c=7&dpr=1.3" class="img-thumbnail" alt="Product Image" width="100px" height="100px"></td>
+          <td>10</td>
+          <td>Mô tả ngắn gọn...</td>
+          <td>500 VND</td>
+          <td>1,000 VND</td>
+          <td><span class="badge bg-success">Còn Hàng</span></td>
+          <td>Nhà Cung Cấp A</td>
+          <td>
+            <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i>Sửa</button>
+            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i>Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-start mt-4">
+        <li class="page-item disabled">
+          <a class="page-link" href="#" tabindex="-1">Trước</a>
+        </li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">...</a></li>
+        <li class="page-item">
+          <a class="page-link" href="#">Tiếp</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="addProductModalLabel">Thêm Sản Phẩm Mới</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="productName" class="form-label">Tên Sản Phẩm</label>
+              <input type="text" class="form-control" id="productName" placeholder="Nhập tên sản phẩm">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productPrice" class="form-label">Giá</label>
+              <input type="number" class="form-control" id="productPrice" placeholder="Nhập giá sản phẩm">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productImage" class="form-label">Ảnh</label>
+              <input type="file" class="form-control" id="productImage">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productQuantity" class="form-label">Số Lượng</label>
+              <input type="number" class="form-control" id="productQuantity" placeholder="Nhập số lượng">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productCostPrice" class="form-label">Giá Nhập</label>
+              <input type="number" class="form-control" id="productCostPrice" placeholder="Nhập giá nhập">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="productSalePrice" class="form-label">Giá Bán</label>
+              <input type="number" class="form-control" id="productSalePrice" placeholder="Nhập giá bán">
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="productSupplier" class="form-label">Nhà Cung Cấp</label>
+              <input type="text" class="form-control" id="productSupplier" placeholder="Nhập tên nhà cung cấp">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Lưu Sản Phẩm</button>
+        </form>
       </div>
     </div>
-  </main>
+  </div>
+</div>
+
+<!-- Include Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 @endsection

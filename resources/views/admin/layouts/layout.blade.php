@@ -7,7 +7,7 @@
 <head>
     <!-- Title Meta -->
     <meta charset="utf-8" />
-    <title>Invoices List | Rasket - Responsive Admin Dashboard Template</title>
+    <title>BeePharmacy | Nhà thuốc cho bạn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -24,6 +24,7 @@
 
     <!-- App css (Require in all Page) -->
     <link href="{{ asset('admin/css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    <script src="{{ asset('admin/js/components/table-gridjs.js') }}"></script>
 
     <!-- Theme Config js (Require in all Page) -->
     <script src="{{ asset('admin/js/config.min.js') }}"></script>
@@ -200,6 +201,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+ 
     @stack('scripts')
 
 </body>

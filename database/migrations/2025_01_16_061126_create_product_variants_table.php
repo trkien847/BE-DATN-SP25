@@ -18,9 +18,9 @@ return new class extends Migration
             $table->decimal('price');
             $table->decimal('sale_price');
             $table->timestamp('sale_price_start_at');
-            $table->timestamp('sale_price_end_at');
+            $table->timestamp('sale_price_end_at')->nullable();
             $table->string('thumbnail');
-            $table->timestamp('deleted_at');
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
