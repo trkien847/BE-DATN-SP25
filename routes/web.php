@@ -32,10 +32,11 @@ Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('c
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
 
 
-
+// oder
 Route::get('/admin/orders', function () {
   return view('admin.order_management.order');
-});
+})->name('order.list');
+// product
 Route::get('/admin/products', function () {
   return view('admin.products.productList');
-});
+})->name('products.list');
