@@ -40,7 +40,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="/admin/categories">
                     <span class="nav-icon">
                         <iconify-icon icon="carbon:categories"></iconify-icon>
                     </span>
@@ -49,7 +49,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="/admin/products">
                     <span class="nav-icon" style="margin-left: -4px;">
                     <iconify-icon icon="bxl:magento" width="24" height="24"></iconify-icon></iconify-icon>
                     </span>
@@ -58,7 +58,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="/admin/orders">
                     <span class="nav-icon" style="margin-left: -4px;">
                         <iconify-icon icon="prime:book" width="24" height="24"></iconify-icon>
                     </span>

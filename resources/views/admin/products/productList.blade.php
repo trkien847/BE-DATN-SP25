@@ -14,7 +14,7 @@
 </div> --}}
 
 <!-- Product Table Section -->
-<div class="container">
+<div class="container" >
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
     <button class="btn btn-success btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
