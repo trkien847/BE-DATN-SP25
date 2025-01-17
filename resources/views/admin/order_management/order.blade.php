@@ -2,7 +2,7 @@
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <style>
-    .nav-tabs .nav-link.active {
+    /* .nav-tabs .nav-link.active {
         background-color: #f8f9fa;
         border-color: #dee2e6 #dee2e6 #fff;
     }
@@ -22,9 +22,15 @@
 
     .status-delivered {
         color: green;
-    }
+    } */
 </style>
-<div class="container mt-4">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG</h4>
+        {{-- <button class="btn btn-success btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
+          <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+        </button> --}}
+      </div>
     <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link active" href="#">Tất cả đơn giao hàng</a>
@@ -60,11 +66,27 @@
                         <th scope="col">Mã vận đơn</th>
                         <th scope="col">Trạng thái</th>
                         <th scope="col">Tiền COD</th>
-                        <th scope="col">Phí trả đối tác vận chuyển</th>
+                        <th scope="col">Phí ship</th>
                         <th scope="col">Trạng thái đối soát</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>FUN02297</td>
+                        <td>SON03068</td>
+                        <td>S6445630.HN1.A89.291516849</td>
+                        <td class="status-cancelled">
+                            <select name="" id="" class="form-select form-select-xs text-xs">
+                                <option value="">Đã hủy</option>
+                                <option value="">Đang giao hàng</option>
+                                <option value="">Đã giao hàng</option>
+                            </select>
+                        </td>
+                        <td>0</td>
+                        <td>18,000</td>
+                        <td><span class="badge bg-success">Đã đối soát</span></td>
+                    </tr>
                     <tr>
                         <td><input type="checkbox"></td>
                         <td>FUN02297</td>
@@ -77,68 +99,65 @@
                         </td>
                         <td>0</td>
                         <td>18,000</td>
-                        <td>Chưa đối soát</td>
+                        <td><span class="badge bg-success">Đã đối soát</span></td>
                     </tr>
                     <tr>
                         <td><input type="checkbox"></td>
-                        <td>FUN02294</td>
+                        <td>FUN02297</td>
                         <td>SON03068</td>
-                        <td>FUN02294</td>
-                        <td class="status-pending">Đang giao hàng</td>
-                        <td>8,680,000</td>
-                        <td>63,000</td>
-                        <td>Chưa đối soát</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>FUN02293</td>
-                        <td>SON03065</td>
-                        <td>S6445630.HN1.8CVPhuc.356688118</td>
-                        <td class="status-cancelled">Hủy đóng gói</td>
-                        <td>9,180,000</td>
-                        <td>63,000</td>
-                        <td>Chưa đối soát</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>FUN02290</td>
-                        <td>SON03050</td>
-                        <td>S6445630.HN1.C12H.409211786</td>
-                        <td class="status-pending">Đang giao hàng</td>
-                        <td>9,180,000</td>
-                        <td>77,500</td>
-                        <td>Chưa đối soát</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>FUN02289</td>
-                        <td>SON03047</td>
-                        <td>S6445630.HN1.A86T.405315314</td>
-                        <td class="status-pending">Chờ giao hàng</td>
-                        <td>60,858</td>
-                        <td>22,000</td>
-                        <td>Chưa đối soát</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>FUN02282</td>
-                        <td>SON03052</td>
-                        <td>FUN02282</td>
-                        <td class="status-delivered">Đã giao hàng</td>
-                        <td>9,180,000</td>
+                        <td>S6445630.HN1.A89.291516849</td>
+                        <td class="status-cancelled">
+                            <select name="" id="" class="custom-select">
+                                <option value="">Đã hủy</option>
+                            </select>
+                        </td>
                         <td>0</td>
-                        <td>Chưa đối soát</td>
+                        <td>18,000</td>
+                        <td><span class="badge bg-success">Đã đối soát</span></td>
                     </tr>
                     <tr>
                         <td><input type="checkbox"></td>
-                        <td>FUN02275</td>
-                        <td>SON03038</td>
-                        <td>FUN02275</td>
-                        <td class="status-delivered">Đã giao hàng</td>
-                        <td>216,000</td>
+                        <td>FUN02297</td>
+                        <td>SON03068</td>
+                        <td>S6445630.HN1.A89.291516849</td>
+                        <td class="status-cancelled">
+                            <select name="" id="" class="custom-select">
+                                <option value="">Đã hủy</option>
+                            </select>
+                        </td>
                         <td>0</td>
-                        <td>Đang đối soát</td>
+                        <td>18,000</td>
+                        <td><span class="badge bg-success">Đã đối soát</span></td>
                     </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>FUN02297</td>
+                        <td>SON03068</td>
+                        <td>S6445630.HN1.A89.291516849</td>
+                        <td class="status-cancelled">
+                            <select name="" id="" class="custom-select">
+                                <option value="">Đã hủy</option>
+                            </select>
+                        </td>
+                        <td>0</td>
+                        <td>18,000</td>
+                        <td><span class="badge bg-warning">Chưa đối soát</span></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>FUN02297</td>
+                        <td>SON03068</td>
+                        <td>S6445630.HN1.A89.291516849</td>
+                        <td class="status-cancelled">
+                            <select name="" id="" class="custom-select">
+                                <option value="">Đã hủy</option>
+                            </select>
+                        </td>
+                        <td>0</td>
+                        <td>18,000</td>
+                        <td><span class="badge bg-success">Đã đối soát</span></td>
+                    </tr>
+                    
                 </tbody>
             </table>
             <nav aria-label="Page navigation">
