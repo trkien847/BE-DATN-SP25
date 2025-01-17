@@ -29,11 +29,12 @@
                     <span class="nav-text"> Dashboard </span>
                 </a>
             </li>
+
             <li class="nav-item">
                 <a class="nav-link" href="index.html">
                     <span class="nav-icon">
                         <iconify-icon icon="carbon:categories"></iconify-icon>
-                    </span>                  
+                    </span>
                     <span class="nav-text"> Categories </span>
                 </a>
             </li>
