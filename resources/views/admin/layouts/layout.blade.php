@@ -24,6 +24,7 @@
 
     <!-- App css (Require in all Page) -->
     <link href="{{ asset('admin/css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    <script src="{{ asset('admin/js/components/table-gridjs.js') }}"></script>
 
     <!-- Theme Config js (Require in all Page) -->
     <script src="{{ asset('admin/js/config.min.js') }}"></script>
@@ -197,6 +198,7 @@
 
     <!-- App Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/app.js') }}"></script>
+ 
     @stack('scripts')
 
 </body>
