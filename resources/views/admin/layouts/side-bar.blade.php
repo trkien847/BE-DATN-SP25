@@ -46,6 +46,14 @@
                     <span class="nav-text"> Brand </span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('coupons.list')}}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="carbon:categories"></iconify-icon>
+                    </span>                  
+                    <span class="nav-text"> mã giảm giảm  </span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>

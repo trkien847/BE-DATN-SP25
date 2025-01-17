@@ -13,7 +13,8 @@ class BrandController extends Controller
      */
     public function index()
     {
-        return view('admin.brands.list');
+        $brands = Brand::all();
+        return view('admin.brands.list', compact('brands'));
     }
 
     /**
@@ -66,7 +67,8 @@ class BrandController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $brand = Brand::findOrFail($id); // Lấy thông tin thương hiệu theo ID
+        return view('admin.brands.brand.edit', compact('brand'));
     }
 
     /**
@@ -74,7 +76,21 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $brand = Brand::findOrFail($id); // Tìm thương hiệu theo ID
+        $brand->update($request->only(['name', 'slug', 'is_active'])); // Cập nhật thương hiệu
+    
+        // Nếu có file logo, xử lý upload và lưu logo
+        if ($request->hasFile('logo')) {
+            // Xóa logo cũ nếu có
+            if ($brand->logo && \Storage::exists('public/' . $brand->logo)) {
+                \Storage::delete('public/' . $brand->logo);
+            }
+            // Lưu logo mới
+            $brand->logo = $request->file('logo')->store('logos', 'public');
+            $brand->save();
+        }
+    
+        return redirect()->route('brands.list')->with('success', 'Brand updated successfully!');
     }
 
     /**
@@ -82,6 +98,15 @@ class BrandController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $brand = Brand::findOrFail($id); // Tìm thương hiệu theo ID
+
+        // Xóa logo nếu có
+        if ($brand->logo && \Storage::exists('public/' . $brand->logo)) {
+            \Storage::delete('public/' . $brand->logo); // Xóa logo khỏi storage
+        }
+    
+        $brand->delete(); // Xóa thương hiệu
+    
+        return redirect()->route('brands.list')->with('success', 'Brand deleted successfully!');
     }
 }
