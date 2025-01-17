@@ -3,6 +3,7 @@
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Coupons\CoupoController;
+use App\Http\Controllers\ReviewsController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
@@ -31,7 +32,11 @@ Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.l
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
 
-
+// reviews
+Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
+Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])->name('list.edit');
+// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
+Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
 
 Route::get('/admin/orders', function () {
   return view('admin.order_management.order');
