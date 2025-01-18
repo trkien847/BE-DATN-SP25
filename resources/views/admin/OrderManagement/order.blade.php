@@ -31,7 +31,7 @@
           <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
         </button> --}}
       </div>
-    <ul class="nav nav-tabs">
+    <ul class="nav" >
         <li class="nav-item">
             <a class="nav-link active" href="#">Tất cả đơn giao hàng</a>
         </li>
@@ -90,7 +90,6 @@
                     <td>{{ number_format($od->total_amount, 0, ',', '.') }} VND</td>
                     <td>test</td>
                     <td><span class="badge bg-success">{{ $od->orderStatusDetails->name }}</span></td>
-                    <td></td>
                 </tr>
                 @endforeach
 

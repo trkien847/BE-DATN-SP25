@@ -11,7 +11,7 @@
                         </div>
                         <div>
                             <a href="{{ route('brands.create') }}" class="btn btn-success">
-                                <i class="bx bx-plus me-1"></i>Create Brand
+                                <i class="bx bx-plus me-1"></i>Thêm Thương Hiệu
                             </a>
                         </div>
                     </div> <!-- end row -->
@@ -23,7 +23,7 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Name</th>
-                                    <th scope="col">Slug</th>
+                                    <!-- <th scope="col">Slug</th> -->
                                     <th scope="col">Logo</th>
                                     <th scope="col">Active</th>
                                     <th scope="col">Actions</th>
@@ -34,7 +34,7 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $brand->name }}</td>
-                                        <td>{{ $brand->slug }}</td>
+                                        <!-- <td>{{ $brand->slug }}</td> -->
                                         <td>
                                             <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo" width="50">
                                         </td>
