@@ -4,6 +4,7 @@ use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Coupons\CoupoController;
 use App\Http\Controllers\ReviewsController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
@@ -40,10 +41,10 @@ Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])
 // Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
 Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
 
-Route::get('/admin/orders', function () {
-  return view('admin.order_management.order');
-})->name('order.list');
 // product
 Route::get('/admin/products', function () {
   return view('admin.products.productList');
 })->name('products.list');
+
+Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
+Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
