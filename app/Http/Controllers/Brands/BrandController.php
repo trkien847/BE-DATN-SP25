@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Brands;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class BrandController extends Controller
 {
@@ -95,8 +96,8 @@ class BrandController extends Controller
     public function update(Request $request, string $id)
     {
         $brand = Brand::findOrFail($id); // Tìm thương hiệu theo ID
-        $brand->update($request->only(['name', 'slug', 'is_active'])); // Cập nhật thương hiệu
-    
+        $brand->update($request->only(['name', 'slug', 'is_active','description'])); // Cập nhật thương hiệu
+      
         // Nếu có file logo, xử lý upload và lưu logo
         if ($request->hasFile('logo')) {
             // Xóa logo cũ nếu có
