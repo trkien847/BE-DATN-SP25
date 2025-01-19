@@ -26,12 +26,12 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Description</th>
+                                    <th scope="col">Tên Thương Hiệu</th>
+                                    <th scope="col">Mô tả thương hiệu</th>
                                     <th scope="col">Slug</th>
                                     <th scope="col">Logo</th>
-                                    <th scope="col">Active</th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col">Kích Hoạt</th>
+                                    <th scope="col">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,14 +48,14 @@
                                         </td>
                                         <td>
                                             @if($brand->is_active)
-                                                <span class="badge bg-success">Active</span>
+                                                <span class="badge bg-success">Có</span>
                                             @else
-                                                <span class="badge bg-danger">Inactive</span>
+                                                <span class="badge bg-danger">Không</span>
                                             @endif
                                         </td>
                                         <td>
                                             
-                                            <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                            <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-primary btn-sm">Sửa</a>
                                             
                                             <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -63,7 +63,7 @@
                                                 <button type="submit" 
                                                         class="btn btn-danger btn-sm" 
                                                         onclick="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')">
-                                                    Delete
+                                                    Xóa
                                                 </button>
                                             </form>
                                             

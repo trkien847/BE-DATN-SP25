@@ -9,12 +9,12 @@
                         @csrf
                         @method('PUT')
                         <div class="mb-3">
-                            <label for="name" class="form-label">Brand Name</label>
+                            <label for="name" class="form-label">Tên Thương Hiệu</label>
                             <input type="text" id="name" name="name" class="form-control" value="{{ $brand->name }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
+                            <label for="description" class="form-label">Mô tả</label>
                             <input type="text" id="description" name="description" class="form-control" value="{{ $brand->description }}" required>
                         </div>
 
@@ -27,14 +27,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="is_active" class="form-label">Active</label>
+                            <label for="is_active" class="form-label">Kích Hoạt</label>
                             <select id="is_active" name="is_active" class="form-control">
-                                <option value="1" {{ $brand->is_active ? 'selected' : '' }}>Yes</option>
-                                <option value="0" {{ !$brand->is_active ? 'selected' : '' }}>No</option>
+                                <option value="1" {{ $brand->is_active ? 'selected' : '' }}>Có</option>
+                                <option value="0" {{ !$brand->is_active ? 'selected' : '' }}>Không</option>
                             </select>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">Update Brand</button>
+                        <button type="submit" class="btn btn-primary">Sửa Thương Hiệu</button>
                         {{-- <a href="{{ route('brands.index') }}" class="btn btn-secondary">Back</a> --}}
                     </form>
                 </div>
