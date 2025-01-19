@@ -22,6 +22,6 @@ class CategoryType extends Model implements Transformable
      *
      * @var array
      */
-    protected $fillable = ['id', 'name'];
+    protected $fillable = ['category_id', 'name','icon'];
 
 }

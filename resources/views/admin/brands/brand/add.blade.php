@@ -62,7 +62,4 @@
         </div> <!-- end card -->
     </div> <!-- end col -->
 
-    <!-- Include các modal khác nếu cần -->
-    @include('admin.categories.modal.add')
-    @include('sweetalert::alert')
 @endsection

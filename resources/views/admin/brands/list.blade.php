@@ -15,7 +15,7 @@
                         </div>
                         <div>
                             <a href="{{ route('brands.create') }}" class="btn btn-success">
-                                <i class="bx bx-plus me-1"></i>Create Brand
+                                <i class="bx bx-plus me-1"></i>Thêm Thương Hiệu
                             </a>
                         </div>
                     </div> <!-- end row -->
@@ -41,6 +41,8 @@
                                         <td>{{ $brand->name }}</td>
                                         <td>{{ $brand->description }}</td>
                                         <td>{{ $brand->slug }}</td>
+                                        <!-- <td>{{ $brand->slug }}</td> -->
+
                                         <td>
                                             <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo" width="50">
                                         </td>
@@ -76,7 +78,5 @@
             </div> <!-- end card body -->
         </div> <!-- end card -->
     </div> <!-- end col -->
-    @include('admin.categories.modal.add')
-    @include('sweetalert::alert')
 @endsection
 
