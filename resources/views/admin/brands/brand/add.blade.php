@@ -37,6 +37,11 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="description" class="form-label">Mô tả thương hiệu</label>
+                                <textarea name="description" id="description" class="form-control" rows="4" placeholder="Nhập mô tả thương hiệu"></textarea>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="logo" class="form-label">Logo</label>
                                 <input type="file" id="logo" name="logo" class="form-control">
                             </div>
