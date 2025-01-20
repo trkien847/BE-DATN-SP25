@@ -64,6 +64,10 @@ class Brand extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at']; // Khai báo để Laravel hiểu rằng trường deleted_at chứa giá trị ngày giờ
 
-
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'brand_id');
+    }
+    
 
 }

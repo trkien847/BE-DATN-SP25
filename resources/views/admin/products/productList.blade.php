@@ -35,7 +35,7 @@
 
   .table thead th {
     color: #fff;
-    background-color:rgb(59, 72, 84);
+    background-color: rgb(59, 72, 84);
     text-align: center;
     vertical-align: middle;
   }
@@ -70,7 +70,7 @@
   }
 
   .search-bar button:hover {
-    background-color:rgb(179, 0, 9);
+    background-color: rgb(179, 0, 9);
     border-color: rgb(179, 0, 9);
   }
 </style>
@@ -82,12 +82,37 @@
   </div>
 </div> --}}
 
+@if(session('success'))
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    alert('{{ session(' success ') }}');});
+</script>
+@endif
+
+@if(session('error'))
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    alert('{{ session(' error ') }}');});
+</script>
+@endif
+
+@if($errors->any())
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
+    @foreach($errors -> all() as $error)
+    errorMessage += '- {{ $error }}\n';
+    @endforeach
+    alert(errorMessage);
+  });
+</script>
+@endif
 
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
+    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM HEHE BOY</h4>
     <button style="background-color: rgb(59, 72, 84); color: white;" class="btn btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
-      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm (Ba to kom)
     </button>
   </div>
 
@@ -112,7 +137,7 @@
           <th scope="col">Tên Sản Phẩm</th>
           <th scope="col">Giá</th>
           <th scope="col">Ảnh</th>
-          <th scope="col">Số Lượng</th>
+          <th scope="col">Danh mục</th>
           <th scope="col">Mô Tả</th>
           <th scope="col">Giá Nhập</th>
           <th scope="col">Giá Bán</th>
@@ -124,14 +149,42 @@
       <tbody>
         @foreach($products as $product)
         <tr>
-          <td>{{ $product->id }}</td>
+          <td>{{ $product->sku }}</td>
           <td>{{ $product->name }}</td>
           <td>{{ number_format($product->price, 0, ',', '.') }} VND</td>
           <td>
-            <img src="{{ $product->image_url }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px">
+            <img src="{{ asset('upload/'.$product->thumbnail)  }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px">
           </td>
-          <td>{{ $product->quantity }}</td>
-          <td>{{ $product->description }}</td>
+          <td>
+              @foreach($product->categories as $category)
+                  <div>
+                      <span class="category-name" style="cursor: pointer;" onclick="toggleSubcategories({{ $category->id }})">
+                          {{ $category->name }}
+                      </span>
+                      @if($category->categoryTypes->isNotEmpty())
+                          <div id="subcategories-{{ $category->id }}" style="display: none; margin-left: 20px;">
+                              @foreach($category->categoryTypes as $categoryType)
+                                  <div>{{ $categoryType->name }}</div>
+                              @endforeach
+                          </div>
+                      @endif
+                  </div>
+              @endforeach
+          </td>
+          <script>
+            function toggleSubcategories(categoryId) {
+                const subcategoriesDiv = document.getElementById(`subcategories-${categoryId}`);
+                const toggleIcon = document.getElementById(`icon-${categoryId}`);
+                if (subcategoriesDiv.style.display === 'none') {
+                    subcategoriesDiv.style.display = 'block';
+                    toggleIcon.textContent = '-';
+                } else {
+                    subcategoriesDiv.style.display = 'none';
+                    toggleIcon.textContent = '+';
+                }
+            }
+          </script>
+          <td>{!! Str::limit($product->content, 50, '...') !!}</td>
           <td>{{ number_format($product->import_price, 0, ',', '.') }} VND</td>
           <td>{{ number_format($product->sale_price, 0, ',', '.') }} VND</td>
           <td>
@@ -139,17 +192,25 @@
               {{ $product->quantity > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
             </span>
           </td>
-          <td>{{ $product->supplier }}</td>
+          <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>
           <td>
-            <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i> Sửa</button>
-            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Xóa</button>
+            <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil-square"></i> Sửa
+            </a>
+            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger btn-sm" 
+                  onclick="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')">
+                    Xóa
+                </button>
+            </form>
           </td>
         </tr>
         @endforeach
       </tbody>
     </table>
   </div>
-
   <!-- Phân trang -->
   <nav aria-label="Page navigation">
     {{ $products->links('pagination::bootstrap-5') }}
@@ -168,11 +229,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form action="{{ route('products.store') }}" method="post" enctype="multipart/form-data">
+          @csrf
           <div class="row">
             <div class="col-md-6">
               <label for="categorySelect" class="form-label">Chọn Danh Mục Cha</label>
-              <select id="categorySelect" class="form-select">
+              <select id="categorySelect" class="form-select" name="category_id">
                 <option value="">Chọn danh mục cha</option>
                 @foreach($categories as $category)
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -181,7 +243,7 @@
             </div>
             <div class="col-md-6">
               <label for="categoryTypeSelect" class="form-label">Chọn Danh Mục Con</label>
-              <select id="categoryTypeSelect" class="form-select" disabled>
+              <select id="categoryTypeSelect" class="form-select" name="category_type_id" disabled>
                 <option value="">Chọn danh mục con</option>
               </select>
             </div>
@@ -218,22 +280,22 @@
 
             <div class="col-md-6 mb-3">
               <label for="productName" class="form-label">Tên Sản Phẩm</label>
-              <input type="text" class="form-control" id="productName" placeholder="Nhập tên sản phẩm">
+              <input type="text" class="form-control" id="productName" name="name" placeholder="Nhập tên sản phẩm">
             </div>
             <div class="col-md-6 mb-3">
               <label for="productPrice" class="form-label">Mã sản phẩm</label>
-              <input type="text" class="form-control" id="productPrice" placeholder="Nhập giá sản phẩm">
+              <input type="text" class="form-control" id="productPrice" name="sku" placeholder="Nhập giá sản phẩm">
             </div>
             <div class="col-md-12 mb-3">
               <label for="productImage" class="form-label">Ảnh</label>
-              <input type="file" class="form-control" id="productImage" accept="image/*">
+              <input type="file" class="form-control" id="productImage" name="thumbnail" accept="image/*">
             </div>
             <div id="imagePreview" style="margin-top: 10px;">
               <img id="previewImg" src="#" alt="Preview Image" style="max-width: 50%; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
             </div>
             <div class="col-md-6 mb-3">
               <label for="brandSelect" class="form-label">Chọn tên thương hiệu</label>
-              <select id="brandSelect" class="form-control">
+              <select id="brandSelect" class="form-control" name="brand_id">
                 <option value="">Chọn tên thương hiệu</option>
                 @foreach($brands as $br)
                 <option value="{{ $br->id }}">{{ $br->name }}</option>
@@ -242,25 +304,25 @@
             </div>
             <div class="col-md-6 mb-3">
               <label for="productCostPrice" class="form-label">Giá Bán</label>
-              <input type="number" class="form-control" id="productCostPrice" placeholder="Nhập giá bán">
+              <input type="number" class="form-control" id="productCostPrice" name="sell_price" placeholder="Nhập giá bán">
             </div>
             <div class="col-md-6 mb-3">
               <label for="productSalePrice" class="form-label">Giá Nhập</label>
-              <input type="number" class="form-control" id="productSalePrice" placeholder="Nhập giá nhập">
+              <input type="number" class="form-control" id="productSalePrice" name="price" placeholder="Nhập giá nhập">
             </div>
             <div class="col-md-6 mb-3">
               <label for="productSalePrice" class="form-label">Giá Khuyến Mãi (Mãi bên nhau em nhe)</label>
-              <input type="number" class="form-control" id="productSalePrice" placeholder="Giá Khuyến Mãi">
+              <input type="number" class="form-control" id="productSalePrice" name="sale_price" placeholder="Giá Khuyến Mãi">
             </div>
 
             <div class="col-md-6 mb-3">
               <label for="timestampInput" class="form-label">Ngày Giờ Bắt Đầu Giảm Giá</label>
-              <input type="datetime-local" id="timestampInput" class="form-control">
+              <input type="datetime-local" id="timestampInput" name="sale_price_start_at" class="form-control">
             </div>
 
             <div class="col-md-6 mb-3">
               <label for="timestampInput" class="form-label">Ngày Giờ Kết Thúc Giảm Giá</label>
-              <input type="datetime-local" id="timestampInput" class="form-control">
+              <input type="datetime-local" id="timestampInput" name="sale_price_end_at" class="form-control">
             </div>
 
             <div class="col-md-12 mb-3">
@@ -268,7 +330,7 @@
               <textarea class="form-control @error('bio') is-invalid @enderror"
                 id="doctorBio"
                 style="height: 100px"
-                name="bio">
+                name="content">
               </textarea>
               <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
               <script>

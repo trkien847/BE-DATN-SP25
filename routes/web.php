@@ -44,7 +44,10 @@ Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'ind
 
 // product
 Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
-
+Route::post('/admin/products/create', [ProductController::class, 'productStore'])->name('products.store');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
