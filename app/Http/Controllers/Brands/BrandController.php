@@ -65,7 +65,7 @@ class BrandController extends Controller
         // Create the brand
         Brand::create([
             'name' => $request->input('name'),
-            'slug' => null, // Slug will be generated automatically in the model
+            //'slug' => null, // Slug will be generated automatically in the model
             'logo' => $logoPath ?? null, // Chỉ lưu đường dẫn logo nếu có
             'is_active' => $request->input('is_active', true),
             'description' => $request->input('description'),

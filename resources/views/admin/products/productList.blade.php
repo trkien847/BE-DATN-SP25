@@ -110,9 +110,9 @@
 
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM HEHE BOY</h4>
+    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
     <button style="background-color: rgb(59, 72, 84); color: white;" class="btn btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
-      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm (Ba to kom)
+      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
     </button>
   </div>
 
@@ -184,8 +184,8 @@
                 }
             }
           </script>
-          <td>{!! Str::limit($product->content, 50, '...') !!}</td>
-          <td>{{ number_format($product->import_price, 0, ',', '.') }} VND</td>
+          <td>{!! Str::limit($product->content, 100, '...') !!}</td>
+          <td>{{ number_format($product->price, 0, ',', '.') }} VND</td>
           <td>{{ number_format($product->sale_price, 0, ',', '.') }} VND</td>
           <td>
             <span class="badge {{ $product->quantity > 0 ? 'bg-success' : 'bg-danger' }}">
@@ -225,7 +225,6 @@
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="addProductModalLabel">Thêm Sản Phẩm Mới</h5>
-        <img src="https://th.bing.com/th/id/OIP.9jxDOjYDVT3wHc-v3JAO8gAAAA?w=200&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7" style="width: 50px; height: 50px; margin-left: 50px;">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -337,7 +336,6 @@
                 CKEDITOR.replace('doctorBio');
               </script>
             </div>
-
           </div>
           <button type="submit" class="btn btn-primary w-100">Lưu Sản Phẩm</button>
         </form>
