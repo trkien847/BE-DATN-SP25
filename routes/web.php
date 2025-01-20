@@ -38,9 +38,9 @@ Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('c
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
-Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])->name('list.edit');
-// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
-Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
+Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
+// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'edit'])->name('reviews.edit');
+Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
 
 // product
 Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
