@@ -11,7 +11,7 @@
                     </div>
                     <div>
                       
-                        <a href="{{route('coupons.create')}}" class="btn btn-success"><i class="bx bx-plus me-1"></i>Creat Coupon</a>
+                        <a href="{{route('coupons.create')}}" class="btn btn-success"><i class="bx bx-plus me-1"></i>Thêm Mã Giảm</a>
                     </div>
                 </div> <!-- end row -->
             </div>
