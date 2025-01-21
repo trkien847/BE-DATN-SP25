@@ -28,4 +28,8 @@ class Category extends Model implements Transformable
     {
         return $this->hasMany(CategoryType::class, 'category_id');
     }
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'category_product', 'category_id', 'product_id');
+    }
 }

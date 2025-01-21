@@ -3,6 +3,7 @@
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Coupons\CoupoController;
+use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Auth;
@@ -37,14 +38,16 @@ Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('c
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
-Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])->name('list.edit');
-// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
-Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
+Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
+// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'edit'])->name('reviews.edit');
+Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
 
 // product
-Route::get('/admin/products', function () {
-  return view('admin.products.productList');
-})->name('products.list');
+Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
+Route::post('/admin/products/create', [ProductController::class, 'productStore'])->name('products.store');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');

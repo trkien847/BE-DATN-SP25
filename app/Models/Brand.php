@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Brand extends Model
 {
@@ -20,6 +23,7 @@ class Brand extends Model
         'slug',
         'logo',
         'is_active',
+        'description',
     ];
 
     /**
@@ -30,6 +34,7 @@ class Brand extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'deleted_at' => 'datetime',
+        
     ];
 
     /**
@@ -55,4 +60,14 @@ class Brand extends Model
             }
         });
     }
+   
+    use SoftDeletes;
+    protected $dates = ['deleted_at']; // Khai báo để Laravel hiểu rằng trường deleted_at chứa giá trị ngày giờ
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'brand_id');
+    }
+    
+
 }
