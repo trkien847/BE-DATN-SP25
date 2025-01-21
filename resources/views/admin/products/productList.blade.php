@@ -5,6 +5,9 @@
 <!-- Include Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
   .select2-container .select2-selection--single {
     height: 38px;
@@ -85,28 +88,48 @@
 @if(session('success'))
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    alert('{{ session(' success ') }}');});
+    Swal.fire({
+      icon: 'success',
+      title: 'Thành công!',
+      text: '{{ session('success') }}',
+      confirmButtonText: 'OK'
+    });
+  });
 </script>
 @endif
 
 @if(session('error'))
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    alert('{{ session(' error ') }}');});
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: '{{ session('error') }}',
+      confirmButtonText: 'Đóng'
+    });
+  });
 </script>
 @endif
 
 @if($errors->any())
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
-    @foreach($errors -> all() as $error)
-    errorMessage += '- {{ $error }}\n';
+    let errorMessage = '<ul>';
+    @foreach($errors->all() as $error)
+      errorMessage += '<li>{{ $error }}</li>';
     @endforeach
-    alert(errorMessage);
+    errorMessage += '</ul>';
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Có lỗi xảy ra!',
+      html: errorMessage,
+      confirmButtonText: 'Đã hiểu'
+    });
   });
 </script>
 @endif
+
 
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-4">

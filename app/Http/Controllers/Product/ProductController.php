@@ -56,13 +56,35 @@ class ProductController extends Controller
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
-
+        
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
+        
+        $price = $request->input('price');
+        $sell_price = $request->input('sell_price');
+        $sale_price = $request->input('sale_price');
+        
+        $customErrors = [];
+        
+        if ($price > $sell_price) {
+            $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
+        }
+        
+        if (!is_null($sale_price) && $sale_price > $sell_price) {
+            $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
+        }
+        
+        if (!empty($customErrors)) {
+            return redirect()->back()
+                ->withErrors($customErrors)
+                ->withInput()
+                ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
+        }
+        
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
@@ -135,10 +157,31 @@ class ProductController extends Controller
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
-
+        
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
+        }
+        
+        $price = $request->input('price');
+        $sell_price = $request->input('sell_price');
+        $sale_price = $request->input('sale_price');
+        
+        $customErrors = [];
+        
+        if ($price > $sell_price) {
+            $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
+        }
+        
+        if (!is_null($sale_price) && $sale_price > $sell_price) {
+            $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
+        }
+        
+        if (!empty($customErrors)) {
+            return redirect()->back()
+                ->withErrors($customErrors)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }

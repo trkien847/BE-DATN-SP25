@@ -3,7 +3,40 @@
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+@if(session('error'))
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: '{{ session('error') }}',
+      confirmButtonText: 'Đóng'
+    });
+  });
+</script>
+@endif
+
+@if($errors->any())
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let errorMessage = '<ul>';
+    @foreach($errors->all() as $error)
+      errorMessage += '<li>{{ $error }}</li>';
+    @endforeach
+    errorMessage += '</ul>';
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Có lỗi xảy ra!',
+      html: errorMessage,
+      confirmButtonText: 'Đã hiểu'
+    });
+  });
+</script>
+@endif
 <h3>Sửa Chữa sai lầm</h3>
 <form action="{{ route('products.update', $product->id) }}" method="post" enctype="multipart/form-data" style="margin-top: 10px;">
     @csrf
