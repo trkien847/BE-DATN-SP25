@@ -101,7 +101,7 @@
                         var orderId = $(this).data('order-id'); 
 
                         $.ajax({
-                            url: '{{ route('updateOrderStatus') }}',  
+                            url: '{{ route('updateOrderStatus')}}',
                             method: 'POST',
                             data: {
                                 _token: '{{ csrf_token() }}', 
