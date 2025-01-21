@@ -11,7 +11,7 @@
                         </div>
                         <div>
                             <a href="{{ route('categories.create') }}" class="btn btn-success">
-                                <i class="bx bx-plus me-1"></i>Create Category
+                                <i class="bx bx-plus me-1"></i>Thêm Danh Mục
                             </a>
                         </div>
                     </div> <!-- end row -->
@@ -25,7 +25,7 @@
                                     <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục</th>
                                     <th class="border-0 py-2 sortable" data-sort="created_at">Ngày tạo</th>
                                     <th class="border-0 py-2 sortable" data-sort="updated_at">Ngày cập nhật</th>
-                                    <th class="border-0 py-2">Action</th>
+                                    <th class="border-0 py-2">Hành Động</th>
                                 </tr>
                             </thead> <!-- end thead-->
                             <tbody>
