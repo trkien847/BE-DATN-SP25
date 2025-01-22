@@ -7,6 +7,7 @@ use App\Http\Controllers\ReviewsController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\User\AuthController;
 
 
 
@@ -37,6 +38,15 @@ Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews
 Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])->name('list.edit');
 // Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
 Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
+
+
+
+// register
+Route::get('/user/form_register', [AuthController::class, 'formRegister'])->name('register.form'); 
+Route::post('/user/register', [AuthController::class, 'register'])->name('register.store'); 
+//login
+Route::get('/user/form_login', [AuthController::class, 'formLogin'])->name('login.form'); 
+Route::post('/user/login', [AuthController::class, 'login'])->name('login');
 
 Route::get('/admin/orders', function () {
   return view('admin.order_management.order');
