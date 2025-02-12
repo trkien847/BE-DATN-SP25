@@ -37,14 +37,14 @@
   }
 
   .table thead th {
-    color: #fff;
-    background-color: rgb(59, 72, 84);
+    color:#5d7186;
+    background-color:rgb(243, 243, 243);
     text-align: center;
     vertical-align: middle;
   }
 
   .table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color:rgb(15, 15, 15);
   }
 
   .table img {
@@ -61,14 +61,14 @@
 
   .search-bar input {
     flex: 1;
-    border: 2px solid #6c757d;
+    border: 2px solidrgb(255, 255, 255);
     border-radius: 5px;
     padding: 0.5rem;
   }
 
   .search-bar button {
-    background-color: rgb(59, 72, 84);
-    border-color: rgb(59, 72, 84);
+    background-color: #1e84c4;
+    border-color:  #1e84c4;
     color: #fff;
   }
 
@@ -132,26 +132,36 @@
 
 
 <div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
-    <button style="background-color: rgb(59, 72, 84); color: white;" class="btn btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
-      <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+    <div class="d-flex flex-wrap justify-content-between gap-3">
+    <button class="btn btn-success" 
+    color: white; class="btn btn-l" 
+    data-bs-toggle="modal" 
+    data-bs-target="#addProductModal">
+      <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
+      Thêm Sản Phẩm
     </button>
+    </div>
+    
+  
   </div>
 
-  <div class="table-responsive rounded shadow">
+  <div class="d-flex flex-wrap justify-content-between gap-3">
 
     <form action="{{ route('products.list') }}" method="GET" class="search-bar">
+    <span><i class="bx bx-search-alt"></i></span>
       <input
         type="text"
         name="search"
         class="form-control"
         placeholder="Tìm kiếm sản phẩm..."
         value="{{ request('search') }}">
+        
       <button type="submit" class="btn btn-primary">
         <i class="bi bi-search"></i> Tìm Kiếm
       </button>
-    </form>
+      </form>
 
     <table class="table table-hover table-bordered align-middle">
       <thead>
