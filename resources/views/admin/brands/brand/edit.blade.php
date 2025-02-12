@@ -26,14 +26,7 @@
                             @endif
                         </div>
 
-                        <div class="mb-3">
-                            <label for="is_active" class="form-label">Kích Hoạt</label>
-                            <select id="is_active" name="is_active" class="form-control">
-                                <option value="1" {{ $brand->is_active ? 'selected' : '' }}>Có</option>
-                                <option value="0" {{ !$brand->is_active ? 'selected' : '' }}>Không</option>
-                            </select>
-                        </div>
-                        
+                       
                         <button type="submit" class="btn btn-primary">Sửa Thương Hiệu</button>
                         {{-- <a href="{{ route('brands.index') }}" class="btn btn-secondary">Back</a> --}}
                     </form>

@@ -25,16 +25,21 @@ Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])-
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
+
 Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
 Route::post('/admin/brands/create', [BrandController::class, 'store'])->name('brands.store');
 Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
-Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update'); // Cập nhật thương hiệu
+Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
 Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
+Route::get('/admin/brands/is_active', [BrandController::class, 'indexQueryIs_active'])->name('brands.listActive');
+
 
 // mã giảm giá
 Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.list');
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
+Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
+
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');

@@ -25,14 +25,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'phone',
-        'address',
-        'email',
-        'password',
-        'image',
-        'role'
+        'google_id', 'phone_number', 'email', 'fullname', 'password',
+        'avatar', 'gender', 'birthday', 'loyalty_points', 'role',
+        'status', 'email_verified_at', 'verified_at', 'remember_token'
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -54,24 +51,24 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function review()
-    {
-        return $this->hasMany(Review::class);
-    }
-    public function doctor()
-    {
-        return $this->hasMany(Doctor::class);
-    }
-    public function bill()
-    {
-        return $this->hasMany(Bill::class);
-    }
-    public function appoinment()
-    {
-        return $this->hasMany(Appoinment::class);
-    }
-    public function appoinmentHistory()
-    {
-        return $this->hasMany(AppoinmentHistory::class);
-    }
+    // public function review()
+    // {
+    //     return $this->hasMany(Review::class);
+    // }
+    // public function doctor()
+    // {
+    //     return $this->hasMany(Doctor::class);
+    // }
+    // public function bill()
+    // {
+    //     return $this->hasMany(Bill::class);
+    // }
+    // public function appoinment()
+    // {
+    //     return $this->hasMany(Appoinment::class);
+    // }
+    // public function appoinmentHistory()
+    // {
+    //     return $this->hasMany(AppoinmentHistory::class);
+    // }
 }

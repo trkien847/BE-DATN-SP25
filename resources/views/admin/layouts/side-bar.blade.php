@@ -11,13 +11,9 @@
             <img src="{{ asset('admin/images/logo-light.png') }}" class="logo-lg" alt="logo light">
         </a> --}}
         <div class="col-12 text-start">
-            <iconify-icon
-                icon="solar:hearts-bold-duotone"
-                class="fs-18 align-middle text-danger">
-            </iconify-icon> 
-            <a
-                href="" class="fw-bold footer-text"
-                target="_blank">BeePharmacy</a>
+            <iconify-icon icon="solar:hearts-bold-duotone" class="fs-18 align-middle text-danger">
+            </iconify-icon>
+            <a href="" class="fw-bold footer-text" target="_blank">BeePharmacy</a>
         </div>
     </div>
 
@@ -43,39 +39,42 @@
                     <span class="nav-icon">
                         <iconify-icon icon="carbon:categories"></iconify-icon>
                     </span>
-                    <span class="nav-text"> Danh Mục  </span>
+                    <span class="nav-text"> Danh Mục </span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{route('products.list')}}">
+                <a class="nav-link" href="{{ route('products.list') }}">
                     <span class="nav-icon">
-                    <iconify-icon icon="lsicon:management-stockout-filled" width="16" height="16"></iconify-icon>
+                        <iconify-icon icon="lsicon:management-stockout-filled" width="16"
+                            height="16"></iconify-icon>
                     </span>
-                    <span class="nav-text"> Sản Phẩm  </span>
+                    <span class="nav-text"> Sản Phẩm </span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{route('order.list')}}">
+                <a class="nav-link" href="{{ route('order.list') }}">
                     <span class="nav-icon">
-                    <iconify-icon icon="cuida:document-text-outline" width="24" height="24"></iconify-icon>
-                    </span>                  
+                        <iconify-icon icon="cuida:document-text-outline" width="24" height="24"></iconify-icon>
+                    </span>
                     <span class="nav-text"> Quản Lý Đơn Hàng </span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{route('brands.list')}}">
+                <a class="nav-link" href="{{ route('brands.list') }}">
                     <span class="nav-icon">
-                    <iconify-icon icon="gridicons:multiple-users" width="24" height="24"></iconify-icon>
-                    </span>                  
+                        <iconify-icon icon="gridicons:multiple-users" width="24" height="24"></iconify-icon>
+                    </span>
                     <span class="nav-text"> Thương Hiệu </span>
                 </a>
             </li>
+
+            
             <li class="nav-item">
-                <a class="nav-link" href="{{route('coupons.list')}}">
+                <a class="nav-link" href="{{ route('coupons.list') }}">
                     <span class="nav-icon">
-                    <iconify-icon icon="mynaui:ticket-solid" width="24" height="24"></iconify-icon>
-                    </span>                  
-                    <span class="nav-text"> Mã Giảm Giá  </span>
+                        <iconify-icon icon="mynaui:ticket-solid" width="24" height="24"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> Mã Giảm Giá </span>
                 </a>
             </li>
         </ul>

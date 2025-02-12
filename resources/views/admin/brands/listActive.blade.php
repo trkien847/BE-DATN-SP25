@@ -121,16 +121,13 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        {{-- <a style="margin-left: 10px" class="btn btn-success mb-3 " href="{{ route('brands.listActive') }}">Thương hiệu chưa hoạt động   </a> --}}
-                        <div class="d-flex justify-content-center">
-                            {{ $brands->links('pagination::bootstrap-4') }}
-                        </div>
+                        {{-- <a style="margin-left: 10px" class="btn btn-success mb-3 " href="{{ route('brands.list') }}">Quay lại</a> --}}
+                       
                     </div> <!-- table responsive -->
                 </div>
             </div> <!-- end card body -->
         </div> <!-- end card -->
     </div> <!-- end col -->
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toggleSwitches = document.querySelectorAll('.toggle-active');
