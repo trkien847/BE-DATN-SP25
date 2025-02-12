@@ -58,9 +58,11 @@
                     <div class="d-flex flex-wrap justify-content-between gap-3">
                         <div class="search-bar">
                             <span><i class="bx bx-search-alt"></i></span>
-                            <form action="{{ route('brands.list') }}" method="GET" class="d-flex">
-                                <input type="text" name="search" class="form-control" placeholder="Search brand..." value="{{ request('search') }}">
-                                <button type="submit" class="btn btn-primary ms-2">Search</button>
+                            <form action="{{ route('brands.list') }}" method="GET" class="d-flex justify-content-center">
+                                @csrf
+                                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm thương hiệu ..."
+                                    value="{{ request('search') }}">
+                                <button style="width: 20vh;" type="submit" class="btn btn-primary ms-2">Tìm kiếm</button>
                             </form>
 
                         </div>
