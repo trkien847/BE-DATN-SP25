@@ -12,6 +12,7 @@ use App\Models\CategoryType;
 use App\Models\CategoryTypeProduct;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
+use App\Models\ProductGalleries;
 
 class ProductController extends Controller
 {
@@ -27,6 +28,13 @@ class ProductController extends Controller
             })
             ->paginate(5);
         return view('admin.products.productList', compact('brands', 'categories', 'products'));
+    }
+
+    public function productAdd()
+    {
+        $brands = Brand::all();
+        $categories = Category::with('categoryTypes')->get();
+        return view('admin.products.viewProAdd', compact('brands', 'categories'));
     }
 
     public function productStore(Request $request)
@@ -56,35 +64,35 @@ class ProductController extends Controller
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
-        
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
-        
+
         $price = $request->input('price');
         $sell_price = $request->input('sell_price');
         $sale_price = $request->input('sale_price');
-        
+
         $customErrors = [];
-        
+
         if ($price > $sell_price) {
             $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
         }
-        
+
         if (!is_null($sale_price) && $sale_price > $sell_price) {
             $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
         }
-        
+
         if (!empty($customErrors)) {
             return redirect()->back()
                 ->withErrors($customErrors)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
-        
+
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
@@ -115,6 +123,18 @@ class ProductController extends Controller
         $categoryTypeProduct->category_type_id = $request->category_type_id;
         $categoryTypeProduct->save();
 
+        if ($request->hasFile('image')) {
+            foreach ((array) $request->file('image') as $image) {
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload'), $imageName);
+
+                $productGallery = new ProductGalleries();
+                $productGallery->product_id = $product->id;
+                $productGallery->image = $imageName;
+                $productGallery->save();
+            }
+        }
+
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được lưu thành công!');
     }
 
@@ -126,8 +146,9 @@ class ProductController extends Controller
             ->where('id', $id)->first();
         $brands = Brand::all();
         $categories = Category::with('categoryTypes')->get();
+        $productGallery = ProductGalleries::where('product_id', $id)->get();
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
-        return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes'));
+        return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery'));
     }
 
     public function update(Request $request, $id)
@@ -157,28 +178,28 @@ class ProductController extends Controller
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
-        
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
-        
+
         $price = $request->input('price');
         $sell_price = $request->input('sell_price');
         $sale_price = $request->input('sale_price');
-        
+
         $customErrors = [];
-        
+
         if ($price > $sell_price) {
             $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
         }
-        
+
         if (!is_null($sale_price) && $sale_price > $sell_price) {
             $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
         }
-        
+
         if (!empty($customErrors)) {
             return redirect()->back()
                 ->withErrors($customErrors)
@@ -219,19 +240,53 @@ class ProductController extends Controller
         $categoryTypeProduct->category_type_id = $request->category_type_id;
         $categoryTypeProduct->save();
 
+        if ($request->hasFile('image')) {
+            $productGalleries = ProductGalleries::where('product_id', $id)->get();
+
+            foreach ($productGalleries as $gallery) {
+                if (File::exists(public_path('upload/' . $gallery->image))) {
+                    File::delete(public_path('upload/' . $gallery->image));
+                }
+                $gallery->delete();
+            }
+
+            foreach ($request->file('image') as $image) {
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload'), $imageName);
+
+                ProductGalleries::create([
+                    'product_id' => $id,
+                    'image' => $imageName,
+                ]);
+            }
+        }
+
+
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
     }
 
     public function destroy(string $id)
     {
         $product = Product::find($id);
-    
+
         if ($product->thumbnail && File::exists(public_path('uploads/' . $product->thumbnail))) {
             File::delete(public_path('upload/' . $product->thumbnail));
         }
 
         $product->delete();
-    
+
         return redirect()->route('products.list')->with('success', 'Xóa thành công!');
+    }
+
+    public function productct($id)
+    {
+        $product = Product::query()
+            ->with(['brand', 'categories', 'categoryTypes'])
+            ->where('id', $id)->first();
+        $brands = Brand::all();
+        $categories = Category::with('categoryTypes')->get();
+        $productGallery = ProductGalleries::where('product_id', $id)->get();
+        $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
+        return view('admin.products.productct', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery'));
     }
 }
