@@ -269,7 +269,6 @@
             </div>
         </div>
     </div>
-    <!-- CALL TO ACTION END -->
     <!-- MODAL AREA START (Quick View Modal) -->
     @include('client.components.QuickViewModal')
     <!-- MODAL AREA END -->
@@ -306,7 +305,6 @@
 
             console.log("Category ID:", categoryId, "Subcategory ID:", subcategoryId);
 
-            // Bắt sự kiện thay đổi trên input tìm kiếm và checkbox
             $('.filter-checkbox, #search-input,#sortSelect').on('change keyup', filterProducts);
 
             function filterProducts() {
