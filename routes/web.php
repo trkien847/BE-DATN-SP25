@@ -12,6 +12,7 @@ use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\User\AuthController;
 
 Route::get('/auto-login', function () {
     Auth::loginUsingId(1);
@@ -56,6 +57,15 @@ Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews
 Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
 // Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'edit'])->name('reviews.edit');
 Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
+
+
+
+// // register
+// Route::get('/user/form_register', [AuthController::class, 'formRegister'])->name('register.form'); 
+// Route::post('/user/register', [AuthController::class, 'register'])->name('register.store'); 
+// //login
+// Route::get('/user/form_login', [AuthController::class, 'formLogin'])->name('login.form'); 
+// Route::post('/user/login', [AuthController::class, 'login'])->name('login');
 
 // product
 Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
