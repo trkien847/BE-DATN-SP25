@@ -289,4 +289,17 @@ class ProductController extends Controller
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
         return view('admin.products.productct', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery'));
     }
+
+    public function getProduct($id)
+    {
+        $product = Product::with('categories')->findOrFail($id);
+
+        return response()->json([
+            'name' => $product->name,
+            'thumbnail' => $product->thumbnail,
+            'sale_price' => $product->sale_price ?? $product->sell_price,
+            'sell_price' => $product->sell_price,
+            'categories' => $product->categories 
+        ]);
+    }
 }
