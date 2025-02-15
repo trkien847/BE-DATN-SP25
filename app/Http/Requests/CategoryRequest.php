@@ -23,9 +23,22 @@ class CategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => 'required|string|max:255|unique',
+        $rules = [
+            'name' => 'required|string|max:255',
         ];
+    
+        if ($this->has('subcategories')) {
+            $rules['subcategories.*'] = 'nullable|string|max:255';
+            $rules['subcategory_icons.*'] = 'nullable|max:255';
+    
+            if ($this->isMethod('post')) {
+                $rules['name'] .= '|unique:categories,name';
+                $rules['subcategories.*'] .= '|unique:category_types,name';
+                $rules['subcategory_icons.*'] .= '|unique:category_types,icon';
+            }
+        }
+    
+        return $rules;
     }
     public function messages(): array
     {
@@ -33,14 +46,11 @@ class CategoryRequest extends FormRequest
             'name.required' => 'Tên không được bỏ trống',
             'name.string' => 'Tên phải là chuỗi',
             'name.max' => 'Tên không được vượt quá 255 ký tự',
-            'name.unique' => 'Ten danh muc da ton tai',
+            'name.unique' => 'Tên danh mục đã tồn tại',
+            'subcategories.*.string' => 'Tên danh mục con phải là chuỗi',
+            'subcategories.*.max' => 'Tên danh mục con không được vượt quá 255 ký tự',            'subcategory_icons.*.max' => 'Icon danh mục con không được vượt quá 255 ký tự',
+            'subcategory_icons.*.unique' => 'Icon danh mục con đã tồn tại',
+            'subcategories.*.unique' => 'Tên danh mục con đã tồn tại',
         ];
     }
-    protected function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(response()->json([
-            'errors' => $validator->errors(),
-        ], 422));
-    }
-
 }

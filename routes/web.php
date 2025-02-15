@@ -1,24 +1,43 @@
 <?php
 
 use App\Http\Controllers\Brands\BrandController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Coupons\CoupoController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ReviewsController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\AuthController;
 
-
-
-Route::get('/', function () {
-  return view('welcome');
+Route::get('/auto-login', function () {
+    Auth::loginUsingId(1);
+    return redirect('/');
 });
-// Route::prefix('admin')->name('admin.')->group(function(){
-//   Route::get('/categories',)
-// })
+
+Route::get('/', [HomeController::class, 'index'])->name('index');
+Route::get('/{categoryId}/{subcategoryId?}', [ShopListController::class, 'show'])
+    ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]*'])
+    ->name('category.show');
+
+Route::get('/search/{categoryId}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
+Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
+
+Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+
 Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
-Route::post('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+Route::post('/admin/categories/store', [CategoryController::class, 'store'])->name('categories.store');
+Route::get('/admin/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+Route::post('/categories/{id}/toggle-active', [CategoryController::class, 'toggleActive']);
+Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::class, 'toggleSubcategoryActive'])->name('categories.toggleSubcategoryActive');
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
@@ -35,23 +54,28 @@ Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('c
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
-Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'index'])->name('list.edit');
-// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'index'])->name('reviews.edit');
-Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'index'])->name('reviews.destroy');
+Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
+// Route::put('/admin/edit/{reviews}', [ReviewsController::class, 'edit'])->name('reviews.edit');
+Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
 
 
 
-// register
-Route::get('/user/form_register', [AuthController::class, 'formRegister'])->name('register.form'); 
-Route::post('/user/register', [AuthController::class, 'register'])->name('register.store'); 
-//login
-Route::get('/user/form_login', [AuthController::class, 'formLogin'])->name('login.form'); 
-Route::post('/user/login', [AuthController::class, 'login'])->name('login');
+// // register
+// Route::get('/user/form_register', [AuthController::class, 'formRegister'])->name('register.form'); 
+// Route::post('/user/register', [AuthController::class, 'register'])->name('register.store'); 
+// //login
+// Route::get('/user/form_login', [AuthController::class, 'formLogin'])->name('login.form'); 
+// Route::post('/user/login', [AuthController::class, 'login'])->name('login');
 
 Route::get('/admin/orders', function () {
   return view('admin.order_management.order');
 })->name('order.list');
 // product
-Route::get('/admin/products', function () {
-  return view('admin.products.productList');
-})->name('products.list');
+Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
+Route::post('/admin/products/create', [ProductController::class, 'productStore'])->name('products.store');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
+Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');

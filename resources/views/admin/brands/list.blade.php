@@ -7,11 +7,19 @@
                     <div class="d-flex flex-wrap justify-content-between gap-3">
                         <div class="search-bar">
                             <span><i class="bx bx-search-alt"></i></span>
-                            <input type="search" class="form-control" id="search" placeholder="Search brand...">
+                            <form action="{{ route('brands.list') }}" method="GET" class="d-flex">
+                                <input type="text" name="search" 
+                                class="form-control" 
+                                placeholder="Tìm kiếm thương hiệu..." 
+                                value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary ms-2">
+                                Search</button>
+                            </form>
+                            
                         </div>
                         <div>
                             <a href="{{ route('brands.create') }}" class="btn btn-success">
-                                <i class="bx bx-plus me-1"></i>Create Brand
+                                <i class="bx bx-plus me-1"></i>Thêm Thương Hiệu
                             </a>
                         </div>
                     </div> <!-- end row -->
@@ -22,11 +30,12 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">Name</th>
+                                    <th scope="col">Tên Thương Hiệu</th>
+                                    <th scope="col">Mô tả thương hiệu</th>
                                     <th scope="col">Slug</th>
                                     <th scope="col">Logo</th>
-                                    <th scope="col">Active</th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col">Kích Hoạt</th>
+                                    <th scope="col">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -34,26 +43,34 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $brand->name }}</td>
+                                        <td>{{ $brand->description }}</td>
                                         <td>{{ $brand->slug }}</td>
+                                        <!-- <td>{{ $brand->slug }}</td> -->
+
                                         <td>
                                             <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo" width="50">
                                         </td>
                                         <td>
                                             @if($brand->is_active)
-                                                <span class="badge bg-success">Active</span>
+                                                <span class="badge bg-success">Có</span>
                                             @else
-                                                <span class="badge bg-danger">Inactive</span>
+                                                <span class="badge bg-danger">Không</span>
                                             @endif
                                         </td>
                                         <td>
                                             
-                                            <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                            <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-primary btn-sm">Sửa</a>
                                             
                                             <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                <button type="submit" 
+                                                        class="btn btn-danger btn-sm" 
+                                                        onclick="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')">
+                                                    Xóa
+                                                </button>
                                             </form>
+                                            
                                             
                                         </td>
                                     </tr>
@@ -65,6 +82,5 @@
             </div> <!-- end card body -->
         </div> <!-- end card -->
     </div> <!-- end col -->
-    @include('admin.categories.modal.add')
-    @include('sweetalert::alert')
 @endsection
+

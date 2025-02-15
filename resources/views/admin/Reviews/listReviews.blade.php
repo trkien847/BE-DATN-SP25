@@ -49,7 +49,9 @@
                                <td>
                                    {{$items->reason}}
                                </td>
-                               <td class="text-danger">{{$items->is_active}}</td>
+                               <td class="{{ $items->is_active ? 'text-success' : 'text-danger' }}">
+                                    {{ $items->is_active ? 'active' : 'deactive' }}
+                                </td>
                                <td class="text-danger">{{$items->created_at}}</td>
                                <td class="text-danger">{{$items->updated_at}}</td>
                                <td>
@@ -76,6 +78,5 @@
         </div> <!-- end card body -->
     </div> <!-- end card -->
 </div> <!-- end col -->
-    @include('admin.categories.modal.add')
-    @include('sweetalert::alert')
+    
 @endsection

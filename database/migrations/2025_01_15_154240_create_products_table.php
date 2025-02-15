@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('brand_id');
             $table->string('name');
-            $table->string('name_link');
-            $table->string('slug');
             $table->integer('views');
             $table->text('content');
             $table->string('thumbnail');
