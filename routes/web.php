@@ -1,20 +1,33 @@
 <?php
 
 use App\Http\Controllers\Brands\BrandController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Coupons\CoupoController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ReviewsController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
 
-
-
-Route::get('/', function () {
-  return view('welcome');
+Route::get('/auto-login', function () {
+    Auth::loginUsingId(1);
+    return redirect('/');
 });
+
+Route::get('/', [HomeController::class, 'index'])->name('index');
+Route::get('/{categoryId}/{subcategoryId?}', [ShopListController::class, 'show'])
+    ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]*'])
+    ->name('category.show');
+
+Route::get('/search/{categoryId}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
+Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
+
+Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 
 Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
 Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
@@ -22,6 +35,8 @@ Route::post('/admin/categories/store', [CategoryController::class, 'store'])->na
 Route::get('/admin/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
 Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
 Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+Route::post('/categories/{id}/toggle-active', [CategoryController::class, 'toggleActive']);
+Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::class, 'toggleSubcategoryActive'])->name('categories.toggleSubcategoryActive');
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
