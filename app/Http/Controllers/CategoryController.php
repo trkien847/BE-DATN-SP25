@@ -52,4 +52,23 @@ class CategoryController extends Controller
         $this->categoryService->deleteCategory($id);
         return redirect()->route('categories.list')->with('success', 'Category and subcategories deleted successfully');
     }
+    public function toggleActive(Request $request, $id)
+    {
+        $category = $this->categoryService->toggleActive($id, $request->is_active);
+
+        return response()->json([
+            'success' => true,
+            'is_active' => $category->is_active,
+            'is_parent' => $category->categoryTypes->count() > 0
+        ]);
+    }
+    public function toggleSubcategoryActive(Request $request, $id)
+    {
+        $subcategory = $this->categoryService->toggleSubcategoryActive($id, $request->is_active);
+
+        return response()->json([
+            'success' => $subcategory !== false,
+            'is_active' => $subcategory ? $subcategory->is_active : 0
+        ]);
+    }
 }

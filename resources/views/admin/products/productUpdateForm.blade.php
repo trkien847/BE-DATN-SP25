@@ -48,7 +48,7 @@
                     </button>
                 </div>
                 <ul id="menu" class="hidden lg:block">
-                    <h2 class="text-lg font-semibold">Sửa sản phẩm</h2>
+                    <h2 class="text-lg font-semibold">sửa sản phẩm</h2>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-white bg-teal-500 p-2 rounded-md" onclick="selectMenuItem(event)">
                             <i class="fas fa-cog mr-2"></i> Tổng quát
