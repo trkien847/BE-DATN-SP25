@@ -67,9 +67,6 @@ Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'des
 // Route::get('/user/form_login', [AuthController::class, 'formLogin'])->name('login.form'); 
 // Route::post('/user/login', [AuthController::class, 'login'])->name('login');
 
-Route::get('/admin/orders', function () {
-  return view('admin.order_management.order');
-})->name('order.list');
 // product
 Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
 Route::post('/admin/products/create', [ProductController::class, 'productStore'])->name('products.store');
