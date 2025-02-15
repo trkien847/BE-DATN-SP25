@@ -28,12 +28,24 @@ class ShopListController extends Controller
             $products = $subcategory->products;
             $brands = $products->pluck('brand')->unique()->filter();
             $carts = Cart::where('user_id', auth()->id())->get();
-            return view('client.shopList.index', compact('category', 'subcategory', 'products', 'categories', 'brands', 'productTop', 'carts'));
+            $subtotal = $carts->sum(function ($cart) {
+                $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
+                    ? $cart->product->sale_price 
+                    : $cart->product->sell_price;
+                return $cart->quantity * $price;
+            }); 
+            return view('client.shopList.index', compact('category', 'subcategory', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
         } else {
             $products = $category->products;
             $brands = $products->pluck('brand')->unique()->filter();
             $carts = Cart::where('user_id', auth()->id())->get();
-            return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts'));
+            $subtotal = $carts->sum(function ($cart) {
+                $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
+                    ? $cart->product->sale_price 
+                    : $cart->product->sell_price;
+                return $cart->quantity * $price;
+            }); 
+            return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
         }
     }
     public function search(Request $request, $categoryId, $subcategoryId = null)
