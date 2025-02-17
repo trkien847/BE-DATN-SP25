@@ -21,7 +21,7 @@ class CoupoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Coupon::query();
+        $query = Coupon::with(['restriction', 'users']); // Eager load để tránh N+1 query
 
         if ($request->has('search')) {
             $search = $request->input('search');
@@ -29,10 +29,23 @@ class CoupoController extends Controller
                 ->orWhere('title', 'LIKE', "%$search%")
                 ->orWhere('description', 'LIKE', "%$search%");
         }
-
+    
         $coupons = $query->orderBy('created_at', 'desc')->paginate(5);
-
-
+    
+        // Lấy tên sản phẩm và danh mục theo valid_products & valid_categories
+        foreach ($coupons as $coupon) {
+            if ($coupon->restriction) {
+                $productIds = json_decode($coupon->restriction->valid_products, true) ?? [];
+                $categoryIds = json_decode($coupon->restriction->valid_categories, true) ?? [];
+    
+                $coupon->productNames = Product::whereIn('id', $productIds)->pluck('name')->toArray();
+                $coupon->categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->toArray();
+            } else {
+                $coupon->productNames = [];
+                $coupon->categoryNames = [];
+            }
+        }
+    
         return view('admin.coupons.list', compact('coupons'));
     }
 
@@ -53,60 +66,60 @@ class CoupoController extends Controller
      */
     public function store(CouponRequest $request)
     {
-  
-    DB::beginTransaction();
-    
-    try {
 
-        // Tạo mã giảm giá
+        DB::beginTransaction();
 
-        $coupon = Coupon::create([
-            'code' => $request->code,
-            'title' => $request->title,
-            'description' => $request->description,
-            'discount_type' => $request->discount_type,
-            'discount_value' => $request->discount_value,
-            'usage_limit' => $request->usage_limit ?? null, // 
-            'usage_count' => 0,
-            'start_date' => $request->start_date ?? null,
-            'end_date' => $request->end_date ?? null,
-        ]);
+        try {
 
-        // Tạo ràng buộc mã giảm giá (nếu có)
+            // Tạo mã giảm giá
 
-        
-        if ($request->filled(['min_order_value', 'max_discount_value', 'valid_categories', 'valid_products'])) {
-            CouponRestriction::create([
-                'coupon_id' => $coupon->id,
-                'min_order_value' => $request->min_order_value,
-                'max_discount_value' => $request->max_discount_value,
-                'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
-                'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
+            $coupon = Coupon::create([
+                'code' => $request->code,
+                'title' => $request->title,
+                'description' => $request->description,
+                'discount_type' => $request->discount_type,
+                'discount_value' => $request->discount_value,
+                'usage_limit' => $request->usage_limit ?? null, // 
+                'usage_count' => 0,
+                'start_date' => $request->start_date ?? null,
+                'end_date' => $request->end_date ?? null,
             ]);
-        }
 
-        // Gán mã giảm giá cho user nếu có
-        if ($request->has('user_id')) {
-            try {
-                $coupon->users()->sync($request->user_id);
-                Log::info("Thêm user vào bảng coupon_user thành công.");
-            } catch (\Exception $e) {
-                Log::error("Lỗi khi thêm vào bảng coupon_user: " . $e->getMessage());
-                throw new \Exception("Không thể thêm user vào mã giảm giá.");
+            // Tạo ràng buộc mã giảm giá (nếu có)
+
+
+            if ($request->filled(['min_order_value', 'max_discount_value', 'valid_categories', 'valid_products'])) {
+                CouponRestriction::create([
+                    'coupon_id' => $coupon->id,
+                    'min_order_value' => $request->min_order_value,
+                    'max_discount_value' => $request->max_discount_value,
+                    'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
+                    'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
+                ]);
             }
+
+            // Gán mã giảm giá cho user nếu có
+            if ($request->has('user_id')) {
+                try {
+                    $coupon->users()->sync($request->user_id);
+                    Log::info("Thêm user vào bảng coupon_user thành công.");
+                } catch (\Exception $e) {
+                    Log::error("Lỗi khi thêm vào bảng coupon_user: " . $e->getMessage());
+                    throw new \Exception("Không thể thêm user vào mã giảm giá.");
+                }
+            }
+
+            DB::commit();
+            Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
+
+            return redirect()->route('coupons.list')->with('success', 'Thêm mã giảm giá thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
-
-        DB::commit();
-        Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
-
-        return redirect()->route('coupons.list')->with('success', 'Thêm mã giảm giá thành công!');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
-
-        return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
     }
-}
 
 
 

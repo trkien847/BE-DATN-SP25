@@ -19,12 +19,15 @@ class Coupon extends Model {
         'end_date' => 'datetime',
     ];
 
-    public function restrictions() {
-        return $this->hasOne(CouponRestriction::class);
+    public function restriction()
+    {
+        return $this->hasOne(CouponRestriction::class, 'coupon_id');
     }
+    
 
-    public function users() {
-        return $this->belongsToMany(User::class, 'coupon_user');
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'coupon_user', 'coupon_id', 'user_id');
     }
 
     public function isExpired(): bool {
