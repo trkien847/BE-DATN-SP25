@@ -57,7 +57,7 @@ class CoupoController extends Controller
     DB::beginTransaction();
     
     try {
-        
+
         // Tạo mã giảm giá
 
         $coupon = Coupon::create([
@@ -66,7 +66,7 @@ class CoupoController extends Controller
             'description' => $request->description,
             'discount_type' => $request->discount_type,
             'discount_value' => $request->discount_value,
-            'usage_limit' => $request->usage_limit ?? null,
+            'usage_limit' => $request->usage_limit ?? null, // 
             'usage_count' => 0,
             'start_date' => $request->start_date ?? null,
             'end_date' => $request->end_date ?? null,
