@@ -22,7 +22,7 @@
                             <thead class="bg-light bg-opacity-50">
                                 <tr>
                                     <th class="border-0 py-2 sortable" data-sort="id">ID</th>
-                                    <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục</th>
+                                    <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục69</th>
                                     <th class="border-0 py-2 sortable" data-sort="created_at">Ngày tạo</th>
                                     <th class="border-0 py-2 sortable" data-sort="updated_at">Ngày cập nhật</th>
                                     <th class="border-0 py-2">Trạng Thái</th>
