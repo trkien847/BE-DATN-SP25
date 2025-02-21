@@ -27,12 +27,12 @@ class User extends Authenticatable
     protected $fillable = [
         'fullname', 
         'email', 
+        'role_id', 
         'phone_number', 
         'birthday', 
         'password', 
         'gender', 
         'avatar', 
-        'role', 
         'status', 
         'email_verified_at', 
         'verified_at', 
@@ -62,22 +62,29 @@ class User extends Authenticatable
 
     public function review()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Reviews::class);
     }
-    public function doctor()
+    // public function doctor()
+    // {
+    //     return $this->hasMany(Doctor::class);
+    // }
+    // public function bill()
+    // {
+    //     return $this->hasMany(Bill::class);
+    // }
+    // public function appoinment()
+    // {
+    //     return $this->hasMany(Appoinment::class);
+    // }
+    // public function appoinmentHistory()
+    // {
+    //     return $this->hasMany(AppoinmentHistory::class);
+    // }
+    public function cart()
     {
-        return $this->hasMany(Doctor::class);
+        return $this->hasMany(Cart::class);
     }
-    public function bill()
-    {
-        return $this->hasMany(Bill::class);
-    }
-    public function appoinment()
-    {
-        return $this->hasMany(Appoinment::class);
-    }
-    public function appoinmentHistory()
-    {
-        return $this->hasMany(AppoinmentHistory::class);
+    public function role(){
+        return $this->belongsTo(Role::class);
     }
 }

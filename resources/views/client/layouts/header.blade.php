@@ -84,28 +84,35 @@
                                         <li>
                                             <a href="#"><i class="icon-user"></i></a>
                                             <ul>
-                                                <li><a href="login.html">Sign in</a></li>
-                                                <li><a href="register.html">Register</a></li>
-                                                <li><a href="account.html">My Account</a></li>
-                                                <li><a href="wishlist.html">Wishlist</a></li>
-                                            </ul>
+                                                @if (Auth::guest())
+                                                    <li><a href="{{ route('login') }}">Sign in</a></li>
+                                                    <li><a href="{{ route('register') }}">Register</a></li>
+                                                @endif
+                                            
+                                                @if (Auth::check())
+                                                    {{-- <li><a href="{{ route('account') }}">My Account</a></li> --}}
+                                                    <li><a href="{{ route('logout') }}">Logout</a></li>
+                                                @endif
+                                            </ul>                                            
                                         </li>
                                     </ul>
                                 </div>
                             </li>
-                            <li>
-                                <!-- mini-cart 2 -->
-                                <div class="mini-cart-icon mini-cart-icon-2">
-                                    <a href="#ltn__utilize-cart-menu" class="ltn__utilize-toggle">
-                                        <span class="mini-cart-icon">
-                                            <i class="icon-shopping-cart"></i>
-                                            <sup>{{ $carts->count() }}</sup>
-                                        </span>
-                                        <h6><span>Your Cart</span> <span class="ltn__secondary-color">{{ number_format($subtotal, 2) }}đ</span>
-                                        </h6>
-                                    </a>
-                                </div>
-                            </li>
+                            @if (Auth::check())
+                                <li>
+                                    <div class="mini-cart-icon mini-cart-icon-2">
+                                        <a href="#ltn__utilize-cart-menu" class="ltn__utilize-toggle">
+                                            <span class="mini-cart-icon">
+                                                <i class="icon-shopping-cart"></i>
+                                                <sup>{{ $carts->count() }}</sup>
+                                            </span>
+                                            <h6><span>Your Cart</span> <span
+                                                    class="ltn__secondary-color">{{ number_format($subtotal, 2) }}đ</span>
+                                            </h6>
+                                        </a>
+                                    </div>
+                                </li>
+                            @endif
                         </ul>
                     </div>
                 </div>
