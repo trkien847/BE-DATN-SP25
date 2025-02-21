@@ -76,5 +76,11 @@ Route::get('/products/{id}/productct', [ProductController::class, 'productct'])-
 Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
 Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
+Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
+Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
+Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
+Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
+Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
+
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');

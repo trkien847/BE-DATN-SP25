@@ -255,6 +255,41 @@
                                 @endforeach
                             </div>
                         </div>
+                        <a href="#" class="btn-next3 text-white bg-teal-500 w-100 block text-center p-2 rounded-md mt-4">
+                            Tiếp theo
+                        </a>
+                    </div>
+
+                    <div class="form4" style="display: none;">
+                    <h4>Thêm Biến Thể</h4>
+                        <div id="variant-container">
+                        @foreach ($product->variants as $index => $variant)
+            <div class="variant-row">
+                <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->id }}">
+                <label>Thuộc Tính</label>
+                <select name="variants[{{ $index }}][attribute_value_id]" class="form-control">
+                    @foreach($attributes as $attribute)
+                        @foreach($attribute->values as $value)
+                            <option value="{{ $value->id }}" {{ $variant->attribute_value_id == $value->id ? 'selected' : '' }}>
+                                {{ $attribute->name }}: {{ $value->value }}
+                            </option>
+                        @endforeach
+                    @endforeach
+                </select>
+
+                <label>Giá Biến Thể</label>
+                <input type="number" name="variants[{{ $index }}][price]" class="form-control" value="{{ $variant->price }}" required>
+
+                <label>Số Lượng</label>
+                <input type="number" name="variants[{{ $index }}][stock]" class="form-control" value="{{ $variant->stock }}" required>
+
+                <button type="button" class="btn btn-danger remove-variant" data-id="{{ $variant->id }}">Xóa</button>
+            </div>
+            @endforeach
+                        </div>
+
+                        <button type="button" id="add-variant" class="btn btn-secondary">Thêm Biến Thể</button>
+
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
 
@@ -262,7 +297,46 @@
             </div>
         </div>
     </div>
+    <script>
+    document.getElementById('add-variant').addEventListener('click', function() {
+        let container = document.getElementById('variant-container');
+        let index = container.getElementsByClassName('variant-row').length;
+        
+        let html = `
+            <div class="variant-row">
+                <label>Thuộc Tính</label>
+                <select name="variants[\${index}][attribute_value_id]" class="form-control">
+                    @foreach($attributes as $attribute)
+                        @foreach($attribute->values as $value)
+                            <option value="{{ $value->id }}">{{ $attribute->name }}: {{ $value->value }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
 
+                <label>Giá Biến Thể</label>
+                <input type="number" name="variants[\${index}][price]" class="form-control" required>
+
+                <label>Số Lượng</label>
+                <input type="number" name="variants[\${index}][stock]" class="form-control" required>
+
+                <button type="button" class="btn btn-danger remove-variant">Xóa</button>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+        updateRemoveButtons();
+    });
+
+    function updateRemoveButtons() {
+        document.querySelectorAll('.remove-variant').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+    }
+
+    updateRemoveButtons();
+</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
@@ -475,6 +549,36 @@
         switchToForm1();
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnNext3 = document.querySelector('.btn-next3');
+        if (btnNext3) {
+            btnNext3.addEventListener('click', function(event) {
+                event.preventDefault();
+                const previousErrorBox = document.querySelector('.error-box');
+                if (previousErrorBox) {
+                    previousErrorBox.remove();
+                }  
+                console.log("btn-next3 clicked");
+                switchToForm4();
+                console.log("switchToForm3() has been called");
+                
+                document.querySelectorAll('#menu a').forEach(link => {
+                    if (link.textContent.trim() === 'Thêm ảnh') {
+                        link.classList.remove('bg-teal-500', 'text-white');
+                        link.classList.add('text-gray-600');
+                    }
+                    if (link.textContent.trim() === 'Thêm biến thể') {
+                        link.classList.remove('text-gray-600');
+                        link.classList.add('bg-teal-500', 'text-white');
+                    }
+                });
+            });
+        } else {
+            console.log("Không tìm thấy phần tử .btn-next3");
+        }
+        switchToForm1();
+    });
+
 
 
         $(document).ready(function() {
@@ -488,20 +592,30 @@
 
         function switchToForm1() {
             document.querySelector('.form1').style.display = 'block';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form3').style.display = 'none';
             document.querySelector('.form2').style.display = 'none';
         }
 
         function switchToForm2() {
             document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form3').style.display = 'none';
             document.querySelector('.form2').style.display = 'block';
         }
 
         function switchToForm3() {
             document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form2').style.display = 'none';
             document.querySelector('.form3').style.display = 'block';
+        }
+
+        function switchToForm4() {
+            document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form2').style.display = 'none';
+            document.querySelector('.form3').style.display = 'none';
+            document.querySelector('.form4').style.display = 'block';
         }
 
         function selectMenuItem(event) {
@@ -519,6 +633,8 @@
                 switchToForm1();
             }else if (menuText === 'Thêm ảnh') {
                 switchToForm3();
+            }else if (menuText === 'Thêm biến thể') {
+                switchToForm4();
             }
         }
         

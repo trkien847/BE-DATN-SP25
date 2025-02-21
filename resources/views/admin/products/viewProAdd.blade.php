@@ -61,22 +61,18 @@
                     </li>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-image mr-2"></i> Thêm ảnh
+                            <i class="fas fa-image mr-2"></i> Thêm Ảnh
                         </a>
                     </li>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-wrench mr-2"></i> Thêm biến thể
+                            <i class="fas fa-wrench mr-2"></i> Thêm Biến Thể
                         </a>
                     </li>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-search mr-2"></i> SEO
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-shipping-fast mr-2"></i> Ship và dịch vụ khác
+                        <i class="fas fa-dollar-sign  mr-2"></i>
+                        Giá Nhập
                         </a>
                     </li>
                     <li class="mb-2">
@@ -211,10 +207,6 @@
                                 <input type="number" class="form-control" id="productCostPrice" name="sell_price" placeholder="Nhập giá bán">
                             </div>
                             <div>
-                                <label for="productSalePrice" class="form-label">Giá Nhập</label>
-                                <input type="number" class="form-control" id="productSalePrice" name="price" placeholder="Nhập giá nhập">
-                            </div>
-                            <div>
                                 <label for="sale_price" class="form-label">Giá Khuyến Mãi (Mãi bên nhau em nhe)</label>
                                 <input type="number" class="form-control" id="sale_price" name="sale_price" placeholder="Giá Khuyến Mãi">
                             </div>
@@ -234,13 +226,26 @@
 
                     <div class="form3" style="display: none;">
                         <h2>Thêm Ảnh</h2>
-                        <div class="form3 p-4 border rounded" id="uploadContainer">
+                        <div class="form p-4 border rounded" id="uploadContainer">
                             <div class="form-group">
                                 <label for="images">Chọn ảnh (có thể chọn nhiều):</label>
                                 <input type="file" id="images" name="image[]" multiple accept="image/*" class="form-control">   
                             </div>
                             <div id="previewContainer" class="mt-4 d-flex flex-wrap"></div>
                         </div>
+                        <a href="#" class="btn-next3 text-white bg-teal-500 w-100 block text-center p-2 rounded-md mt-4">
+                            Tiếp theo
+                        </a>
+                    </div>
+
+                    <div class="form4" style="display: none;">
+                    <h4>Thêm Biến Thể</h4>
+                        <div id="variant-container">
+                            
+                        </div>
+
+                        <button type="button" id="add-variant" class="btn btn-secondary">Thêm Biến Thể</button>
+
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
 
@@ -248,7 +253,46 @@
             </div>
         </div>
     </div>
+    <script>
+    document.getElementById('add-variant').addEventListener('click', function() {
+        let container = document.getElementById('variant-container');
+        let index = container.getElementsByClassName('variant-row').length;
+        
+        let html = `
+            <div class="variant-row">
+                <label>Thuộc Tính</label>
+                <select name="variants[\${index}][attribute_value_id]" class="form-control">
+                    @foreach($attributes as $attribute)
+                        @foreach($attribute->values as $value)
+                            <option value="{{ $value->id }}">{{ $attribute->name }}: {{ $value->value }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
 
+                <label>Giá Biến Thể</label>
+                <input type="number" name="variants[\${index}][price]" class="form-control" required>
+
+                <label>Số Lượng</label>
+                <input type="number" name="variants[\${index}][stock]" class="form-control" required>
+
+                <button type="button" class="btn btn-danger remove-variant">Xóa</button>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+        updateRemoveButtons();
+    });
+
+    function updateRemoveButtons() {
+        document.querySelectorAll('.remove-variant').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+    }
+
+    updateRemoveButtons();
+</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
@@ -402,7 +446,6 @@
                 }
                 const brandSelect = document.getElementById('brandSelect');
                 const productCostPrice = document.getElementById('productCostPrice');
-                const productSalePrice = document.getElementById('productSalePrice');
                 const sale_price = document.getElementById('sale_price');
                 const timestampInput = document.getElementById('timestampInput');
                 const sale_price_end_at = document.getElementById('sale_price_end_at');
@@ -412,9 +455,6 @@
                 }
                 if (productCostPrice.value.trim() === "") {
                     errorMessage += "<li>Vui lòng nhập Tên Sản Phẩm.</li>";
-                }
-                if (productSalePrice.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
                 }
                 if (timestampInput.value.trim() === "") {
                     errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
@@ -462,6 +502,37 @@
     });
 
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnNext3 = document.querySelector('.btn-next3');
+        if (btnNext3) {
+            btnNext3.addEventListener('click', function(event) {
+                event.preventDefault();
+                const previousErrorBox = document.querySelector('.error-box');
+                if (previousErrorBox) {
+                    previousErrorBox.remove();
+                }  
+                console.log("btn-next3 clicked");
+                switchToForm4();
+                console.log("switchToForm3() has been called");
+                
+                document.querySelectorAll('#menu a').forEach(link => {
+                    if (link.textContent.trim() === 'Thêm ảnh') {
+                        link.classList.remove('bg-teal-500', 'text-white');
+                        link.classList.add('text-gray-600');
+                    }
+                    if (link.textContent.trim() === 'Thêm biến thể') {
+                        link.classList.remove('text-gray-600');
+                        link.classList.add('bg-teal-500', 'text-white');
+                    }
+                });
+            });
+        } else {
+            console.log("Không tìm thấy phần tử .btn-next3");
+        }
+        switchToForm1();
+    });
+
+
 
         $(document).ready(function() {
             $('#brandSelect').select2({
@@ -474,20 +545,30 @@
 
         function switchToForm1() {
             document.querySelector('.form1').style.display = 'block';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form3').style.display = 'none';
             document.querySelector('.form2').style.display = 'none';
         }
 
         function switchToForm2() {
             document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form3').style.display = 'none';
             document.querySelector('.form2').style.display = 'block';
         }
 
         function switchToForm3() {
             document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form4').style.display = 'none';
             document.querySelector('.form2').style.display = 'none';
             document.querySelector('.form3').style.display = 'block';
+        }
+
+        function switchToForm4() {
+            document.querySelector('.form1').style.display = 'none';
+            document.querySelector('.form2').style.display = 'none';
+            document.querySelector('.form3').style.display = 'none';
+            document.querySelector('.form4').style.display = 'block';
         }
 
         function selectMenuItem(event) {
@@ -505,6 +586,8 @@
                 switchToForm1();
             }else if (menuText === 'Thêm ảnh') {
                 switchToForm3();
+            }else if (menuText === 'Thêm biến thể') {
+                switchToForm4();
             }
         }
         
