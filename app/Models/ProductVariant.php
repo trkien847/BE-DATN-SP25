@@ -23,6 +23,10 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+    public function attributeValues()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'attribute_value_product_variant', 'product_variant_id', 'attribute_value_id');
+    }
     protected function totalStock(): Attribute
     {
         return Attribute::make(

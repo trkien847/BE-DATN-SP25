@@ -11,6 +11,7 @@ use App\Models\AttributeValueProduct;
 use App\Models\AttributeValueProductVariant;
 use App\Models\AttributeValues;
 use App\Models\Brand;
+use App\Models\Cart;
 use App\Models\Category;
 use Illuminate\Support\Facades\File;
 use App\Models\CategoryProduct;
@@ -342,14 +343,35 @@ class ProductController extends Controller
 
     public function productct($id)
     {
+        $carts = Cart::where('user_id', auth()->id())->get();
+        $subtotal = $carts->sum(function ($cart) {
+            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
+                ? $cart->product->sale_price 
+                : $cart->product->sell_price;
+            return $cart->quantity * $price;
+        }); 
         $product = Product::query()
-            ->with(['brand', 'categories', 'categoryTypes'])
+            ->with(['brand', 'categories', 'categoryTypes', 'variants.attributeValues.attribute', 'attributes'])
             ->where('id', $id)->first();
         $brands = Brand::all();
         $categories = Category::with('categoryTypes')->get();
         $productGallery = ProductGalleries::where('product_id', $id)->get();
+        $productGallery2 = ProductGalleries::where('product_id', $id)->get();
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
-        return view('admin.products.productct', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery'));
+
+        $categoryIds = $product->categories->pluck('id')->toArray();
+        $categoryTypeIds = $product->categoryTypes->pluck('id')->toArray();
+        $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
+            $query->whereIn('categories.id', $categoryIds);
+        })
+        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+            $query->whereIn('category_types.id', $categoryTypeIds);
+        })
+        ->where('id', '!=', $id) 
+        ->limit(10) 
+        ->get();
+        return view('client.product.productct', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'productGallery2', 
+        'carts', 'subtotal', 'relatedProducts'));
     }
 
     public function getProduct($id)

@@ -61,12 +61,12 @@
                     </li>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-image mr-2"></i> Thêm Ảnh
+                            <i class="fas fa-image mr-2"></i> Thêm ảnh
                         </a>
                     </li>
                     <li class="mb-2">
                         <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                            <i class="fas fa-wrench mr-2"></i> Thêm Biến Thể
+                            <i class="fas fa-wrench mr-2"></i> Thêm biến thể
                         </a>
                     </li>
                     <li class="mb-2">

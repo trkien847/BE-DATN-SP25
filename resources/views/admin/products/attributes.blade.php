@@ -19,7 +19,8 @@
                 <tr>
                     <td>{{ $attribute->id }}</td>
                     <td>{{ $attribute->name }}</td>
-                    <td>{{ $attribute->slug }} @foreach ($attribute->values as $value)
+                    <td>{{ $attribute->slug }} 
+                        @foreach ($attribute->values as $value)
                             <span class="badge bg-primary">{{ $value->value }}</span>
                         @endforeach</td>
                     <td>{{ $attribute->is_active ? 'Hiển thị' : 'Ẩn' }}</td>
