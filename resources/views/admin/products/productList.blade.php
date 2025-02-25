@@ -186,8 +186,8 @@
           <td>{{ number_format($product->price, 0, ',', '.') }} VND</td>
           <td>{{ number_format($product->sale_price, 0, ',', '.') }} VND</td>
           <td>
-            <span class="badge {{ $product->quantity > 0 ? 'bg-success' : 'bg-danger' }}">
-              {{ $product->quantity > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
+            <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
+              {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
             </span>
           </td>
           <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>

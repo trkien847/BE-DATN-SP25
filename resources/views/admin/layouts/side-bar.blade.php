@@ -71,6 +71,14 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="{{route('attributes.list')}}">
+                    <span class="nav-icon">
+                    <iconify-icon icon="gridicons:multiple-users" width="24" height="24"></iconify-icon>
+                    </span>                  
+                    <span class="nav-text"> Biến thể </span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{route('coupons.list')}}">
                     <span class="nav-icon">
                     <iconify-icon icon="mynaui:ticket-solid" width="24" height="24"></iconify-icon>
