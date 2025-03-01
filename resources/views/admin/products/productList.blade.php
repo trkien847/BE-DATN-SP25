@@ -209,9 +209,9 @@
            class="btn btn-warning btn-sm">
            <i class="bx bx-edit fs-16"></i>
           </a>
-            <a href="{{ route('products.productct', $product->id) }}" class="btn btn-warning btn-sm">
+            <!-- <a href="{{ route('products.productct', $product->id) }}" class="btn btn-warning btn-sm">
                 <i class="bi bi-pencil-square"></i> Chi tiết sp
-            </a>
+            </a> -->
             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')
