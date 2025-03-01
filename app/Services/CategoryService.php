@@ -26,6 +26,10 @@ class CategoryService
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
+<<<<<<< HEAD
+=======
+                        
+>>>>>>> 82ee9425388d17214dc00abdc6e9da1fe5f04190
                     ]);
                 }
             }
@@ -57,6 +61,10 @@ class CategoryService
                 if ($subcategoryId && $existingSubcategories->has($subcategoryId)) {
                     $this->categoryTypeRepository->update([
                         'name' => $subcategoryName,
+<<<<<<< HEAD
+=======
+                       
+>>>>>>> 82ee9425388d17214dc00abdc6e9da1fe5f04190
                     ], $subcategoryId);
 
                     $existingSubcategories->forget($subcategoryId);
@@ -64,6 +72,10 @@ class CategoryService
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
+<<<<<<< HEAD
+=======
+                        
+>>>>>>> 82ee9425388d17214dc00abdc6e9da1fe5f04190
                     ]);
                 }
             }
