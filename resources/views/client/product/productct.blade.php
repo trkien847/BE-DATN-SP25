@@ -82,27 +82,51 @@
                                     </ul>
                                 </div>
                                 <h3>{{ $product->name }}</h3>
+                                @php
+                                    $min_variant_price = $product->variants->min('price');
+                                    $min_variant_sale_price = $product->variants->min('sale_price');
+                                @endphp
+
+                                <!-- Hiển thị giá mặc định (ban đầu là biến thể có giá thấp nhất) -->
                                 <div class="product-price">
-                                    <span>{{ number_format($product->sale_price, 0, ',', '.') }} VND</span>
-                                    <del>{{ number_format($product->sell_price, 0, ',', '.') }} VND</del>
+                                        <span id="current-price">{{ number_format($min_variant_sale_price, 0, ',', '.') }} VND</span>
+                                        <del id="original-price">{{ number_format($min_variant_price, 0, ',', '.') }} VND</del>
                                 </div>
                                 <div class="modal-product-meta ltn__product-details-menu-1">
                                     <ul>
                                         <li>
                                             <strong>Categories:</strong>
-                                            @foreach($product->variants as $variant)
-                                            <tr>
-                                                <td>{{ number_format($variant->price, 0, ',', '.') }} VND</td>
-                                                <td>
-                                                    @foreach($variant->attributeValues as $attributeValue)
-                                                    {{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }} {{ $attributeValue->value }}<br>
-                                                    @endforeach
-                                                </td>
-                                            </tr>
-                                            @endforeach
+                                            <div class="variant-buttons">
+                                                @foreach($product->variants as $variant)
+                                                    <button class="btn btn-outline-primary variant-btn" 
+                                                            data-price="{{ $variant->price }}" 
+                                                            data-sale-price="{{ $variant->sale_price }}">
+                                                        @foreach($variant->attributeValues as $attributeValue)
+                                                            {{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }} <br>
+                                                            số lượng: {{$variant->stock}}
+                                                        @endforeach
+                                                    </button>
+                                                @endforeach
+                                            </div>
                                         </li>
                                     </ul>
                                 </div>
+                                <script>
+                                    document.querySelectorAll('.variant-btn').forEach(button => {
+                                        button.addEventListener('click', function() {
+                                            let salePrice = this.getAttribute('data-sale-price');
+                                            let originalPrice = this.getAttribute('data-price');
+
+                                            // Nếu không có giá khuyến mại hoặc bằng 0, dùng giá gốc
+                                            if (!salePrice || salePrice == '0') {
+                                                salePrice = originalPrice;
+                                            }
+
+                                            document.getElementById('current-price').innerHTML = new Intl.NumberFormat('vi-VN').format(salePrice) + " VND";
+                                            document.getElementById('original-price').innerHTML = new Intl.NumberFormat('vi-VN').format(originalPrice) + " VND";
+                                        });
+                                    });
+                                </script>
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
@@ -165,9 +189,7 @@
                     <div class="tab-content">
                         <div class="tab-pane fade active show" id="liton_tab_details_1_1">
                             <div class="ltn__shop-details-tab-content-inner">
-                                <h4 class="title-2">Lorem ipsum dolor sit amet elit.</h4>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+                                {!! $product->content !!}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="liton_tab_details_1_2">

@@ -70,12 +70,6 @@
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="#" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
-                        <i class="fas fa-dollar-sign  mr-2"></i>
-                        Giá Nhập
-                        </a>
-                    </li>
-                    <li class="mb-2">
                         <a href="{{ route('products.list') }}" class="flex items-center text-gray-600 hover:text-gray-800 p-2 rounded-md" onclick="selectMenuItem(event)">
                             <i class="fas fa-arrow-left mr-2"></i> Quay lại
                         </a>
@@ -203,14 +197,6 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="productCostPrice" class="form-label">Giá Bán</label>
-                                <input type="number" class="form-control" id="productCostPrice" name="sell_price" placeholder="Nhập giá bán">
-                            </div>
-                            <div>
-                                <label for="sale_price" class="form-label">Giá Khuyến Mãi (Mãi bên nhau em nhe)</label>
-                                <input type="number" class="form-control" id="sale_price" name="sale_price" placeholder="Giá Khuyến Mãi">
-                            </div>
-                            <div>
                                 <label for="timestampInput" class="form-label">Ngày Giờ Bắt Đầu Giảm Giá</label>
                                 <input type="datetime-local" id="timestampInput" name="sale_price_start_at" class="form-control">
                             </div>
@@ -254,44 +240,79 @@
         </div>
     </div>
     <script>
-    document.getElementById('add-variant').addEventListener('click', function() {
-        let container = document.getElementById('variant-container');
-        let index = container.getElementsByClassName('variant-row').length;
-        
-        let html = `
-            <div class="variant-row">
-                <label>Thuộc Tính</label>
-                <select name="variants[\${index}][attribute_value_id]" class="form-control">
-                    @foreach($attributes as $attribute)
-                        @foreach($attribute->values as $value)
-                            <option value="{{ $value->id }}">{{ $attribute->name }}: {{ $value->value }}</option>
-                        @endforeach
+    document.getElementById('add-variant').addEventListener('click', function () {
+    let container = document.getElementById('variant-container');
+    let index = container.getElementsByClassName('variant-row').length;
+
+    let html = `
+        <div class="variant-row">
+            <label>Thuộc Tính</label>
+            <select name="variants[${index}][attribute_value_id]" class="form-control variant-select">
+                <option value="">Chọn biến thể</option>
+                @foreach($attributes as $attribute)
+                    @foreach($attribute->values as $value)
+                        <option value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}">
+                            {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
+                        </option>
                     @endforeach
-                </select>
+                @endforeach
+            </select>
 
-                <label>Giá Biến Thể</label>
-                <input type="number" name="variants[\${index}][price]" class="form-control" required>
+            <label>Giá Biến Thể</label>
+            <input type="number" name="variants[${index}][price]" class="form-control" required>
 
-                <label>Số Lượng</label>
-                <input type="number" name="variants[\${index}][stock]" class="form-control" required>
+            <label>Giảm giá Biến Thể</label>
+            <input type="number" name="variants[${index}][sale_price]" class="form-control" required>
 
-                <button type="button" class="btn btn-danger remove-variant">Xóa</button>
-            </div>
-        `;
+            <label>Số Lượng</label>
+            <input type="number" name="variants[${index}][stock]" class="form-control" required>
 
-        container.insertAdjacentHTML('beforeend', html);
-        updateRemoveButtons();
+            <button type="button" class="btn btn-danger remove-variant">Xóa</button>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', html);
+    updateRemoveButtons();
+    updateVariantOptions();
+});
+
+function updateRemoveButtons() {
+    document.querySelectorAll('.remove-variant').forEach(button => {
+        button.addEventListener('click', function () {
+            this.closest('.variant-row').remove();
+            updateVariantOptions();
+        });
+    });
+}
+
+function updateVariantOptions() {
+    let selectedValues = new Set();
+
+    // Lấy tất cả giá trị đã chọn
+    document.querySelectorAll('.variant-select').forEach(select => {
+        let value = select.value;
+        if (value) selectedValues.add(value);
     });
 
-    function updateRemoveButtons() {
-        document.querySelectorAll('.remove-variant').forEach(button => {
-            button.addEventListener('click', function() {
-                this.parentElement.remove();
-            });
+    // Cập nhật danh sách option cho từng select  
+    document.querySelectorAll('.variant-select').forEach(select => {
+        select.querySelectorAll('option').forEach(option => {
+            if (option.value && selectedValues.has(option.value) && option.value !== select.value) {
+                option.style.display = 'none';
+            } else {
+                option.style.display = 'block';
+            }
         });
-    }
+    });
+}
 
-    updateRemoveButtons();
+// Lắng nghe sự kiện thay đổi trên dropdown để cập nhật danh sách lựa chọn
+document.addEventListener('change', function (event) {
+    if (event.target.classList.contains('variant-select')) {
+        updateVariantOptions();
+    }
+});
+
 </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -445,22 +466,17 @@
                     previousErrorBox.remove();
                 }
                 const brandSelect = document.getElementById('brandSelect');
-                const productCostPrice = document.getElementById('productCostPrice');
-                const sale_price = document.getElementById('sale_price');
                 const timestampInput = document.getElementById('timestampInput');
                 const sale_price_end_at = document.getElementById('sale_price_end_at');
                 let errorMessage = "";
                 if (brandSelect.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng chọn Danh Mục Cha.</li>";
-                }
-                if (productCostPrice.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Tên Sản Phẩm.</li>";
+                    errorMessage += "<li>Vui lòng chọn nhan hang.</li>";
                 }
                 if (timestampInput.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
+                    errorMessage += "<li>Vui lòng nhập Ngay bat dau giam gia.</li>";
                 }
                 if (sale_price_end_at.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
+                    errorMessage += "<li>Vui lòng nhập Ngay ket thuc giam gia.</li>";
                 }
                
                 

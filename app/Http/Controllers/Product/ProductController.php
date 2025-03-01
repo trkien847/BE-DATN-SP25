@@ -30,12 +30,19 @@ class ProductController extends Controller
         $categories = Category::with('categoryTypes')->get();
         $search = $request->get('search');
         $products = Product::query()
-        ->with(['brand', 'categories', 'categoryTypes'])
-        ->withSum('variants', 'stock') // Tính tổng stock khi lấy danh sách sản phẩm
-        ->when($search, function ($query, $search) {
-            return $query->where('name', 'LIKE', '%' . $search . '%');
-        })
-        ->paginate(5);
+            ->with([
+                'brand',
+                'categories',
+                'categoryTypes',
+                'variants.attributeValues.attribute', 
+                'attributeValues.attribute' 
+            ])
+            ->withSum('variants', 'stock') 
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'LIKE', '%' . $search . '%');
+            })
+            ->paginate(5);
+
         return view('admin.products.productList', compact('brands', 'categories', 'products'));
     }
 
@@ -55,8 +62,6 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
-            'sell_price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
             'sale_price_start_at' => 'nullable|date',
             'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -66,8 +71,6 @@ class ProductController extends Controller
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'sell_price.required' => 'Vui lòng nhập giá bán.',
-            'sale_price.numeric' => 'Giá khuyến mãi phải là số.',
             'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
@@ -113,9 +116,6 @@ class ProductController extends Controller
             $product->thumbnail = $imageName;
         }
         $product->sku = $request->sku;
-        $product->price = $request->price;
-        $product->sell_price = $request->sell_price;
-        $product->sale_price = $request->sale_price;
         $product->sale_price_start_at = $request->sale_price_start_at;
         $product->sale_price_end_at = $request->sale_price_end_at;
         $product->is_active = 1;
@@ -148,6 +148,7 @@ class ProductController extends Controller
                 $productVariant = ProductVariant::create([
                     'product_id' => $product->id,
                     'price' => $variant['price'],
+                    'sale_price' => $variant['sale_price'],
                     'stock' => $variant['stock'],
                 ]);
 
@@ -171,8 +172,13 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = Product::query()
-            ->with(['brand', 'categories', 'categoryTypes', 'variants'])
+            ->with(['brand',
+                'categories',
+                'categoryTypes',
+                'variants.attributeValues.attribute', 
+                'attributeValues.attribute'])
             ->where('id', $id)->first();
+
         $attributes = Attribute::with('values')->get();
         $brands = Brand::all();
         $categories = Category::with('categoryTypes')->get();
@@ -189,9 +195,6 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
-            'sell_price' => 'required|numeric|min:0',
-            'price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
             'sale_price_start_at' => 'nullable|date',
             'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -201,9 +204,6 @@ class ProductController extends Controller
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'sell_price.required' => 'Vui lòng nhập giá bán.',
-            'price.required' => 'Vui lòng nhập giá nhập.',
-            'sale_price.numeric' => 'Giá khuyến mãi phải là số.',
             'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
             'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
@@ -293,14 +293,14 @@ class ProductController extends Controller
         if ($request->has('variants')) {
             foreach ($request->variants as $variantData) {
                 if (isset($variantData['id']) && !empty($variantData['id'])) {
-                    // Cập nhật biến thể cũ
+
                     $variant = ProductVariant::findOrFail($variantData['id']);
                     $variant->update([
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
                     ]);
                 } else {
-                    // Tạo biến thể mới
+
                     $variant = ProductVariant::create([
                         'product_id' => $product->id,
                         'price' => $variantData['price'],
@@ -319,7 +319,7 @@ class ProductController extends Controller
             }
         }
 
-        // Xóa biến thể không còn tồn tại trong request
+
         ProductVariant::where('product_id', $product->id)
             ->whereNotIn('id', $variantIds)
             ->delete();
@@ -341,39 +341,7 @@ class ProductController extends Controller
         return redirect()->route('products.list')->with('success', 'Xóa thành công!');
     }
 
-    public function productct($id)
-    {
-        $carts = Cart::where('user_id', auth()->id())->get();
-        $subtotal = $carts->sum(function ($cart) {
-            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
-                ? $cart->product->sale_price 
-                : $cart->product->sell_price;
-            return $cart->quantity * $price;
-        }); 
-        $product = Product::query()
-            ->with(['brand', 'categories', 'categoryTypes', 'variants.attributeValues.attribute', 'attributes'])
-            ->where('id', $id)->first();
-        $brands = Brand::all();
-        $categories = Category::with('categoryTypes')->get();
-        $productGallery = ProductGalleries::where('product_id', $id)->get();
-        $productGallery2 = ProductGalleries::where('product_id', $id)->get();
-        $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
-
-        $categoryIds = $product->categories->pluck('id')->toArray();
-        $categoryTypeIds = $product->categoryTypes->pluck('id')->toArray();
-        $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
-            $query->whereIn('categories.id', $categoryIds);
-        })
-        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
-            $query->whereIn('category_types.id', $categoryTypeIds);
-        })
-        ->where('id', '!=', $id) 
-        ->limit(10) 
-        ->get();
-        return view('client.product.productct', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'productGallery2', 
-        'carts', 'subtotal', 'relatedProducts'));
-    }
-
+    
     public function getProduct($id)
     {
         $product = Product::with('categories')->findOrFail($id);
@@ -465,4 +433,62 @@ class ProductController extends Controller
 
         return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được cập nhật!');
     }
+
+
+
+
+    // cli
+
+
+
+    public function productct($id)
+    {
+        $carts = Cart::where('user_id', auth()->id())->get();
+        $subtotal = $carts->sum(function ($cart) {
+            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0
+                ? $cart->product->sale_price
+                : $cart->product->sell_price;
+            return $cart->quantity * $price;
+        });
+        $product = Product::query()
+            ->with(['brand',
+                'categories',
+                'categoryTypes',
+                'variants.attributeValues.attribute', 
+                'attributeValues.attribute'])
+            ->where('id', $id)->first();
+
+            $min_variant_price = $product->variants->min('price');
+
+        $brands = Brand::all();
+        $categories = Category::with('categoryTypes')->get();
+        $productGallery = ProductGalleries::where('product_id', $id)->get();
+        $productGallery2 = ProductGalleries::where('product_id', $id)->get();
+        $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
+
+        $categoryIds = $product->categories->pluck('id')->toArray();
+        $categoryTypeIds = $product->categoryTypes->pluck('id')->toArray();
+        $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
+            $query->whereIn('categories.id', $categoryIds);
+        })
+            ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+                $query->whereIn('category_types.id', $categoryTypeIds);
+            })
+            ->where('id', '!=', $id)
+            ->limit(10)
+            ->get();
+        return view('client.product.productct', compact(
+            'product',
+            'categories',
+            'brands',
+            'categoryTypes',
+            'productGallery',
+            'productGallery2',
+            'carts',
+            'subtotal',
+            'relatedProducts', 
+            'min_variant_price'
+        ));
+    }
+
 }

@@ -101,7 +101,7 @@
 
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
-    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
+    <h4 class="text-secondary">DANH SÁCH TRÒ CHƠI SAYGEX 69</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
     <a href="{{ route('products.add') }}" class="btn btn-success">
       <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
@@ -133,12 +133,11 @@
         <tr>
           <th scope="col">Mã SP</th>
           <th scope="col">Tên Sản Phẩm</th>
-          <th scope="col">Giá</th>
+          <th scope="col">Giá nhập</th>
           <th scope="col">Ảnh</th>
           <th scope="col">Danh mục</th>
           <th scope="col">Mô Tả</th>
-          <th scope="col">Giá Nhập</th>
-          <th scope="col">Giá Bán</th>
+          <th scope="col">Biến thể</th>
           <th scope="col">Trạng Thái</th>
           <th scope="col">Nhà Cung Cấp</th>
           <th scope="col">Hành Động</th>
@@ -183,11 +182,25 @@
             }
           </script>
           <td>{!! Str::limit($product->content, 100, '...') !!}</td>
-          <td>{{ number_format($product->price, 0, ',', '.') }} VND</td>
-          <td>{{ number_format($product->sale_price, 0, ',', '.') }} VND</td>
+          <td>          
+            @foreach($product->variants as $variant)
+                <div>
+                    <strong>SKU:</strong>  
+                      @foreach($variant->attributeValues as $value)
+                        {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}  
+                      @endforeach <br>
+
+                    <strong>Giá:</strong> {{ number_format($variant->price, 0, ',', '.') }} VND <br>
+                    <strong>Giá KM:</strong> {{ number_format($variant->sale_price, 0, ',', '.') }} VND <br>    
+                    <strong>Số lượng:</strong> {{ $variant->stock }}  <br>        
+                  </div>
+                  <hr>
+              @endforeach         
+          </td>
           <td>
             <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
               {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
+              {{ $product->variants_sum_stock }}
             </span>
           </td>
           <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>

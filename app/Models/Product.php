@@ -52,6 +52,10 @@ class Product extends Model
         return $this->belongsToMany(Attribute::class, 'attribute_value_product', 'product_id', 'attribute_value_id')
             ->withPivot('attribute_value_id'); // Nếu có dữ liệu trung gian
     }
+    public function attributeValues()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'attribute_value_product');
+    }
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 }
