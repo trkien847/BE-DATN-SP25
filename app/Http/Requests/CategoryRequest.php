@@ -48,7 +48,8 @@ class CategoryRequest extends FormRequest
             'name.max' => 'Tên không được vượt quá 255 ký tự',
             'name.unique' => 'Tên danh mục đã tồn tại',
             'subcategories.*.string' => 'Tên danh mục con phải là chuỗi',
-            'subcategories.*.max' => 'Tên danh mục con không được vượt quá 255 ký tự',            'subcategory_icons.*.max' => 'Icon danh mục con không được vượt quá 255 ký tự',
+            'subcategories.*.max' => 'Tên danh mục con không được vượt quá 255 ký tự',            
+            'subcategory_icons.*.max' => 'Icon danh mục con không được vượt quá 255 ký tự',
             'subcategory_icons.*.unique' => 'Icon danh mục con đã tồn tại',
             'subcategories.*.unique' => 'Tên danh mục con đã tồn tại',
         ];
