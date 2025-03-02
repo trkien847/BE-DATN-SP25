@@ -96,9 +96,13 @@
                                     <ul>
                                         <li>
                                             <strong>Categories:</strong>
-                                            <div class="variant-buttons">
+                                            <div class="variant-buttons rounded-sm width: 200px; height: 200px">
                                                 @foreach($product->variants as $variant)
-                                                    <button class="btn btn-outline-primary variant-btn" 
+                                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                                                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:
+                                                            !bg-white text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-
+                                                            primary-50 hover:border-primary-500 hover:text-primary-500 md:hover:border-primary
+                                                            -200 md:hover:text-primary-200 " 
                                                             data-price="{{ $variant->price }}" 
                                                             data-sale-price="{{ $variant->sale_price }}">
                                                         @foreach($variant->attributeValues as $attributeValue)
