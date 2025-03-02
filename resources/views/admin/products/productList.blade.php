@@ -101,7 +101,7 @@
 
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
-    <h4 class="text-secondary">DANH SÁCH TRÒ CHƠI SAYGEX 69</h4>
+    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
     <a href="{{ route('products.add') }}" class="btn btn-success">
       <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
@@ -209,9 +209,9 @@
            class="btn btn-warning btn-sm">
            <i class="bx bx-edit fs-16"></i>
           </a>
-            <!-- <a href="{{ route('products.productct', $product->id) }}" class="btn btn-warning btn-sm">
+            <a href="{{ route('products.productct', $product->id) }}" class="btn btn-warning btn-sm">
                 <i class="bi bi-pencil-square"></i> Chi tiết sp
-            </a> -->
+            </a>
             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')

@@ -304,6 +304,7 @@ class ProductController extends Controller
                     $variant = ProductVariant::create([
                         'product_id' => $product->id,
                         'price' => $variantData['price'],
+                        'sale_price' => $variantData['sale_price'],
                         'stock' => $variantData['stock'],
                     ]);
                     AttributeValueProductVariant::create([
