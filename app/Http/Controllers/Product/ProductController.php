@@ -34,16 +34,40 @@ class ProductController extends Controller
                 'brand',
                 'categories',
                 'categoryTypes',
-                'variants.attributeValues.attribute', 
-                'attributeValues.attribute' 
+                'variants.attributeValues.attribute',
+                'attributeValues.attribute'
             ])
-            ->withSum('variants', 'stock') 
+            ->where('is_active', 1)
+            ->withSum('variants', 'stock')
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'LIKE', '%' . $search . '%');
             })
             ->paginate(5);
 
         return view('admin.products.productList', compact('brands', 'categories', 'products'));
+    }
+
+    public function hidden()
+    {
+        $products = Product::query()
+            ->with([
+                'brand',
+                'categories',
+                'categoryTypes',
+                'variants.attributeValues.attribute',
+                'attributeValues.attribute'
+            ])
+            ->where('is_active', 0)
+            ->withSum('variants', 'stock')
+            ->paginate(5);
+        return view('admin.products.hidden', compact('products'));
+    }
+
+    public function restore($id)
+    {
+        $product = Product::findOrFail($id);
+        $product->update(['is_active' => 1]);
+        return redirect()->route('products.hidden')->with('success', 'Sản phẩm đã bị loại khỏi trò chơi SAYGEX!');
     }
 
     public function productAdd()
@@ -172,11 +196,13 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = Product::query()
-            ->with(['brand',
+            ->with([
+                'brand',
                 'categories',
                 'categoryTypes',
-                'variants.attributeValues.attribute', 
-                'attributeValues.attribute'])
+                'variants.attributeValues.attribute',
+                'attributeValues.attribute'
+            ])
             ->where('id', $id)->first();
 
         $attributes = Attribute::with('values')->get();
@@ -332,17 +358,13 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::find($id);
+        $product->is_active = 0;
+        $product->save();
 
-        if ($product->thumbnail && File::exists(public_path('uploads/' . $product->thumbnail))) {
-            File::delete(public_path('upload/' . $product->thumbnail));
-        }
-
-        $product->delete();
-
-        return redirect()->route('products.list')->with('success', 'Xóa thành công!');
+        return redirect()->route('products.list')->with('success', 'Sản phẩm này đã bị cho tham gia trò chơi SAYGEX!');
     }
 
-    
+
     public function getProduct($id)
     {
         $product = Product::with('categories')->findOrFail($id);
@@ -452,14 +474,16 @@ class ProductController extends Controller
             return $cart->quantity * $price;
         });
         $product = Product::query()
-            ->with(['brand',
+            ->with([
+                'brand',
                 'categories',
                 'categoryTypes',
-                'variants.attributeValues.attribute', 
-                'attributeValues.attribute'])
+                'variants.attributeValues.attribute',
+                'attributeValues.attribute'
+            ])
             ->where('id', $id)->first();
 
-            $min_variant_price = $product->variants->min('price');
+        $min_variant_price = $product->variants->min('price');
 
         $brands = Brand::all();
         $categories = Category::with('categoryTypes')->get();
@@ -469,6 +493,7 @@ class ProductController extends Controller
 
         $categoryIds = $product->categories->pluck('id')->toArray();
         $categoryTypeIds = $product->categoryTypes->pluck('id')->toArray();
+
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
         })
@@ -487,9 +512,57 @@ class ProductController extends Controller
             'productGallery2',
             'carts',
             'subtotal',
-            'relatedProducts', 
+            'relatedProducts',
             'min_variant_price'
         ));
     }
 
+
+    public function import()
+    {
+        $products = Product::with('variants.attributeValues.attribute')
+            ->whereNull('import_at')
+            ->get();
+
+
+        $importedProducts = Product::whereNotNull('import_at')
+            ->select('import_at')
+            ->selectRaw('GROUP_CONCAT(name) as product_names')
+            ->groupBy('import_at')
+            ->get();
+
+        return view('admin.products.import', compact('products', 'importedProducts'));
+    }
+
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'import_at' => 'required|date',
+            'products' => 'required|array',
+            'variants' => 'required|array',
+            'import_prices' => 'required|array',
+            'import_prices.*' => 'required|numeric|min:0',
+        ]);
+
+        $products = $request->input('products');
+        $variants = $request->input('variants');
+        $importPrices = $request->input('import_prices');
+        $importAt = $request->input('import_at');
+
+        Product::whereIn('id', $products)->update([
+            'import_at' => $importAt,
+            'updated_at' => now(),
+        ]);
+
+        foreach ($variants as $variantId) {
+            if (isset($importPrices[$variantId])) {
+                ProductVariant::where('id', $variantId)->update([
+                    'import_price' => $importPrices[$variantId],
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->route('products.list')->with('success', 'Đã cập nhật giá nhập biến thể và thời gian nhập sản phẩm thành công!');
+    }
 }

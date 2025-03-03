@@ -72,7 +72,11 @@ Route::post('/admin/products/create', [ProductController::class, 'productStore']
 Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
-Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
+Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
+Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
+Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
 
 Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
 Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');

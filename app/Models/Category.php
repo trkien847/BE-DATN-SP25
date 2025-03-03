@@ -30,6 +30,6 @@ class Category extends Model implements Transformable
     }
     public function categoryTypes()
     {
-        return $this->belongsToMany(CategoryType::class, 'category_type_product', 'product_id', 'category_type_id');
+        return $this->hasMany(CategoryType::class, 'category_id');
     }
 }
