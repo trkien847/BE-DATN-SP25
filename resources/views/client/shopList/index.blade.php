@@ -113,7 +113,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h2 class="product-title"><a
-                                                            href="product-details.html">{{ $product->name }}</a></h2>
+                                                            href="{{route('get-product', $product->id)}}">{{ $product->name }}</a></h2>
                                                     <div class="product-price">
                                                         @if (!empty($product->sale_price) && $product->sale_price > 0)
                                                             <span>{{ number_format($product->sale_price) }}đ</span>
@@ -185,11 +185,11 @@
                             <h4 class="ltn__widget-title ltn__widget-title-border">Product Price</h4>
                             <ul>
                                 @foreach ([
-            'under_100' => 'Dưới 100.000đ',
-            '100_300' => '100.000đ - 300.000đ',
-            '300_500' => '300.000đ - 500.000đ',
-            'above_500' => 'Trên 500.000đ',
-        ] as $value => $label)
+                                        'under_100' => 'Dưới 100.000đ',
+                                        '100_300' => '100.000đ - 300.000đ',
+                                        '300_500' => '300.000đ - 500.000đ',
+                                        'above_500' => 'Trên 500.000đ',
+                                    ] as $value => $label)
                                     <li>
                                         <label>
                                             <input type="checkbox" name="price_range[]" value="{{ $value }}"
