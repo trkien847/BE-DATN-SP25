@@ -248,8 +248,8 @@
             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline delete-form">
               @csrf
               @method('PATCH')
-              <button type="submit" class="btn btn-secondary btn-sm">
-                <i class="bx bx-hide fs-16"></i>
+              <button type="submit" class="btn btn-secondary btn-sm ">
+                <i class="bx bx-hide fs-16 "></i>
               </button>
             </form>
           </td>
