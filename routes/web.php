@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -92,3 +93,22 @@ Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdat
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+
+  // Quản lý người dùng
+  Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+  Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
+  Route::post('/users/store', [UserManagementController::class, 'store'])->name('users.store');
+  Route::get('/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+  Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
+  Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+  
+  // Quản lý phân quyền
+  Route::get('/roles', [UserManagementController::class, 'rolesList'])->name('roles.list');
+  Route::get('/roles/create', [UserManagementController::class, 'rolesCreate'])->name('roles.create');
+  Route::post('/roles/store', [UserManagementController::class, 'rolesStore'])->name('roles.store');
+  Route::get('/roles/{id}/edit', [UserManagementController::class, 'rolesEdit'])->name('roles.edit');
+  Route::put('/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
+  Route::delete('/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
+});
