@@ -54,6 +54,8 @@ Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.l
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
 Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
+Route::get('coupons/{id}/edit', [CoupoController::class, 'edit'])->name('coupons.edit');
+Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
 
 
 // reviews

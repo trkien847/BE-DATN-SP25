@@ -136,7 +136,19 @@ class CoupoController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $coupon = Coupon::with('restriction', 'users')->findOrFail($id);
+    $products = Product::all();
+    $categories = Category::all();
+    $users = User::all();
+
+    // Lấy danh sách ID của sản phẩm và danh mục được áp dụng
+    $validProducts = json_decode(optional($coupon->restriction)->valid_products, true) ?? [];
+    $validCategories = json_decode(optional($coupon->restriction)->valid_categories, true) ?? [];
+    $appliedUsers = $coupon->users->pluck('id')->toArray();
+
+    return view('admin.coupons.coupon.edit', compact(
+        'coupon', 'products', 'categories', 'users', 'validProducts', 'validCategories', 'appliedUsers'
+    ));
     }
 
     /**
@@ -144,7 +156,45 @@ class CoupoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $coupon = Coupon::findOrFail($id);
+            $coupon->update([
+                'code' => $request->code,
+                'title' => $request->title,
+                'description' => $request->description,
+                'discount_type' => $request->discount_type,
+                'discount_value' => $request->discount_value,
+                'usage_limit' => $request->usage_limit ?? null,
+                'start_date' => $request->start_date ?? null,
+                'end_date' => $request->end_date ?? null,
+            ]);
+    
+            // Cập nhật ràng buộc mã giảm giá
+            if ($request->filled(['min_order_value', 'max_discount_value', 'valid_categories', 'valid_products'])) {
+                $coupon->restriction()->updateOrCreate(
+                    ['coupon_id' => $coupon->id],
+                    [
+                        'min_order_value' => $request->min_order_value,
+                        'max_discount_value' => $request->max_discount_value,
+                        'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
+                        'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
+                    ]
+                );
+            }
+    
+            // Cập nhật danh sách user áp dụng
+            if ($request->has('user_id')) {
+                $coupon->users()->sync($request->user_id);
+            }
+    
+            DB::commit();
+            return redirect()->route('coupons.list')->with('success', 'Cập nhật mã giảm giá thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     /**

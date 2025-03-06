@@ -89,8 +89,8 @@
 
                                         <!-- Hành động -->
                                         <td class="text-center">
-                                            {{-- {{ route('coupons.edit', $coupon->id) }} --}}
-                                            <a href="" class="btn btn-sm btn-soft-secondary me-1">
+                                            
+                                            <a href=" {{ route('coupons.edit', $coupon->id) }}" class="btn btn-sm btn-soft-secondary me-1">
                                                 <i class="bx bx-edit fs-16"></i>
                                             </a>
 
