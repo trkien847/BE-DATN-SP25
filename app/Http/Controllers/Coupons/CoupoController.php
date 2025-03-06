@@ -29,15 +29,15 @@ class CoupoController extends Controller
                 ->orWhere('title', 'LIKE', "%$search%")
                 ->orWhere('description', 'LIKE', "%$search%");
         }
-    
+
         $coupons = $query->orderBy('created_at', 'desc')->paginate(5);
-    
+
         // Lấy tên sản phẩm và danh mục theo valid_products & valid_categories
         foreach ($coupons as $coupon) {
             if ($coupon->restriction) {
                 $productIds = json_decode($coupon->restriction->valid_products, true) ?? [];
                 $categoryIds = json_decode($coupon->restriction->valid_categories, true) ?? [];
-    
+
                 $coupon->productNames = Product::whereIn('id', $productIds)->pluck('name')->toArray();
                 $coupon->categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->toArray();
             } else {
@@ -45,7 +45,7 @@ class CoupoController extends Controller
                 $coupon->categoryNames = [];
             }
         }
-    
+
         return view('admin.coupons.list', compact('coupons'));
     }
 
@@ -88,16 +88,19 @@ class CoupoController extends Controller
             // Tạo ràng buộc mã giảm giá (nếu có)
 
 
-            if ($request->filled(['min_order_value', 'max_discount_value', 'valid_categories', 'valid_products'])) {
+            try {
                 CouponRestriction::create([
                     'coupon_id' => $coupon->id,
-                    'min_order_value' => $request->min_order_value,
-                    'max_discount_value' => $request->max_discount_value,
+                    'min_order_value' => $request->min_order_value ?? 1000,
+                    'max_discount_value' => $request->max_discount_value ?? 2000,
                     'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
                     'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
                 ]);
+                Log::info("CouponRestriction được tạo thành công cho Coupon ID: " . $coupon->id);
+            } catch (\Exception $e) {
+                Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage());
             }
-
+            
             // Gán mã giảm giá cho user nếu có
             if ($request->has('user_id')) {
                 try {
@@ -137,19 +140,35 @@ class CoupoController extends Controller
     public function edit(string $id)
     {
         $coupon = Coupon::with('restriction', 'users')->findOrFail($id);
-    $products = Product::all();
-    $categories = Category::all();
-    $users = User::all();
+        $products = Product::all();
+        $categories = Category::all();
+        $users = User::all();
+        $restriction = $coupon->restriction;
 
-    // Lấy danh sách ID của sản phẩm và danh mục được áp dụng
-    $validProducts = json_decode(optional($coupon->restriction)->valid_products, true) ?? [];
-    $validCategories = json_decode(optional($coupon->restriction)->valid_categories, true) ?? [];
-    $appliedUsers = $coupon->users->pluck('id')->toArray();
+        // Lấy danh sách ID của sản phẩm và danh mục được áp dụng
+        $validProducts = json_decode(optional($restriction)->valid_products, true) ?? [];
+        $validCategories = json_decode(optional($restriction)->valid_categories, true) ?? [];
+        $appliedUsers = $coupon->users->pluck('id')->toArray();
 
-    return view('admin.coupons.coupon.edit', compact(
-        'coupon', 'products', 'categories', 'users', 'validProducts', 'validCategories', 'appliedUsers'
-    ));
+        // Lấy giá trị min_order_value và max_discount_value
+        $minOrderValue = optional($restriction)->min_order_value;
+    
+        $maxDiscountValue = optional($restriction)->max_discount_value;
+
+        return view('admin.coupons.coupon.edit', compact(
+            'coupon',
+            'products',
+            'categories',
+            'users',
+            'restriction',
+            'validProducts',
+            'validCategories',
+            'appliedUsers',
+            'minOrderValue',
+            'maxDiscountValue'
+        ));
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -160,46 +179,64 @@ class CoupoController extends Controller
 
         try {
             $coupon = Coupon::findOrFail($id);
+
+            // Cập nhật thông tin mã giảm giá
             $coupon->update([
                 'code' => $request->code,
                 'title' => $request->title,
                 'description' => $request->description,
                 'discount_type' => $request->discount_type,
                 'discount_value' => $request->discount_value,
-                'usage_limit' => $request->usage_limit ?? null,
+                'usage_limit' => $request->filled('usage_limit') ? $request->usage_limit : 0,
                 'start_date' => $request->start_date ?? null,
                 'end_date' => $request->end_date ?? null,
             ]);
-    
-            // Cập nhật ràng buộc mã giảm giá
-            if ($request->filled(['min_order_value', 'max_discount_value', 'valid_categories', 'valid_products'])) {
-                $coupon->restriction()->updateOrCreate(
-                    ['coupon_id' => $coupon->id],
-                    [
-                        'min_order_value' => $request->min_order_value,
-                        'max_discount_value' => $request->max_discount_value,
-                        'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
-                        'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
-                    ]
+
+            // Xử lý ràng buộc mã giảm giá
+            $validCategories = is_array($request->valid_categories) ? $request->valid_categories : [];
+            $validProducts = is_array($request->valid_products) ? $request->valid_products : [];
+            $userIds = is_array($request->user_id) ? $request->user_id : [];
+
+            Log::info("Valid Categories: " . json_encode($validCategories));
+            Log::info("Valid Products: " . json_encode($validProducts));
+            Log::info("User IDs: " . json_encode($userIds));
+
+            // Kiểm tra xem có dữ liệu restriction không
+            if ($request->filled(['min_order_value', 'max_discount_value'])) {
+                $restriction = $coupon->restriction()->firstOrCreate(
+                    ['coupon_id' => $coupon->id]
                 );
+
+                if (!$restriction) {
+                    throw new \Exception("Không thể tìm hoặc tạo bản ghi restriction.");
+                }
+                Log::info("Đã updte xong user : " . json_encode($restriction->toArray()));
+
+                // Cập nhật restriction
+                $restriction->update([
+                    'min_order_value' => $request->min_order_value,
+                    'max_discount_value' => $request->max_discount_value,
+                    'valid_categories' => json_encode($validCategories),
+                    'valid_products' => json_encode($validProducts),
+                ]);
+
+                Log::info("Updated Restriction: " . json_encode($restriction->toArray()));
             }
-    
+
             // Cập nhật danh sách user áp dụng
-            if ($request->has('user_id')) {
-                $coupon->users()->sync($request->user_id);
-            }
-    
+            $coupon->users()->sync($userIds);
+
             DB::commit();
             return redirect()->route('coupons.list')->with('success', 'Cập nhật mã giảm giá thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            Log::error("Lỗi khi cập nhật mã giảm giá: " . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Lỗi cập nhật mã giảm giá: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
 
