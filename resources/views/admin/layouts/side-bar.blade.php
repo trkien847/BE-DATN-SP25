@@ -29,7 +29,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="index.html">
                     <span class="nav-icon">
-                        <iconify-icon icon="solar:home-2-broken"></iconify-icon>
+                    <iconify-icon icon="line-md:home-md" width="24" height="24"></iconify-icon>
                     </span>
                     <span class="nav-text"> Thống Kê </span>
                 </a>
@@ -37,7 +37,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('categories.list') }}">
                     <span class="nav-icon">
-                        <iconify-icon icon="carbon:categories"></iconify-icon>
+                    <iconify-icon icon="line-md:folder-settings-filled" width="24" height="24"></iconify-icon>
                     </span>
                     <span class="nav-text"> Danh Mục </span>
                 </a>
@@ -45,8 +45,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('products.list') }}">
                     <span class="nav-icon">
-                        <iconify-icon icon="lsicon:management-stockout-filled" width="16"
-                            height="16"></iconify-icon>
+                    <iconify-icon icon="lsicon:management-stockout-filled" width="16" height="16"></iconify-icon>
                     </span>
                     <span class="nav-text"> Sản Phẩm </span>
                 </a>
@@ -54,21 +53,19 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('order.list') }}">
                     <span class="nav-icon">
-                        <iconify-icon icon="cuida:document-text-outline" width="24" height="24"></iconify-icon>
-                    </span>
+                    <iconify-icon icon="cuida:document-text-outline" width="24" height="24"></iconify-icon>
+                    </span>                  
                     <span class="nav-text"> Quản Lý Đơn Hàng </span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('brands.list') }}">
                     <span class="nav-icon">
-                        <iconify-icon icon="gridicons:multiple-users" width="24" height="24"></iconify-icon>
-                    </span>
+                    <iconify-icon icon="gridicons:multiple-users" width="24" height="24"></iconify-icon>
+                    </span>                  
                     <span class="nav-text"> Thương Hiệu </span>
                 </a>
             </li>
-
-            
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('coupons.list') }}">
                     <span class="nav-icon">

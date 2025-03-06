@@ -262,7 +262,7 @@
                                                     </div>
                                                     <div class="product-info">
                                                         <h2 class="product-title">
-                                                            <a href="product-details.html">{{ $product->name }}</a>
+                                                            <a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                         </h2>
                                                         <div class="product-price">
                                                             @if (!empty($product->sale_price) && $product->sale_price > 0)

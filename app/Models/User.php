@@ -25,13 +25,19 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'phone',
-        'address',
-        'email',
-        'password',
-        'image',
-        'role'
+        'fullname', 
+        'email', 
+        'phone_number', 
+        'birthday', 
+        'password', 
+        'gender', 
+        'avatar', 
+        'role', 
+        'status', 
+        'email_verified_at', 
+        'verified_at', 
+        'google_id', 
+        'loyalty_points'
     ];
 
 
@@ -55,24 +61,24 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // public function review()
-    // {
-    //     return $this->hasMany(Review::class);
-    // }
-    // public function doctor()
-    // {
-    //     return $this->hasMany(Doctor::class);
-    // }
-    // public function bill()
-    // {
-    //     return $this->hasMany(Bill::class);
-    // }
-    // public function appoinment()
-    // {
-    //     return $this->hasMany(Appoinment::class);
-    // }
-    // public function appoinmentHistory()
-    // {
-    //     return $this->hasMany(AppoinmentHistory::class);
-    // }
+    public function review()
+    {
+        return $this->hasMany(Review::class);
+    }
+    public function doctor()
+    {
+        return $this->hasMany(Doctor::class);
+    }
+    public function bill()
+    {
+        return $this->hasMany(Bill::class);
+    }
+    public function appoinment()
+    {
+        return $this->hasMany(Appoinment::class);
+    }
+    public function appoinmentHistory()
+    {
+        return $this->hasMany(AppoinmentHistory::class);
+    }
 }

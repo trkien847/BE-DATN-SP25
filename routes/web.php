@@ -12,12 +12,19 @@ use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\User\AuthController;
+use App\Http\Controllers\UserController;
 
-Route::get('/auto-login', function () {
-    Auth::loginUsingId(1);
-    return redirect('/');
-});
+// Route::get('/auto-login', function () {
+//     Auth::loginUsingId(1);
+//     return redirect('/');
+// });
+
+Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
+Route::post('/login', [UserController::class, 'login'])->name('login.submit');
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
+Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/{categoryId}/{subcategoryId?}', [ShopListController::class, 'show'])
@@ -71,7 +78,17 @@ Route::post('/admin/products/create', [ProductController::class, 'productStore']
 Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
-Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
+Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
+Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
+Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
+
+Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
+Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
+Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
+Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
+Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
