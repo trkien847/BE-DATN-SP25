@@ -49,6 +49,36 @@
                                     value="{{ old('discount_value', $coupon->discount_value) }}">
                             </div>
 
+                             <!-- Số lần sử dụng tối đa -->
+                            
+                            <div class="mb-3">
+                                <label for="usage_limit" class="form-label">Số lần sử dụng tối đa</label>
+                                <input type="number" id="usage_limit" name="usage_limit" class="form-control"
+                                    value="{{ old('usage_limit', $coupon->usage_limit) }}">
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="min_order_value" class="form-label">Số tiền tối thiểu để áp dụng</label>
+                                        <input type="number" id="min_order_value" name="min_order_value"
+                                            class="form-control" step="0.01" placeholder="Nhập số tiền tối thiểu" 
+                                            value="{{ old('min_order_value', $minOrderValue) }}">
+                                    </div>
+                                </div>
+                            
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="max_discount_value" class="form-label">Số tiền tối đa giảm</label>
+                                        <input type="number" id="max_discount_value" name="max_discount_value"
+                                            class="form-control" step="0.01" placeholder="Nhập số tiền tối đa"
+                                            value="{{ old('max_discount_value', $maxDiscountValue) }}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+
                             <!-- Ngày bắt đầu & Ngày kết thúc -->
                             <div class="row">
                                 <div class="col-md-6">
