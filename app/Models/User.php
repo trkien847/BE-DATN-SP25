@@ -27,18 +27,19 @@ class User extends Authenticatable
     protected $fillable = [
         'fullname', 
         'email', 
-        'role_id', 
         'phone_number', 
         'birthday', 
         'password', 
         'gender', 
         'avatar', 
+        'role', 
         'status', 
         'email_verified_at', 
         'verified_at', 
         'google_id', 
         'loyalty_points'
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -62,29 +63,22 @@ class User extends Authenticatable
 
     public function review()
     {
-        return $this->hasMany(Reviews::class);
+        return $this->hasMany(Review::class);
     }
-    // public function doctor()
-    // {
-    //     return $this->hasMany(Doctor::class);
-    // }
-    // public function bill()
-    // {
-    //     return $this->hasMany(Bill::class);
-    // }
-    // public function appoinment()
-    // {
-    //     return $this->hasMany(Appoinment::class);
-    // }
-    // public function appoinmentHistory()
-    // {
-    //     return $this->hasMany(AppoinmentHistory::class);
-    // }
-    public function cart()
+    public function doctor()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasMany(Doctor::class);
     }
-    public function role(){
-        return $this->belongsTo(Role::class);
+    public function bill()
+    {
+        return $this->hasMany(Bill::class);
+    }
+    public function appoinment()
+    {
+        return $this->hasMany(Appoinment::class);
+    }
+    public function appoinmentHistory()
+    {
+        return $this->hasMany(AppoinmentHistory::class);
     }
 }
