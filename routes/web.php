@@ -54,7 +54,7 @@ Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('b
 Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update'); // Cập nhật thương hiệu
 Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
-// mã giảm giá
+// mã giảm giá ok 
 Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.list');
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
