@@ -17,7 +17,7 @@ class CategoryTypeProduct extends Model
 
     public function categoryType()
     {
-        return $this->belongsTo(CategoryType::class, 'id', 'category_type_id');
+        return $this->belongsTo(CategoryType::class, 'category_type_id', 'id');
     }
 
     public function product()

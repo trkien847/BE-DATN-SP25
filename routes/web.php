@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -48,16 +49,22 @@ Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::c
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
+
 Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
 Route::post('/admin/brands/create', [BrandController::class, 'store'])->name('brands.store');
 Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
-Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update'); // Cập nhật thương hiệu
+Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
 Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
+Route::get('/admin/brands/is_active', [BrandController::class, 'indexQueryIs_active'])->name('brands.listActive');
 
 // mã giảm giá
 Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.list');
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
+Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
+Route::get('coupons/{id}/edit', [CoupoController::class, 'edit'])->name('coupons.edit');
+Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
+
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
@@ -72,7 +79,11 @@ Route::post('/admin/products/create', [ProductController::class, 'productStore']
 Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
-Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
+Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
+Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
+Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
 
 Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
 Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
@@ -82,3 +93,22 @@ Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdat
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+
+  // Quản lý người dùng
+  Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+  Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
+  Route::post('/users/store', [UserManagementController::class, 'store'])->name('users.store');
+  Route::get('/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+  Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
+  Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+  
+  // Quản lý phân quyền
+  Route::get('/roles', [UserManagementController::class, 'rolesList'])->name('roles.list');
+  Route::get('/roles/create', [UserManagementController::class, 'rolesCreate'])->name('roles.create');
+  Route::post('/roles/store', [UserManagementController::class, 'rolesStore'])->name('roles.store');
+  Route::get('/roles/{id}/edit', [UserManagementController::class, 'rolesEdit'])->name('roles.edit');
+  Route::put('/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
+  Route::delete('/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
+});

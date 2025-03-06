@@ -288,13 +288,13 @@ function updateRemoveButtons() {
 function updateVariantOptions() {
     let selectedValues = new Set();
 
-    // Lấy tất cả giá trị đã chọn
+
     document.querySelectorAll('.variant-select').forEach(select => {
         let value = select.value;
         if (value) selectedValues.add(value);
     });
 
-    // Cập nhật danh sách option cho từng select  
+      
     document.querySelectorAll('.variant-select').forEach(select => {
         select.querySelectorAll('option').forEach(option => {
             if (option.value && selectedValues.has(option.value) && option.value !== select.value) {
@@ -306,7 +306,7 @@ function updateVariantOptions() {
     });
 }
 
-// Lắng nghe sự kiện thay đổi trên dropdown để cập nhật danh sách lựa chọn
+
 document.addEventListener('change', function (event) {
     if (event.target.classList.contains('variant-select')) {
         updateVariantOptions();

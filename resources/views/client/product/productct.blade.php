@@ -11,6 +11,114 @@
 <div class="ltn__utilize-overlay"></div>
 
 <!-- BREADCRUMB AREA START -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .ltn__product-details-menu-3 h5 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+  .product-details-list {
+    list-style: none;
+    padding: 0;
+  }
+  .product-details-list li {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .product-details-list li strong {
+    font-weight: 700;
+    color: #333;
+    width: 40%;
+  }
+  .product-details-list li span {
+    width: 60%;
+    text-align: left;
+    color: #555;
+  }
+  .ltn__shop-details-inner {
+    margin-bottom: 60px;
+  }
+  .ltn__shop-details-img-gallery {
+    
+  }
+  .ltn__shop-details-large-img .single-large-img img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .ltn__shop-details-small-img .single-small-img img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin: 5px;
+  }
+  .modal-product-info h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .product-ratting ul {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .product-ratting ul li {
+    margin-right: 5px;
+  }
+  .variant-buttons button {
+    margin: 5px;
+  }
+  .fade-out {
+    animation: fadeOut 0.3s ease forwards;
+  }
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  .product-price span, .product-price del {
+    display: inline-block;
+  }
+
+  .variant-btn {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  .variant-btn.zoomed {
+    animation: zoomIn 0.3s ease forwards;
+    background-color: #e3f2fd; 
+  }
+  @keyframes zoomIn {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1.05);
+    }
+  }
+</style>
 <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image" data-bs-bg="img/bg/14.jpg">
     <div class="container">
         <div class="row">
@@ -35,153 +143,154 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-md-12">
-                <div class="ltn__shop-details-inner mb-60">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="ltn__shop-details-img-gallery">
-                                <div class="ltn__shop-details-large-img">
-                                    <div class="single-large-img">
-                                        <a href="{{ asset('upload/'.$product->thumbnail)  }}" data-rel="lightcase:myCollection">
-                                            <img src="{{ asset('upload/'.$product->thumbnail)  }}" alt="Image">
-                                        </a>
-                                    </div>
-                                    @foreach($productGallery as $productGallery)
-                                    <div class="single-large-img">
-                                        <a href="{{ asset('upload/'.$productGallery->image)  }}" data-rel="lightcase:myCollection">
-                                            <img src="{{ asset('upload/'.$productGallery->image)  }}" alt="Image">
-                                        </a>
-                                    </div>
-                                    @endforeach
-                                </div>
-                                <div class="ltn__shop-details-small-img slick-arrow-2">
 
-                                    <div class="single-small-img">
-                                        <img src="{{ asset('upload/'.$product->thumbnail)  }}" alt="Image">
-                                    </div>
-
-                                    @foreach($productGallery2 as $gallery)
-                                    <div class="single-small-img">
-                                        <img src="{{ asset('upload/'.$gallery->image) }}" alt="Image">
-                                    </div>
-                                    @endforeach
-
-
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="modal-product-info shop-details-info pl-0">
-                                <div class="product-ratting">
-                                    <ul>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                        <li><a href="#"><i class="far fa-star"></i></a></li>
-                                        <li class="review-total"> <a href="#"> ( 95 Reviews )</a></li>
-                                    </ul>
-                                </div>
-                                <h3>{{ $product->name }}</h3>
-                                @php
-                                    $min_variant_price = $product->variants->min('price');
-                                    $min_variant_sale_price = $product->variants->min('sale_price');
-                                @endphp
-
-                                <!-- Hiển thị giá mặc định (ban đầu là biến thể có giá thấp nhất) -->
-                                <div class="product-price">
-                                        <span id="current-price">{{ number_format($min_variant_sale_price, 0, ',', '.') }} VND</span>
-                                        <del id="original-price">{{ number_format($min_variant_price, 0, ',', '.') }} VND</del>
-                                </div>
-                                <div class="modal-product-meta ltn__product-details-menu-1">
-                                    <ul>
-                                        <li>
-                                            <strong>Categories:</strong>
-                                            <div class="variant-buttons rounded-sm width: 200px; height: 200px">
-                                                @foreach($product->variants as $variant)
-                                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                                                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:
-                                                            !bg-white text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-
-                                                            primary-50 hover:border-primary-500 hover:text-primary-500 md:hover:border-primary
-                                                            -200 md:hover:text-primary-200 " 
-                                                            data-price="{{ $variant->price }}" 
-                                                            data-sale-price="{{ $variant->sale_price }}">
-                                                        @foreach($variant->attributeValues as $attributeValue)
-                                                            {{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }} <br>
-                                                            số lượng: {{$variant->stock}}
-                                                        @endforeach
-                                                    </button>
-                                                @endforeach
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <script>
-                                    document.querySelectorAll('.variant-btn').forEach(button => {
-                                        button.addEventListener('click', function() {
-                                            let salePrice = this.getAttribute('data-sale-price');
-                                            let originalPrice = this.getAttribute('data-price');
-
-                                            // Nếu không có giá khuyến mại hoặc bằng 0, dùng giá gốc
-                                            if (!salePrice || salePrice == '0') {
-                                                salePrice = originalPrice;
-                                            }
-
-                                            document.getElementById('current-price').innerHTML = new Intl.NumberFormat('vi-VN').format(salePrice) + " VND";
-                                            document.getElementById('original-price').innerHTML = new Intl.NumberFormat('vi-VN').format(originalPrice) + " VND";
-                                        });
-                                    });
-                                </script>
-                                <div class="ltn__product-details-menu-2">
-                                    <ul>
-                                        <li>
-                                            <div class="cart-plus-minus">
-                                                <input type="text" value="02" name="qtybutton" class="cart-plus-minus-box">
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="theme-btn-1 btn btn-effect-1" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#add_to_cart_modal">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <span>ADD TO CART</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="ltn__product-details-menu-3">
-                                    <ul>
-                                        <li>
-                                            <a href="#" class="" title="Wishlist" data-bs-toggle="modal" data-bs-target="#liton_wishlist_modal">
-                                                <i class="far fa-heart"></i>
-                                                <span>Add to Wishlist</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="" title="Compare" data-bs-toggle="modal" data-bs-target="#quick_view_modal">
-                                                <i class="fas fa-exchange-alt"></i>
-                                                <span>Compare</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <hr>
-                                <div class="ltn__social-media">
-                                    <ul>
-                                        <li>Share:</li>
-                                        <li><a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-                                        <li><a href="#" title="Twitter"><i class="fab fa-twitter"></i></a></li>
-                                        <li><a href="#" title="Linkedin"><i class="fab fa-linkedin"></i></a></li>
-                                        <li><a href="#" title="Instagram"><i class="fab fa-instagram"></i></a></li>
-
-                                    </ul>
-                                </div>
-                                <hr>
-                                <div class="ltn__safe-checkout">
-                                    <h5>Guaranteed Safe Checkout</h5>
-                                    <img src="img/icons/payment-2.png" alt="Payment Image">
-                                </div>
-                            </div>
-                        </div>
+            <div class="ltn__shop-details-inner mb-60">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="ltn__shop-details-img-gallery">
+                <div class="ltn__shop-details-large-img">
+                    <div class="single-large-img">
+                        <a href="{{ asset('upload/'.$product->thumbnail) }}" data-rel="lightcase:myCollection">
+                            <img src="{{ asset('upload/'.$product->thumbnail) }}" alt="Image">
+                        </a>
                     </div>
+                    @foreach($productGallery as $productGallery)
+                    <div class="single-large-img">
+                        <a href="{{ asset('upload/'.$productGallery->image) }}" data-rel="lightcase:myCollection">
+                            <img src="{{ asset('upload/'.$productGallery->image) }}" alt="Image">
+                        </a>
+                    </div>
+                    @endforeach
                 </div>
+                <div class="ltn__shop-details-small-img slick-arrow-2">
+                    <div class="single-small-img">
+                        <img src="{{ asset('upload/'.$product->thumbnail) }}" alt="Image">
+                    </div>
+                    @foreach($productGallery2 as $gallery)
+                    <div class="single-small-img">
+                        <img src="{{ asset('upload/'.$gallery->image) }}" alt="Image">
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="modal-product-info shop-details-info pl-0">
+                <div class="product-ratting">
+                    <ul>
+                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
+                        <li><a href="#"><i class="far fa-star"></i></a></li>
+                        <li class="review-total"><a href="#">( 95 Reviews )</a></li>
+                    </ul>
+                </div>
+                <h3>{{ $product->name }}</h3>
+                @php
+                    $min_variant_price = $product->variants->min('price');
+                    $min_variant_sale_price = $product->variants->min('sale_price');
+                @endphp
+
+                
+                <div class="product-price">
+                    <span id="current-price">{{ number_format($min_variant_sale_price, 0, ',', '.') }} VND</span>
+                    <del id="original-price">{{ number_format($min_variant_price, 0, ',', '.') }} VND</del>
+                </div>
+                <div class="modal-product-meta ltn__product-details-menu-1">
+                    <ul>
+                        <li>
+                            <strong>Biến thể:</strong>
+                            <div class="variant-buttons rounded-sm width: 200px; height: 200px">
+                                @foreach($product->variants as $variant)
+                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:
+                                            !bg-white text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-
+                                            primary-50 hover:border-primary-500 hover:text-primary-500 md:hover:border-primary
+                                            -200 md:hover:text-primary-200" 
+                                            data-price="{{ $variant->price }}" 
+                                            data-sale-price="{{ $variant->sale_price }}">
+                                        @foreach($variant->attributeValues as $attributeValue)
+                                            {{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }} <br>
+                                            số lượng: {{$variant->stock}}
+                                        @endforeach
+                                    </button>
+                                @endforeach
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <script>
+                document.querySelectorAll('.variant-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        
+                        document.querySelectorAll('.variant-btn').forEach(btn => {
+                            btn.classList.remove('zoomed');
+                        });
+
+                        
+                        this.classList.add('zoomed');
+
+                        
+                        let salePrice = this.getAttribute('data-sale-price');
+                        let originalPrice = this.getAttribute('data-price');
+
+                        if (!salePrice || salePrice == '0') {
+                            salePrice = originalPrice;
+                        }
+
+                        const currentPriceElement = document.getElementById('current-price');
+                        const originalPriceElement = document.getElementById('original-price');
+
+                        currentPriceElement.classList.remove('fade-in');
+                        originalPriceElement.classList.remove('fade-in');
+                        currentPriceElement.classList.add('fade-out');
+                        originalPriceElement.classList.add('fade-out');
+
+                        setTimeout(() => {
+                            currentPriceElement.innerHTML = new Intl.NumberFormat('vi-VN').format(salePrice) + " VND";
+                            originalPriceElement.innerHTML = new Intl.NumberFormat('vi-VN').format(originalPrice) + " VND";
+
+                            currentPriceElement.classList.remove('fade-out');
+                            originalPriceElement.classList.remove('fade-out');
+                            currentPriceElement.classList.add('fade-in');
+                            originalPriceElement.classList.add('fade-in');
+                        }, 300);
+                    });
+                });
+                </script>
+                <div class="ltn__product-details-menu-3">
+                    <h5>Thông tin chi tiết sản phẩm</h5>
+                    <ul class="product-details-list">
+                        <li><strong>Danh mục:</strong> <span>{{ $product->categories->isNotEmpty() ? $product->categories->first()->name : 'Không có danh mục' }}</span></li>
+                        <li><strong>Xuất xứ thương hiệu:</strong> <span>{{ $product->brand->name ?? 'Không có thương hiệu' }}</span></li>
+                        <li><strong>Nhà sản xuất:</strong> <span>{{ $product->brand->name ?? 'Chưa xác định' }}</span></li>
+                        <li><strong>Nước sản xuất:</strong> <span>Việt Nam</span></li>
+                        <li><strong>Thành phần:</strong> <span>{{ $product->content ? Str::limit(strip_tags($product->content), 50) : 'Chưa có thông tin' }}</span></li>
+                        <li><strong>Mô tả ngắn:</strong> <span>{{ $product->content ? Str::limit(strip_tags($product->content), 100) : 'Sản phẩm chất lượng cao, hỗ trợ sức khỏe.' }}</span></li>
+                    </ul>
+                </div>
+                <div class="ltn__product-details-menu-2">
+                    <ul>
+                        <li>
+                            <div class="cart-plus-minus">
+                                <input type="text" value="02" name="qtybutton" class="cart-plus-minus-box">
+                            </div>
+                        </li>
+                        <li>
+                            <a href="#" class="theme-btn-1 btn btn-effect-1" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#add_to_cart_modal">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>ADD TO CART</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+</div>
+
                 <!-- Shop Tab Start -->
                 <div class="ltn__shop-details-tab-inner ltn__shop-details-tab-inner-2">
                     <div class="ltn__shop-details-tab-menu">
@@ -193,7 +302,7 @@
                     <div class="tab-content">
                         <div class="tab-pane fade active show" id="liton_tab_details_1_1">
                             <div class="ltn__shop-details-tab-content-inner">
-                                {!! $product->content !!}
+                                <p>{!! $product->content !!}</p>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="liton_tab_details_1_2">

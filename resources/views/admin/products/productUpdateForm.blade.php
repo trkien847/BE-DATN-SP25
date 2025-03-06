@@ -333,13 +333,13 @@
     function updateVariantOptions() {
         let selectedValues = new Set();
 
-        // Lấy tất cả các giá trị đã chọn
+        
         document.querySelectorAll('.variant-select').forEach(select => {
             let value = select.value;
             if (value) selectedValues.add(value);
         });
 
-        // Cập nhật danh sách option của mỗi dropdown
+        
         document.querySelectorAll('.variant-select').forEach(select => {
             let currentValue = select.value;
             select.querySelectorAll('option').forEach(option => {
@@ -352,14 +352,14 @@
         });
     }
 
-    // Khi thay đổi lựa chọn, cập nhật lại danh sách option
+    
     document.addEventListener('change', function (event) {
         if (event.target.classList.contains('variant-select')) {
             updateVariantOptions();
         }
     });
 
-    // Cập nhật khi trang load
+    
     document.addEventListener("DOMContentLoaded", function() {
         updateRemoveButtons();
         updateVariantOptions();

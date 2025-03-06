@@ -8,6 +8,9 @@
     <!-- Title Meta -->
     <meta charset="utf-8" />
     <title>BeePharmacy | Nhà thuốc cho bạn</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -199,6 +202,7 @@
 
     <!-- App Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/app.js') }}"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
