@@ -91,7 +91,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.roles.list') }}">
+                <a class="nav-link" href="{{ route('admin.users.list') }}">
                     <span class="nav-icon">
                         <iconify-icon icon="mdi:account-group-outline" width="24" height="24"></iconify-icon>
                     </span>                  
