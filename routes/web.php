@@ -97,7 +97,7 @@ Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->n
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
   // Quản lý người dùng
-  Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+  Route::get('/users', [UserManagementController::class, 'index'])->name('users.list');
   Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('/users/store', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');

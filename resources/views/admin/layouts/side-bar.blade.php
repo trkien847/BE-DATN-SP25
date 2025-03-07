@@ -90,6 +90,14 @@
                     <span class="nav-text"> Mã Giảm Giá </span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.roles.list') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="mdi:account-group-outline" width="24" height="24"></iconify-icon>
+                    </span>                  
+                    <span class="nav-text"> Quản Lý Người Dùng </span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>
