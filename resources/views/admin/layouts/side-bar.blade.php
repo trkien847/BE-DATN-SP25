@@ -27,13 +27,14 @@
         <ul class="navbar-nav" id="navbar-nav">
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="{{ route('admin.dashboard.index') }}">
                     <span class="nav-icon">
-                    <iconify-icon icon="line-md:home-md" width="24" height="24"></iconify-icon>
+                        <iconify-icon icon="line-md:home-md" width="24" height="24"></iconify-icon>
                     </span>
                     <span class="nav-text"> Thống Kê </span>
                 </a>
             </li>
+            
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('categories.list') }}">
                     <span class="nav-icon">
