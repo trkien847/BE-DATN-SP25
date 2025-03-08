@@ -20,24 +20,39 @@ class UserManagementController extends Controller
 
     public function create()
     {
-        return view('admin.UserManagement.create');
+        $roles = Role::all(); 
+       return view('admin.UserManagement.create', compact('roles')); 
     }
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+{
+    $request->validate([
+        'email' => 'required|email|unique:users,email',
+        // 'phone_number' => 'nullable|regex:/^(0[3|5|7|8|9])+([0-9]{8})$/',
+        'fullname' => 'nullable|string|max:255',
+        'role_id' => 'required|exists:roles,id', 
+        'gender' => 'nullable|in:Nam,Nữ,Khác',
+        'birthday' => 'nullable|date',
+        'status' => 'nullable|in:Online,Offline',
+        'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'password' => 'required|string|min:6',
+    ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    $avatarPath = $request->hasFile('avatar') ? $request->file('avatar')->store('avatars', 'public') : null;
 
-        return redirect()->route('admin.users.list')->with('success', 'Người dùng được tạo thành công!');
-    }
+    User::create([
+        'email' => $request->email,
+        'phone_number' => $request->phone_number,
+        'fullname' => $request->fullname,
+        'role_id' => $request->role_id,
+        'gender' => $request->gender,
+        'birthday' => $request->birthday,
+        'status' => $request->status,
+        'avatar' => $avatarPath,
+        'password' => Hash::make($request->password),
+    ]);
+
+    return redirect()->route('admin.users.list')->with('success', 'Thêm mới người dùng thành công!');
+}
 
     public function edit($id)
     {
@@ -97,6 +112,6 @@ class UserManagementController extends Controller
     public function destroy($id)
     {
         User::destroy($id);
-        return redirect()->route('admin.UserManagement.list')->with('success', 'Người dùng đã được xóa!');
+        return redirect()->route('admin.users.list')->with('success', 'Người dùng đã được xóa!');
     }
 }

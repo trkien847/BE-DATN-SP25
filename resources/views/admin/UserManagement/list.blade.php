@@ -141,7 +141,7 @@
   <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="text-secondary">DANH SÁCH NGƯỜI DÙNG</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
-      <a href="{{ route('products.add') }}" class="btn btn-success shake">
+      <a href="{{ route('admin.users.create') }}" class="btn btn-success shake">
         <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
         Thêm Người Dùng
       </a>
@@ -191,16 +191,16 @@
               <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
                 <i class="bx bx-edit fs-16"></i>
             </a>            
-                <a href="{{ route('admin.users.create', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
+                {{-- <a href="{{ route('admin.users.create', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
                     <i class="bx bx-detail fs-16"></i>
-                </a>
+                </a> --}}
                 <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bx bx-hide fs-16"></i>
-                    </button>
-                </form>
+                  @csrf
+                  @method('DELETE')
+                  <button type="button" class="btn btn-danger btn-sm delete-button" data-id="{{ $user->id }}">
+                      <i class="bx bx-hide fs-16"></i>
+                  </button>
+              </form>              
             </td>
             
             
@@ -210,6 +210,29 @@
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const form = this.closest('form');
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+                text: "Hành động này không thể hoàn tác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+
   </script>
 </div>
 
