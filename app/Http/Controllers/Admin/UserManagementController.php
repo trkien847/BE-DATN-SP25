@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserManagementController extends Controller
 {
@@ -18,7 +20,7 @@ class UserManagementController extends Controller
 
     public function create()
     {
-        return view('admin.users.create');
+        return view('admin.UserManagement.create');
     }
     public function store(Request $request)
     {
@@ -40,26 +42,61 @@ class UserManagementController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return view('admin.users.edit', compact('user'));
+    $roles = Role::all(); 
+    return view('admin.UserManagement.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$id,
-        ]);
+    // Validation dữ liệu
+    $request->validate([
+        'email' => 'required|email|unique:users,email,'.$user->id,
+        // 'phone_number' => 'nullable|regex:/^(0[3|5|7|8|9])+([0-9]{8})$/',
+        'fullname' => 'nullable|string|max:255',
+        'role_id' => 'required|exists:roles,id',
+        'gender' => 'nullable|in:Nam,Nữ,Khác',
+        'birthday' => 'nullable|date',
+        'status' => 'nullable|in:Online,Offline',
+        'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'password' => 'nullable|string|min:6',
+    ]);
 
-        $user->update($request->only('name', 'email'));
+    // Cập nhật thông tin người dùng
+    $user->email = $request->email;
+    $user->phone_number = $request->phone_number;
+    $user->fullname = $request->fullname;
+    $user->role_id = $request->role_id;
+    $user->gender = $request->gender;
+    $user->birthday = $request->birthday;
+    $user->status = $request->status;
 
-        return redirect()->route('admin.users.list')->with('success', 'Thông tin người dùng được cập nhật thành công!');
+    // Xử lý ảnh đại diện
+    if ($request->hasFile('avatar')) {
+        // Xóa avatar cũ nếu có
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        
+        $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        $user->avatar = $avatarPath;
     }
+
+    // Cập nhật mật khẩu nếu có nhập mới
+    if ($request->filled('password')) {
+        $user->password = Hash::make($request->password);
+    }
+
+    $user->save();
+
+    return redirect()->route('admin.users.list')
+                     ->with('success', 'Cập nhật người dùng thành công!');
+}
 
     public function destroy($id)
     {
         User::destroy($id);
-        return redirect()->route('admin.users.list')->with('success', 'Người dùng đã được xóa!');
+        return redirect()->route('admin.UserManagement.list')->with('success', 'Người dùng đã được xóa!');
     }
 }
