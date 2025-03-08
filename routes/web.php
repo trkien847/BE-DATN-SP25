@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
@@ -96,7 +97,7 @@ Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
-
+  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
   // Quản lý người dùng
   Route::get('/users', [UserManagementController::class, 'index'])->name('users.list');
   Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
