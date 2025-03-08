@@ -188,9 +188,9 @@
                 </span>
             </td>
             <td>
-                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
-                    <i class="bx bx-edit fs-16"></i>
-                </a>
+              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
+                <i class="bx bx-edit fs-16"></i>
+            </a>            
                 <a href="{{ route('admin.users.create', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
                     <i class="bx bx-detail fs-16"></i>
                 </a>
