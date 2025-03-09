@@ -191,9 +191,9 @@
               <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
                 <i class="bx bx-edit fs-16"></i>
             </a>            
-                {{-- <a href="{{ route('admin.users.create', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
+                <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
                     <i class="bx bx-detail fs-16"></i>
-                </a> --}}
+                </a>
                 <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
                   @csrf
                   @method('DELETE')

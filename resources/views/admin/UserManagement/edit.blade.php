@@ -80,6 +80,15 @@
                                     <option value="Offline" {{ $user->status == 'Offline' ? 'selected' : '' }}>Offline</option>
                                 </select>
                             </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Địa chỉ</label>
+                                <input type="text" class="form-control @error('address') is-invalid @enderror" 
+                                       id="address" name="address" 
+                                       value="{{ old('address', $user->address->address ?? '') }}">
+                                @error('address')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         
                             <div class="mb-3">
                                 <label for="avatar" class="form-label">Ảnh đại diện</label>
