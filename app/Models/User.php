@@ -12,11 +12,10 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    const ROLE_ADMIN = 'Admin';
-    const ROLE_USER = 'User';
-    const ROLE_DOCTOR = 'Doctor';
-    const ROLE_PHARMACIST = 'Pharmacist';
-    const ROLE_GUEST = 'Guest';
+    const ROLE_ADMIN = 1;
+    const ROLE_STAFF = 2;
+    const ROLE_CUSTOMER = 3;
+    
 
 
     /**
@@ -32,7 +31,7 @@ class User extends Authenticatable
         'password', 
         'gender', 
         'avatar', 
-        'role', 
+        'role_id', 
         'status', 
         'email_verified_at', 
         'verified_at', 
@@ -80,5 +79,9 @@ class User extends Authenticatable
     public function appoinmentHistory()
     {
         return $this->hasMany(AppoinmentHistory::class);
+    }
+    public function address()
+    {
+        return $this->hasOne(UserAddress::class, 'user_id', 'id');
     }
 }

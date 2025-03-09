@@ -96,6 +96,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->grou
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
   // Quản lý người dùng
   Route::get('/users', [UserManagementController::class, 'index'])->name('users.list');
+  Route::get('/users/{id}', [UserManagementController::class, 'detail'])->name('users.detail');
   Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('/users/store', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
