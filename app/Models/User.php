@@ -80,4 +80,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(AppoinmentHistory::class);
     }
+    public function address()
+    {
+        return $this->hasOne(UserAddress::class, 'user_id', 'id');
+    }
 }

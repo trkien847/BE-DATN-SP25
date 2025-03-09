@@ -76,6 +76,7 @@ class UserManagementController extends Controller
         'status' => 'nullable|in:Online,Offline',
         'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'password' => 'nullable|string|min:6',
+        'address' => 'nullable|string|max:255',
     ]);
 
     // Cập nhật thông tin người dùng
@@ -104,6 +105,12 @@ class UserManagementController extends Controller
     }
 
     $user->save();
+    if ($request->filled('address')) {
+        $user->address()->updateOrCreate(
+            ['user_id' => $user->id],
+            ['address' => $request->address]
+        );
+    }
 
     return redirect()->route('admin.users.list')
                      ->with('success', 'Cập nhật người dùng thành công!');
@@ -114,4 +121,9 @@ class UserManagementController extends Controller
         User::destroy($id);
         return redirect()->route('admin.users.list')->with('success', 'Người dùng đã được xóa!');
     }
+    public function detail($id)
+{
+    $user = User::with('address')->findOrFail($id); 
+    return view('admin.UserManagement.detail', compact('user'));
+}
 }
