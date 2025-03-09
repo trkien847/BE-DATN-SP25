@@ -17,10 +17,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 
-// Route::get('/auto-login', function () {
-//     Auth::loginUsingId(1);
-//     return redirect('/');
-// });
 
 Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');

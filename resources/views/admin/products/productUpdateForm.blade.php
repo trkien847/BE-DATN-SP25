@@ -178,7 +178,7 @@
                             <textarea class="form-control @error('bio') is-invalid @enderror"
                                 id="doctorBio"
                                 style="height: 100px"
-                                name="content">{!! Str::limit($product->content) !!}
+                                name="content">{!! $product->content !!}
                         </textarea>
                             <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
                             <script>
