@@ -12,10 +12,17 @@ use Illuminate\Support\Facades\Storage;
 class UserManagementController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return view('admin.UserManagement.list', compact('users'));
+        $search = $request->input('search');
+
+        $users = User::when($search, function ($query, $search) {
+            return $query->where('fullname', 'like', '%' . $search . '%')
+                         ->orWhere('email', 'like', '%' . $search . '%')
+                         ->orWhere('phone_number', 'like', '%' . $search . '%');
+        })->paginate(10);
+    
+        return view('admin.UserManagement.list', compact('users', 'search'));
     }
 
     public function create()
