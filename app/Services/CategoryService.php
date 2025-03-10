@@ -26,7 +26,6 @@ class CategoryService
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
-                        
                     ]);
                 }
             }
@@ -58,7 +57,6 @@ class CategoryService
                 if ($subcategoryId && $existingSubcategories->has($subcategoryId)) {
                     $this->categoryTypeRepository->update([
                         'name' => $subcategoryName,
-                       
                     ], $subcategoryId);
 
                     $existingSubcategories->forget($subcategoryId);
@@ -66,7 +64,6 @@ class CategoryService
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
-                        
                     ]);
                 }
             }

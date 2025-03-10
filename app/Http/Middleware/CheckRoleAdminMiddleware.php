@@ -15,12 +15,18 @@ class CheckRoleAdminMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role_id === User::ROLE_ADMIN) {
-            return $next($request);
+        // Kiểm tra người dùng đã đăng nhập chưa
+        if (!Auth::check()) {
+            return redirect('/login')->with('error', 'Bạn cần đăng nhập để truy cập trang này.');
         }
 
-        return redirect()->route('login')->with('error', 'Bạn không có quyền truy cập vào trang này.');
+        // Kiểm tra role_id của user (chỉ cho phép role_id = 2 hoặc 3)
+        if (!in_array(Auth::user()->role_id, [2, 3])) {
+            return redirect('/')->with('no_access', 'Bạn không có quyền truy cập vào trang này!');
+        }
+
+        return $next($request);
     }
 }

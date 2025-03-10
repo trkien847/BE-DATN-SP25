@@ -20,6 +20,7 @@
     <!-- Responsive css -->
     <link rel="stylesheet" href="{{ asset('client/css/responsive.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     @stack('css')
 </head>
 
@@ -60,6 +61,7 @@
     <script src="{{ asset('client/js/plugins.js') }}"></script>
     <!-- Main JS -->
     <script src="{{ asset('client/js/main.js') }}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     @stack('js')
 </body>
 
