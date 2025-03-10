@@ -272,7 +272,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
-  // Thêm biến thể với hiệu ứng
+  
   $('#add-variant').on('click', function() {
     let container = $('#variant-container');
     let index = container.find('.variant-row').length;
@@ -305,23 +305,23 @@ $(document).ready(function() {
     `;
 
     container.append(html);
-    container.find('.variant-row:last').slideDown(300); // Hiệu ứng trượt xuống
+    container.find('.variant-row:last').slideDown(300); 
     updateRemoveButtons();
     updateVariantOptions();
   });
 
-  // Xóa biến thể với hiệu ứng
+ 
   function updateRemoveButtons() {
     $('.remove-variant').off('click').on('click', function() {
       let row = $(this).closest('.variant-row');
-      row.slideUp(300, function() { // Hiệu ứng trượt lên trước khi xóa
+      row.slideUp(300, function() { 
         row.remove();
         updateVariantOptions();
       });
     });
   }
 
-  // Cập nhật tùy chọn biến thể (loại bỏ trùng lặp)
+  
   function updateVariantOptions() {
     let selectedValues = new Set();
 
@@ -341,14 +341,14 @@ $(document).ready(function() {
     });
   }
 
-  // Kiểm tra giá và số lượng khi nhập xong
+ 
   $(document).on('input', '.variant-price, .variant-sale-price, .variant-stock', function() {
     let row = $(this).closest('.variant-row');
     let price = parseFloat(row.find('.variant-price').val()) || 0;
     let salePrice = parseFloat(row.find('.variant-sale-price').val()) || 0;
     let stock = parseFloat(row.find('.variant-stock').val()) || 0;
 
-    // Kiểm tra giá âm
+   
     if (price < 0) {
       row.find('.variant-price').addClass('error-input');
       Swal.fire({
@@ -362,7 +362,7 @@ $(document).ready(function() {
       row.find('.variant-price').removeClass('error-input');
     }
 
-    // Kiểm tra giảm giá âm hoặc lớn hơn giá bán
+    
     if (salePrice < 0) {
       row.find('.variant-sale-price').addClass('error-input');
       Swal.fire({
@@ -385,7 +385,7 @@ $(document).ready(function() {
       row.find('.variant-sale-price').removeClass('error-input');
     }
 
-    // Kiểm tra số lượng âm
+    
     if (stock < 0) {
       row.find('.variant-stock').addClass('error-input');
       Swal.fire({
@@ -400,7 +400,7 @@ $(document).ready(function() {
     }
   });
 
-  // Kiểm tra toàn bộ form trước khi submit
+ 
   $('form').on('submit', function(e) {
     let hasError = false;
     $('.variant-row').each(function() {
@@ -429,7 +429,7 @@ $(document).ready(function() {
     }
   });
 
-  // Cập nhật tùy chọn khi thay đổi select
+  
   $(document).on('change', '.variant-select', function() {
     updateVariantOptions();
   });
