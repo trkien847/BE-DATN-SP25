@@ -546,10 +546,13 @@ class ProductController extends Controller
 
     public function import()
     {
-        $products = Product::with('variants.attributeValues.attribute')
-            ->whereNull('import_at')
+        $products = Product::with(['variants' => function ($query) {
+            $query->whereNull('import_price');
+        }])
+            ->whereHas('variants', function ($query) {
+                $query->whereNull('import_price');
+            })
             ->get();
-
 
         $importedProducts = Product::whereNotNull('import_at')
             ->select('import_at')

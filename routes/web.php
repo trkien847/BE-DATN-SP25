@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 //admin
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 
 
 Route::get('/loginForm',    [UserController::class, 'showLogin'])   ->name('login');
@@ -44,16 +47,22 @@ Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::c
 
 // thương hiệu
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands.list');
+
 Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
 Route::post('/admin/brands/create', [BrandController::class, 'store'])->name('brands.store');
 Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
-Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update'); // Cập nhật thương hiệu
+Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
 Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
+Route::get('/admin/brands/is_active', [BrandController::class, 'indexQueryIs_active'])->name('brands.listActive');
 
-// mã giảm giá
+// mã giảm giá ok 
 Route::get('/admin/coupons', [CoupoController::class, 'index'])->name('coupons.list');
 Route::get('/admin/coupons/create', [CoupoController::class, 'create'])->name('coupons.create');
 Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
+Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
+Route::get('coupons/{id}/edit', [CoupoController::class, 'edit'])->name('coupons.edit');
+Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
+
 
 // reviews
 Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
@@ -82,3 +91,23 @@ Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdat
 
 Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
 Route::post('/update-order-status', [OrderController::class, 'updateStatus'])->name('updateOrderStatus');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
+  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+  // Quản lý người dùng
+  Route::get('/users', [UserManagementController::class, 'index'])->name('users.list');
+  Route::get('/users/{id}', [UserManagementController::class, 'detail'])->name('users.detail');
+  Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
+  Route::post('/users/store', [UserManagementController::class, 'store'])->name('users.store');
+  Route::get('/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+  Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
+  Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+  
+  // Quản lý phân quyền
+  Route::get('/roles', [UserManagementController::class, 'rolesList'])->name('roles.list');
+  Route::get('/roles/create', [UserManagementController::class, 'rolesCreate'])->name('roles.create');
+  Route::post('/roles/store', [UserManagementController::class, 'rolesStore'])->name('roles.store');
+  Route::get('/roles/{id}/edit', [UserManagementController::class, 'rolesEdit'])->name('roles.edit');
+  Route::put('/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
+  Route::delete('/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
+});

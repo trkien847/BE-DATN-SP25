@@ -12,11 +12,10 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    const ROLE_ADMIN = 'Admin';
-    const ROLE_USER = 'User';
-    const ROLE_DOCTOR = 'Doctor';
-    const ROLE_PHARMACIST = 'Pharmacist';
-    const ROLE_GUEST = 'Guest';
+    const ROLE_ADMIN = 1;
+    const ROLE_STAFF = 2;
+    const ROLE_CUSTOMER = 3;
+    
 
 
     /**
@@ -27,18 +26,19 @@ class User extends Authenticatable
     protected $fillable = [
         'fullname', 
         'email', 
-        'role_id', 
         'phone_number', 
         'birthday', 
         'password', 
         'gender', 
         'avatar', 
+        'role_id', 
         'status', 
         'email_verified_at', 
         'verified_at', 
         'google_id', 
         'loyalty_points'
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -62,29 +62,26 @@ class User extends Authenticatable
 
     public function review()
     {
-        return $this->hasMany(Reviews::class);
+        return $this->hasMany(Review::class);
     }
-    // public function doctor()
-    // {
-    //     return $this->hasMany(Doctor::class);
-    // }
-    // public function bill()
-    // {
-    //     return $this->hasMany(Bill::class);
-    // }
-    // public function appoinment()
-    // {
-    //     return $this->hasMany(Appoinment::class);
-    // }
-    // public function appoinmentHistory()
-    // {
-    //     return $this->hasMany(AppoinmentHistory::class);
-    // }
-    public function cart()
+    public function doctor()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasMany(Doctor::class);
     }
-    public function role(){
-        return $this->belongsTo(Role::class);
+    public function bill()
+    {
+        return $this->hasMany(Bill::class);
+    }
+    public function appoinment()
+    {
+        return $this->hasMany(Appoinment::class);
+    }
+    public function appoinmentHistory()
+    {
+        return $this->hasMany(AppoinmentHistory::class);
+    }
+    public function address()
+    {
+        return $this->hasOne(UserAddress::class, 'user_id', 'id');
     }
 }

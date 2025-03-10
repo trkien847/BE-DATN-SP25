@@ -5,6 +5,39 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .variant-row {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+        .variant-row label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .variant-row input, .variant-row select {
+            width: 100%;
+            margin-top: 5px;
+        }
+        .remove-variant {
+            margin-top: 10px;
+        }
+        .error-input {
+            border-color: #dc3545 !important;
+            animation: shake 0.3s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
 </head>
 @if(session('error'))
 <script>
@@ -225,13 +258,9 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                    <h4>Thêm Biến Thể</h4>
-                        <div id="variant-container">
-                            
-                        </div>
-
+                        <h4>Thêm Biến Thể</h4>
+                        <div id="variant-container"></div>
                         <button type="button" id="add-variant" class="btn btn-secondary">Thêm Biến Thể</button>
-
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
 
@@ -239,81 +268,175 @@
             </div>
         </div>
     </div>
-    <script>
-    document.getElementById('add-variant').addEventListener('click', function () {
-    let container = document.getElementById('variant-container');
-    let index = container.getElementsByClassName('variant-row').length;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function() {
+  // Thêm biến thể với hiệu ứng
+  $('#add-variant').on('click', function() {
+    let container = $('#variant-container');
+    let index = container.find('.variant-row').length;
 
     let html = `
-        <div class="variant-row">
-            <label>Thuộc Tính</label>
-            <select name="variants[${index}][attribute_value_id]" class="form-control variant-select">
-                <option value="">Chọn biến thể</option>
-                @foreach($attributes as $attribute)
-                    @foreach($attribute->values as $value)
-                        <option value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}">
-                            {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
-                        </option>
-                    @endforeach
-                @endforeach
-            </select>
+      <div class="variant-row" style="display: none;">
+        <label>Thuộc Tính</label>
+        <select name="variants[${index}][attribute_value_id]" class="form-control variant-select">
+          <option value="">Chọn biến thể</option>
+          @foreach($attributes as $attribute)
+            @foreach($attribute->values as $value)
+              <option value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}">
+                {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
+              </option>
+            @endforeach
+          @endforeach
+        </select>
 
-            <label>Giá Biến Thể</label>
-            <input type="number" name="variants[${index}][price]" class="form-control" required>
+        <label>Giá Biến Thể</label>
+        <input type="number" name="variants[${index}][price]" class="form-control variant-price" required min="0">
 
-            <label>Giảm giá Biến Thể</label>
-            <input type="number" name="variants[${index}][sale_price]" class="form-control" required>
+        <label>Giảm giá Biến Thể</label>
+        <input type="number" name="variants[${index}][sale_price]" class="form-control variant-sale-price" required min="0">
 
-            <label>Số Lượng</label>
-            <input type="number" name="variants[${index}][stock]" class="form-control" required>
+        <label>Số Lượng</label>
+        <input type="number" name="variants[${index}][stock]" class="form-control variant-stock" required min="0">
 
-            <button type="button" class="btn btn-danger remove-variant">Xóa</button>
-        </div>
+        <button type="button" class="btn btn-danger remove-variant">Xóa</button>
+      </div>
     `;
 
-    container.insertAdjacentHTML('beforeend', html);
+    container.append(html);
+    container.find('.variant-row:last').slideDown(300); // Hiệu ứng trượt xuống
     updateRemoveButtons();
     updateVariantOptions();
-});
+  });
 
-function updateRemoveButtons() {
-    document.querySelectorAll('.remove-variant').forEach(button => {
-        button.addEventListener('click', function () {
-            this.closest('.variant-row').remove();
-            updateVariantOptions();
-        });
+  // Xóa biến thể với hiệu ứng
+  function updateRemoveButtons() {
+    $('.remove-variant').off('click').on('click', function() {
+      let row = $(this).closest('.variant-row');
+      row.slideUp(300, function() { // Hiệu ứng trượt lên trước khi xóa
+        row.remove();
+        updateVariantOptions();
+      });
     });
-}
+  }
 
-function updateVariantOptions() {
+  // Cập nhật tùy chọn biến thể (loại bỏ trùng lặp)
+  function updateVariantOptions() {
     let selectedValues = new Set();
 
-
-    document.querySelectorAll('.variant-select').forEach(select => {
-        let value = select.value;
-        if (value) selectedValues.add(value);
+    $('.variant-select').each(function() {
+      let value = $(this).val();
+      if (value) selectedValues.add(value);
     });
 
-      
-    document.querySelectorAll('.variant-select').forEach(select => {
-        select.querySelectorAll('option').forEach(option => {
-            if (option.value && selectedValues.has(option.value) && option.value !== select.value) {
-                option.style.display = 'none';
-            } else {
-                option.style.display = 'block';
-            }
-        });
+    $('.variant-select').each(function() {
+      $(this).find('option').each(function() {
+        if ($(this).val() && selectedValues.has($(this).val()) && $(this).val() !== $(this).parent().val()) {
+          $(this).hide();
+        } else {
+          $(this).show();
+        }
+      });
     });
-}
+  }
 
+  // Kiểm tra giá và số lượng khi nhập xong
+  $(document).on('input', '.variant-price, .variant-sale-price, .variant-stock', function() {
+    let row = $(this).closest('.variant-row');
+    let price = parseFloat(row.find('.variant-price').val()) || 0;
+    let salePrice = parseFloat(row.find('.variant-sale-price').val()) || 0;
+    let stock = parseFloat(row.find('.variant-stock').val()) || 0;
 
-document.addEventListener('change', function (event) {
-    if (event.target.classList.contains('variant-select')) {
-        updateVariantOptions();
+    // Kiểm tra giá âm
+    if (price < 0) {
+      row.find('.variant-price').addClass('error-input');
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Giá biến thể không được là số âm!',
+        confirmButtonText: 'OK'
+      });
+      return;
+    } else {
+      row.find('.variant-price').removeClass('error-input');
     }
-});
 
+    // Kiểm tra giảm giá âm hoặc lớn hơn giá bán
+    if (salePrice < 0) {
+      row.find('.variant-sale-price').addClass('error-input');
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Giảm giá biến thể không được là số âm!',
+        confirmButtonText: 'OK'
+      });
+      return;
+    } else if (salePrice > price) {
+      row.find('.variant-sale-price').addClass('error-input');
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Giảm giá biến thể không được lớn hơn giá bán!',
+        confirmButtonText: 'OK'
+      });
+      return;
+    } else {
+      row.find('.variant-sale-price').removeClass('error-input');
+    }
+
+    // Kiểm tra số lượng âm
+    if (stock < 0) {
+      row.find('.variant-stock').addClass('error-input');
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Số lượng không được là số âm!',
+        confirmButtonText: 'OK'
+      });
+      return;
+    } else {
+      row.find('.variant-stock').removeClass('error-input');
+    }
+  });
+
+  // Kiểm tra toàn bộ form trước khi submit
+  $('form').on('submit', function(e) {
+    let hasError = false;
+    $('.variant-row').each(function() {
+      let price = parseFloat($(this).find('.variant-price').val()) || 0;
+      let salePrice = parseFloat($(this).find('.variant-sale-price').val()) || 0;
+      let stock = parseFloat($(this).find('.variant-stock').val()) || 0;
+
+      if (price < 0 || salePrice < 0 || stock < 0 || salePrice > price) {
+        hasError = true;
+        $(this).find('.variant-price, .variant-sale-price, .variant-stock').each(function() {
+          if (parseFloat($(this).val()) < 0 || ($(this).hasClass('variant-sale-price') && parseFloat($(this).val()) > price)) {
+            $(this).addClass('error-input');
+          }
+        });
+      }
+    });
+
+    if (hasError) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cảnh báo!',
+        text: 'Vui lòng kiểm tra lại các giá trị nhập vào!',
+        confirmButtonText: 'OK'
+      });
+    }
+  });
+
+  // Cập nhật tùy chọn khi thay đổi select
+  $(document).on('change', '.variant-select', function() {
+    updateVariantOptions();
+  });
+});
 </script>
+
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>

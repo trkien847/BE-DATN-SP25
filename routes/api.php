@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Brands\BrandController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,4 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::post('/brands/{id}/toggle-active', [BrandController::class, 'toggleActive']);

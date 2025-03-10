@@ -18,6 +18,7 @@
                 @endphp
                 <option value="viên" {{ $selectedValue == 'viên' ? 'selected' : '' }}>Viên</option>
                 <option value="ml" {{ $selectedValue == 'ml' ? 'selected' : '' }}>ml</option>
+                <option value="g" {{ $selectedValue == 'g' ? 'selected' : '' }}>g</option>
             </select>
 
         </div>

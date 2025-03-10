@@ -14,6 +14,7 @@
             <select name="value" class="form-control">
                 <option value="viên">Viên</option>
                 <option value="ml">ml</option>
+                <option value="g">g</option>
             </select>
         </div>
         <div class="mb-3">
