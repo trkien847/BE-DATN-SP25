@@ -367,41 +367,22 @@ class ProductController extends Controller
 
     public function getProduct($id)
     {
-        $product = Product::with([
-            'categories',
-            'variants.attributeValues.attribute' // Eager load attribute values và attribute
-        ])->findOrFail($id);
+        $product = Product::with('categories')->findOrFail($id);
 
         return response()->json([
-            'id' => $product->id,
             'name' => $product->name,
             'thumbnail' => $product->thumbnail,
-            'sale_price' => $product->variants->isNotEmpty()
-                ? ($product->variants->pluck('sale_price')->filter()->first() ?? $product->variants->pluck('price')->first())
-                : ($product->sale_price ?? $product->sell_price),
-            'sell_price' => $product->variants->isNotEmpty()
-                ? $product->variants->pluck('price')->first()
-                : $product->sell_price,
-            'categories' => $product->categories,
-            'variants' => $product->variants->map(function ($variant) {
-                return [
-                    'id' => $variant->id,
-                    'price' => $variant->price,
-                    'sale_price' => $variant->sale_price,
-                    'stock' => $variant->stock,
-                    'attributes' => $variant->attributeValues->map(function ($attrValue) {
-                        return [
-                            'attribute' => [
-                                'name' => $attrValue->attribute->name,
-                                'slug' => $attrValue->attribute->slug
-                            ],
-                            'value' => $attrValue->value
-                        ];
-                    })
-                ];
-            })
+            'sale_price' => $product->sale_price ?? $product->sell_price,
+            'sell_price' => $product->sell_price,
+            'categories' => $product->categories
         ]);
     }
+
+
+
+
+
+
 
 
 
@@ -551,13 +532,14 @@ class ProductController extends Controller
 
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
-        })->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+        })
+        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
             $query->whereIn('category_types.id', $categoryTypeIds);
         })
-            ->where('id', '!=', $id)
-            ->with('variants')
-            ->limit(10)
-            ->get();
+        ->where('id', '!=', $id)
+        ->with('variants') 
+        ->limit(10)
+        ->get();
 
         return view('client.product.productct', compact(
             'product',
@@ -566,11 +548,10 @@ class ProductController extends Controller
             'categoryTypes',
             'productGallery',
             'productGallery2',
+            'carts',
             'subtotal',
             'relatedProducts',
-            'min_variant_price',
-            'carts',
-            'subtotal'
+            'min_variant_price'
         ));
     }
 
