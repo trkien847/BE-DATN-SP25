@@ -34,22 +34,6 @@
                                                         <div class="text-danger text-sm mt-2 mb-2">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                                <div class="col-auto">
-                                                    <button type="button" class="btn btn-outline-secondary icon-select-btn"
-                                                        data-bs-toggle="modal" data-bs-target="#iconModal">
-                                                        <i class="fas fa-icons"></i> Select Icon
-                                                    </button>
-                                                    <input type="hidden" name="subcategory_icons[]" class="icon-input">
-                                                    @error('subcategory_icons.0')
-                                                        <div class="text-danger text-sm mt-2 mb-2">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-auto">
-                                                    <button type="button"
-                                                        class="btn btn-danger remove-subcategory">X</button>
-                                                </div>
-                                                <div class="col-auto selected-icon">
-                                                </div>
                                             </div>
                                         </div>
                                     </div>

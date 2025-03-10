@@ -222,18 +222,17 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                        <a href="">
+                                                        <a href="{{ route('products.productct', $product->id) }}">
                                                             <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                                 alt="{{ $product->name }}">
                                                         </a>
                                                         <div class="product-badge">
                                                             <ul>
-                                                                @if (!empty($product->sale_price) && $product->sale_price > 0)
+                                                                @if (!empty($salePrice) && $salePrice > 0)
                                                                     @php
                                                                         $discount = round(
-                                                                            (($product->sell_price -
-                                                                                $product->sale_price) /
-                                                                                $product->sell_price) *
+                                                                            (($regularPrice - $salePrice) /
+                                                                                $regularPrice) *
                                                                                 100,
                                                                         );
                                                                     @endphp
@@ -251,27 +250,37 @@
                                                                         <i class="far fa-eye"></i>
                                                                     </a>
                                                                 </li>
-                                                                <li>
-                                                                    <a href="#" class="add-to-cart-btn" data-id="{{ $product->id }}"
+                                                                {{-- <li>
+                                                                    <a href="#" class="add-to-cart-btn"
+                                                                        data-id="{{ $product->id }}"
                                                                         title="Thêm vào giỏ hàng">
                                                                         <i class="fas fa-shopping-cart"></i>
                                                                     </a>
-                                                                </li>
+                                                                </li> --}}
                                                             </ul>
                                                         </div>
                                                     </div>
                                                     <div class="product-info">
                                                         <h2 class="product-title">
-                                                            <a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                            <a
+                                                                href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                         </h2>
                                                         <div class="product-price">
-                                                            @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                                                <span>{{ number_format($product->sale_price) }}đ</span>
-                                                                <del>{{ number_format($product->sell_price) }}đ</del>
+                                                            @php
+                                                                $salePrice = $product->variants
+                                                                    ->where('sale_price', '>', 0)
+                                                                    ->min('sale_price');
+                                                                $regularPrice = $product->variants->min('price');
+                                                            @endphp
+
+                                                            @if (!empty($salePrice) && $salePrice > 0)
+                                                                <span>{{ number_format($salePrice) }}đ</span>
+                                                                <del>{{ number_format($regularPrice) }}đ</del>
                                                             @else
-                                                                <span>{{ number_format($product->sell_price) }}đ</span>
+                                                                <span>{{ number_format($regularPrice) }}đ</span>
                                                             @endif
                                                         </div>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -381,7 +390,7 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
                             <div class="product-img">
-                                <a href="">
+                                <a href="{{ route('products.productct', $product->id) }}">
                                     <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}">
                                 </a>
                                 <div class="product-badge">
@@ -407,25 +416,30 @@
                                                 <i class="far fa-eye"></i>
                                             </a>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a href="#" class="add-to-cart-btn" data-id="{{ $product->id }}"
                                                 title="Thêm vào giỏ hàng">
                                                 <i class="fas fa-shopping-cart"></i>
                                             </a>
-                                        </li>
+                                        </li> --}}
                                     </ul>
                                 </div>
                             </div>
                             <div class="product-info">
                                 <h2 class="product-title">
-                                    <a href="product-details.html">{{ $product->name }}</a>
+                                    <a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                 </h2>
                                 <div class="product-price">
-                                    @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                        <span>{{ number_format($product->sale_price) }}đ</span>
-                                        <del>{{ number_format($product->sell_price) }}đ</del>
+                                    @php
+                                        $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
+                                        $regularPrice = $product->variants->min('price');
+                                    @endphp
+
+                                    @if (!empty($salePrice) && $salePrice > 0)
+                                        <span>{{ number_format($salePrice) }}đ</span>
+                                        <del>{{ number_format($regularPrice) }}đ</del>
                                     @else
-                                        <span>{{ number_format($product->sell_price) }}đ</span>
+                                        <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
                                 </div>
                             </div>
@@ -808,91 +822,255 @@
 @endsection
 
 @push('js')
+    @if (session('no_access'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Toastify({
+                    text: "{{ session('no_access') }}",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                    stopOnFocus: true,
+                    close: true,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        padding: '12px 20px',
+                        borderRadius: '4px',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                    }
+                }).showToast();
+            });
+        </script>
+    @endif
+
+
     <script>
+        let selectedVariantId = null; // Biến lưu ID biến thể đã chọn
+
         $(document).on('click', '.quick-view-btn', function(e) {
             e.preventDefault();
-
             let productId = $(this).data('id');
-            console.log("Fetching product with ID:", productId);
 
             $.ajax({
                 url: `/get-product/${productId}`,
                 method: 'GET',
                 success: function(response) {
                     console.log(response);
-                    $('#quick_view_modal .modal-product-img img').attr('src',
-                        `/upload/${response.thumbnail}`);
-                    $('#quick_view_modal h3').text(response.name);
-                    $('#quick_view_modal .product-price span').text(new Intl.NumberFormat()
-                        .format(response.sale_price) + 'đ');
-                    $('#quick_view_modal .product-price del').text(new Intl.NumberFormat()
-                        .format(response.sell_price) + 'đ');
+                    $('#quick_view_modal').attr('data-product-id', response.id);
+                    // Cập nhật hình ảnh sản phẩm
+                    $('#quick_view_modal .modal-product-img').html(`
+                <a href="{{ route('products.productct', ':id') }}" target="_blank">
+                    <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
+                </a>
+            `.replace(':id', response.id));
 
+                    $('#quick_view_modal h3').text(response.name);
+
+                    // Cập nhật giá chính
+                    $('#quick_view_modal .product-price span').text(
+                        new Intl.NumberFormat().format(response.sale_price) + 'đ'
+                    );
+                    $('#quick_view_modal .product-price del').text(
+                        new Intl.NumberFormat().format(response.sell_price) + 'đ'
+                    );
+
+                    // Cập nhật danh mục
                     let categoriesHtml = response.categories.map(category =>
-                        `<a href="#">${category.name}</a>`).join(", ");
+                        `<a href="#">${category.name}</a>`
+                    ).join(", ");
                     $('#quick_view_modal .modal-product-meta span').html(categoriesHtml);
+
+                    // Cập nhật danh sách biến thể
+                    if (response.variants && response.variants.length > 0) {
+                        let variantsHtml = '<div class="variant-buttons">';
+                        variantsHtml += response.variants.map((variant, index) => {
+                            let attributesHtml = variant.attributes.map(attr =>
+                                `${attr.attribute.name}: ${attr.value}`
+                            ).join('<br>');
+
+                            return `
+                        <button class="btn btn-outline-primary variant-btn"
+                            data-variant-id="${variant.id}"
+                            data-price="${variant.price}"
+                            data-sale-price="${variant.sale_price}"
+                            data-stock="${variant.stock}"
+                            data-variant-index="${index}">
+                            ${attributesHtml ? attributesHtml + '<br>' : ''}
+                            Giá: <span>${new Intl.NumberFormat().format(variant.sale_price || variant.price)}đ</span>
+                            ${variant.sale_price && variant.price ? 
+                                `<del>${new Intl.NumberFormat().format(variant.price)}đ</del>` : ''
+                            }
+                            <br>Số lượng: ${variant.stock || 0}
+                        </button>
+                    `;
+                        }).join('');
+                        variantsHtml += '</div>';
+                        $('#quick_view_modal .modal-product-variants .variant-list').html(variantsHtml);
+
+                        // Xử lý khi chọn biến thể
+                        $('.variant-btn').on('click', function() {
+                            selectedVariantId = $(this).data(
+                                'variant-id'); // Lưu ID biến thể đã chọn
+                            const variantPrice = $(this).data('sale-price') || $(this).data(
+                                'price');
+                            const variantStock = $(this).data(
+                                'stock');
+
+                            // Cập nhật giá chính
+                            $('#quick_view_modal .product-price span').text(
+                                new Intl.NumberFormat().format(variantPrice) + 'đ'
+                            );
+
+                            if (variantStock > 0) { // ✅ Dùng variantStock thay vì variant.stock
+                                $('.cart-plus-minus-box')
+                                    .val(1)
+                                    .attr('max', variantStock)
+                                    .prop('disabled', false);
+                                $('#quick-add-to-cart-btn').prop('disabled', false);
+                            } else {
+                                $('.cart-plus-minus-box')
+                                    .val(0)
+                                    .attr('max', 0)
+                                    .prop('disabled', true);
+                                $('#quick-add-to-cart-btn').prop('disabled', true);
+                            }
+
+                            // Đánh dấu nút được chọn
+                            $('.variant-btn').removeClass('active');
+                            $(this).addClass('active');
+                        });
+                    } else {
+                        $('#quick_view_modal .modal-product-variants .variant-list').html(
+                            'Không có biến thể');
+                    }
                 },
                 error: function(xhr) {
                     console.log("Lỗi khi tải dữ liệu:", xhr);
                 }
             });
         });
-        $(document).ready(function() {
-            $(".add-to-cart-btn").click(function(e) {
-                e.preventDefault();
-                let productId = $(this).data("id");
 
-                $.ajax({
-                    url: "{{ route('cart.add') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        product_id: productId
-                    },
-                    success: function(response) {
-                        if (response.status === "success") {
-                            // Cập nhật số lượng giỏ hàng
-                            $(".mini-cart-quantity").text(response.cart_count);
+        $(document).on('click', '#quick-add-to-cart-btn', function(e) {
+            e.preventDefault();
 
-                            // Cập nhật danh sách sản phẩm trong giỏ hàng
-                            let cartHtml = "";
-                            response.cart_items.forEach(item => {
-                                let price = item.product.sale_price && item.product
-                                    .sale_price > 0 ?
-                                    parseFloat(item.product.sale_price) :
-                                    parseFloat(item.product.sell_price);
+            let productId = $('#quick_view_modal').data('product-id');
+            let quantity = $('.cart-plus-minus-box').val();
 
-                                cartHtml += `
-                            <div class="mini-cart-item clearfix">
-                                <div class="mini-cart-img">
-                                    <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
-                                </div>
-                                <div class="mini-cart-info">
-                                    <h6><a href="#">${item.product.name}</a></h6>
-                                    <span class="mini-cart-quantity">${item.quantity} x ${price.toLocaleString('vi-VN')}đ</span>
-                                </div>
-                            </div>`;
-                            });
+            if (!selectedVariantId) {
+                alert("Vui lòng chọn một biến thể trước khi thêm vào giỏ hàng!");
+                return;
+            }
 
-                            $(".mini-cart-list").html(cartHtml);
-                            $(".mini-cart-sub-total span").text(response.subtotal);
+            $.ajax({
+                url: "{{ route('cart.add') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    product_id: productId,
+                    product_variant_id: selectedVariantId,
+                    quantity: quantity
+                },
+                success: function(response) {
+                    if (response.status === "success") {
+                        $(".mini-cart-quantity").text(response.cart_count);
 
-                            // Cập nhật thông tin sản phẩm trong modal
-                            $("#add_to_cart_modal .modal-product-img img").attr("src", response
-                                .cart_items[0].product.thumbnail);
-                            $("#add_to_cart_modal .modal-product-info h5 a").text(response
-                                .cart_items[0].product.name);
+                        let cartHtml = "";
+                        response.cart_items.forEach(item => {
+                            let price = item.product.sale_price && item.product.sale_price > 0 ?
+                                parseFloat(item.product.sale_price) :
+                                parseFloat(item.product.sell_price);
 
-                            // Hiển thị modal Bootstrap
-                            $("#add_to_cart_modal").modal("show");
-                        }
-                    },
-                    error: function(xhr) {
-                        alert("Có lỗi xảy ra, vui lòng thử lại!");
-                        console.error(xhr.responseText);
+                            cartHtml += `
+                    <div class="mini-cart-item clearfix">
+                        <div class="mini-cart-img">
+                            <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
+                        </div>
+                        <div class="mini-cart-info">
+                            <h6><a href="#">${item.product.name}</a></h6>
+                            <span class="mini-cart-quantity">${item.quantity} x ${price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                    </div>`;
+                        });
+
+                        $(".mini-cart-list").html(cartHtml);
+                        $(".mini-cart-sub-total span").text(response.subtotal);
+                        $("#cart-subtotal").text(response.subtotal); // ✅ Cập nhật giá trên header
+
+                        Toastify({
+                            text: "Sản phẩm đã được thêm vào giỏ hàng!",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#4caf50",
+                            stopOnFocus: true
+                        }).showToast();
+                        $('#quick_view_modal').modal('hide');
                     }
-                });
+                },
+                error: function(xhr) {
+                    alert("Có lỗi xảy ra, vui lòng thử lại!");
+                    console.error(xhr.responseText);
+                }
             });
         });
     </script>
+@endpush
+@push('styles')
+    <style>
+        .toastify {
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toastify-success {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+
+        .toastify-error {
+            background: linear-gradient(to right, #ff5f6d, #ffc371);
+        }
+
+        .modal-product-variants {
+            margin: 15px 0;
+        }
+
+        .variant-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            /* Khoảng cách giữa các button */
+            justify-content: flex-start;
+            /* Căn trái hoặc có thể dùng space-between/space-around */
+        }
+
+        .variant-btn {
+            flex: 1 1 auto;
+            /* Cho phép button co giãn linh hoạt */
+            min-width: 120px;
+            /* Chiều rộng tối thiểu */
+            max-width: 200px;
+            /* Chiều rộng tối đa để không quá dài */
+            white-space: normal;
+            /* Cho phép xuống dòng */
+            text-align: left;
+            /* Căn trái text */
+            height: auto;
+            /* Chiều cao tự động theo nội dung */
+            padding: 8px 12px;
+            /* Padding đều hơn */
+        }
+
+        /* Style cho button active (tùy chọn) */
+        .variant-btn.active {
+            background-color: #007bff;
+            /* Màu nền khi được chọn */
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
 @endpush

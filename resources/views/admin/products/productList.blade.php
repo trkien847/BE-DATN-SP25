@@ -43,6 +43,43 @@
     object-fit: cover;
     border-radius: 5px;
   }
+  .content-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .overlay-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transform: scale(0.8);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .overlay-content.active {
+    transform: scale(1);
+    opacity: 1;
+  }
+  .show-full-content {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .show-full-content:hover {
+    color: #0056b3;
+  }
   .search-bar {
     margin-bottom: 1.5rem;
     display: flex;
@@ -59,6 +96,26 @@
     background-color: #1e84c4;
     border-color: #1e84c4;
     color: #fff;
+  }
+  .variant-container {
+    position: relative;
+  }
+  .variant-item {
+    padding: 5px;
+    transition: background-color 0.3s ease;
+  }
+  .variant-item:hover {
+    background-color: #f5f5f5;
+  }
+  .variant-count {
+    margin-top: 5px;
+  }
+  .variant-count .badge {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  .variant-list {
+    margin-top: 10px;
   }
   .search-bar button:hover {
     background-color: rgb(179, 0, 9);
@@ -158,106 +215,203 @@
     </form>
 
     <table class="table table-hover table-bordered align-middle">
-      <thead>
-        <tr>
-          <th scope="col">Mã SP</th>
-          <th scope="col">Tên Sản Phẩm</th>
-          <th scope="col">Ngày nhập</th>
-          <th scope="col">Ảnh</th>
-          <th scope="col">Danh mục</th>
-          <th scope="col">Mô Tả</th>
-          <th scope="col">Biến thể</th>
-          <th scope="col">Trạng Thái</th>
-          <th scope="col">Nhà Cung Cấp</th>
-          <th scope="col">Hành Động</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach($products as $product)
-        <tr class="product-row" data-id="{{ $product->id }}">
-          <td>{{ $product->sku }}</td>
-          <td>{{ $product->name }}</td>
-          <td>
-           @if(is_null($product->import_at))
-            <a href="{{ route('products.import') }}" class="btn btn-primary btn-sm" title="Tạo ngày nhập">
-              <i class="bx bx-calendar-plus fs-16"></i>
-            </a>
-            @else
-            {{ $product->import_at }}
-            @endif
-          </td>
-          <td>
-            <img src="{{ asset('upload/'.$product->thumbnail) }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px">
-          </td>
-          <td>
-            @foreach($product->categories as $category)
-              <div>
-                <span class="category-name" style="cursor: pointer;" onclick="toggleSubcategories({{ $category->id }})">
-                  {{ $category->name }}
-                </span>
-                @if($category->categoryTypes->isNotEmpty())
-                  <div id="subcategories-{{ $category->id }}" style="display: none; margin-left: 20px;">
-                    @foreach($category->categoryTypes as $categoryType)
-                      <div>{{ $categoryType->name }}</div>
-                    @endforeach
-                  </div>
-                @endif
-              </div>
-            @endforeach
-          </td>
-          <script>
-            function toggleSubcategories(categoryId) {
-              const subcategoriesDiv = document.getElementById(`subcategories-${categoryId}`);
-              if (subcategoriesDiv.style.display === 'none') {
-                subcategoriesDiv.style.display = 'block';
-              } else {
-                subcategoriesDiv.style.display = 'none';
-              }
-            }
-          </script>
-          <td>{!! Str::limit($product->content, 100, '...') !!}</td>
-          <td>
-            @foreach($product->variants as $variant)
-              <div>
-                <strong>SKU:</strong>
-                @foreach($variant->attributeValues as $value)
-                  {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
-                @endforeach <br>
-                <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($variant->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
-                <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($variant->price, 0, ',', '.') }} VND</span> <br>
-                <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($variant->sale_price, 0, ',', '.') }} VND</span> <br>
-                <strong>Số lượng:</strong> {{ $variant->stock }} <br>
-              </div>
-              <hr>
-            @endforeach
-          </td>
-          <td>
-            <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
-              {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
-              {{ $product->variants_sum_stock }}
+  <thead>
+    <tr>
+      <th scope="col">Mã SP</th>
+      <th scope="col">Tên Sản Phẩm</th>
+      <th scope="col">Ngày nhập</th>
+      <th scope="col">Ảnh</th>
+      <th scope="col">Danh mục</th>
+      <th scope="col">Mô Tả</th>
+      <th scope="col">Biến thể</th>
+      <th scope="col">Trạng Thái</th>
+      <th scope="col">Nhà Cung Cấp</th>
+      <th scope="col">Hành Động</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach($products as $product)
+    <tr class="product-row" data-id="{{ $product->id }}">
+      <td>{{ $product->sku }}</td>
+      <td>{{ $product->name }}</td>
+      <td>
+        @if(is_null($product->import_at))
+          <a href="{{ route('products.import') }}" class="btn btn-primary btn-sm" title="Tạo ngày nhập">
+            <i class="bx bx-calendar-plus fs-16"></i>
+          </a>
+        @else
+          {{ $product->import_at }}
+        @endif
+      </td>
+      <td>
+        <img src="{{ asset('upload/'.$product->thumbnail) }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px">
+      </td>
+      <td>
+        @foreach($product->categories as $category)
+          <div>
+            <span class="category-name" style="cursor: pointer;" onclick="toggleSubcategories({{ $category->id }})">
+              {{ $category->name }}
             </span>
-          </td>
-          <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>
-          <td>
-            <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm ripple">
-              <i class="bx bx-edit fs-16"></i>
-            </a>
-            <a href="{{ route('products.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
-              <i class="bx bx-detail fs-16"></i>
-            </a>
-            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline delete-form">
-              @csrf
-              @method('PATCH')
-              <button type="submit" class="btn btn-secondary btn-sm ">
-                <i class="bx bx-hide fs-16 "></i>
-              </button>
-            </form>
-          </td>
-        </tr>
+            @if($category->categoryTypes->isNotEmpty())
+              <div id="subcategories-{{ $category->id }}" style="display: none; margin-left: 20px;">
+                @foreach($category->categoryTypes as $categoryType)
+                  <div>{{ $categoryType->name }}</div>
+                @endforeach
+              </div>
+            @endif
+          </div>
         @endforeach
-      </tbody>
-    </table>
+      </td>
+      <td>
+        {!! Str::limit($product->content, 100, '...') !!}
+        @if(strlen($product->content) > 100)
+          <a href="javascript:void(0)" class="show-full-content" data-content="{!! htmlentities($product->content) !!}" data-product-id="{{ $product->id }}">Xem thêm</a>
+        @endif
+      </td>
+      <td>
+        <div class="variant-container" data-product-id="{{ $product->id }}">
+          @if($product->variants->isNotEmpty())
+            
+            <div class="variant-item" style="cursor: pointer;" onclick="toggleVariants({{ $product->id }})">
+              <strong>Tên biến thể:</strong>
+              @foreach($product->variants[0]->attributeValues as $value)
+                {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
+              @endforeach <br>
+              <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($product->variants[0]->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
+              <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($product->variants[0]->price, 0, ',', '.') }} VND</span> <br>
+              <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($product->variants[0]->sale_price, 0, ',', '.') }} VND</span> <br>
+              <strong>Số lượng:</strong> {{ $product->variants[0]->stock }} <br>
+            </div>
+           
+            @if($product->variants->count() > 1)
+              <div class="variant-count" onclick="toggleVariants({{ $product->id }})" style="cursor: pointer;">
+                <span class="badge bg-primary rounded-circle" title="Xem thêm biến thể">+{{ $product->variants->count() - 1 }}</span>
+              </div>
+              
+              <div class="variant-list" id="variant-list-{{ $product->id }}" style="display: none;">
+                @foreach($product->variants->slice(1) as $variant)
+                  <div class="variant-item">
+                    <strong>Tên biến thể:</strong>
+                    @foreach($variant->attributeValues as $value)
+                      {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
+                    @endforeach <br>
+                    <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($variant->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
+                    <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($variant->price, 0, ',', '.') }} VND</span> <br>
+                    <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($variant->sale_price, 0, ',', '.') }} VND</span> <br>
+                    <strong>Số lượng:</strong> {{ $variant->stock }} <br>
+                    <hr>
+                  </div>
+                @endforeach
+              </div>
+            @endif
+          @else
+            <span>Không có biến thể</span>
+          @endif
+        </div>
+      </td>
+      <td>
+        <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
+          {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
+          {{ $product->variants_sum_stock }}
+        </span>
+      </td>
+      <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>
+      <td>
+        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm ripple">
+          <i class="bx bx-edit fs-16"></i>
+        </a>
+        <a href="{{ route('products.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
+          <i class="bx bx-detail fs-16"></i>
+        </a>
+        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline delete-form">
+          @csrf
+          @method('PATCH')
+          <button type="submit" class="btn btn-secondary btn-sm ">
+            <i class="bx bx-hide fs-16 "></i>
+          </button>
+        </form>
+      </td>
+    </tr>
+    @endforeach
+  </tbody>
+</table>
+
+<div id="content-overlay" class="content-overlay" style="display: none;">
+  <div class="overlay-content">
+    <h5>Nội dung sản phẩm</h5>
+    <div id="full-content"></div>
+    <button id="close-overlay" class="btn btn-secondary mt-3">Đóng</button>
   </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+function toggleSubcategories(categoryId) {
+  const subcategoriesDiv = document.getElementById(`subcategories-${categoryId}`);
+  if (subcategoriesDiv.style.display === 'none') {
+    subcategoriesDiv.style.display = 'block';
+  } else {
+    subcategoriesDiv.style.display = 'none';
+  }
+}
+
+function toggleVariants(productId) {
+  const variantList = $(`#variant-list-${productId}`);
+  if (variantList.is(':visible')) {
+    variantList.slideUp(300);
+  } else {
+    variantList.slideDown(300);
+  }
+}
+
+function toggleSubcategories(categoryId) {
+  const subcategoriesDiv = document.getElementById(`subcategories-${categoryId}`);
+  if (subcategoriesDiv.style.display === 'none') {
+    subcategoriesDiv.style.display = 'block';
+  } else {
+    subcategoriesDiv.style.display = 'none';
+  }
+}
+
+function toggleVariants(productId) {
+  const variantList = $(`#variant-list-${productId}`);
+  if (variantList.is(':visible')) {
+    variantList.slideUp(300);
+  } else {
+    variantList.slideDown(300);
+  }
+}
+
+$(document).ready(function() {
+  
+  $('.show-full-content').on('click', function() {
+    const content = $(this).data('content');
+    $('#full-content').html(content);
+    $('#content-overlay').fadeIn(300).find('.overlay-content').addClass('active');
+  });
+
+ 
+  $('#close-overlay').on('click', function() {
+    $('#content-overlay').find('.overlay-content').removeClass('active');
+    setTimeout(function() {
+      $('#content-overlay').fadeOut(300);
+    }, 300);
+  });
+
+  
+  $('#content-overlay').on('click', function(e) {
+    if (e.target === this) {
+      $('#content-overlay').find('.overlay-content').removeClass('active');
+      setTimeout(function() {
+        $('#content-overlay').fadeOut(300);
+      }, 300);
+    }
+  });
+});
+</script>
+  </div>
+
+  
 
   <script>
   document.addEventListener('DOMContentLoaded', function() {

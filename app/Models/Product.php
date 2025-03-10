@@ -48,6 +48,14 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
+    public function minVariantPrice()
+    {
+        return $this->variants()->min('price');
+    }
+    public function getMinVariantSalePriceAttribute()
+    {
+        return $this->variants()->whereNotNull('sale_price')->where('sale_price', '>', 0)->min('sale_price');
+    }
     public function attributes()
     {
         return $this->belongsToMany(Attribute::class, 'attribute_value_product', 'product_id', 'attribute_value_id')

@@ -107,7 +107,7 @@
                                                 <sup>{{ $carts->count() }}</sup>
                                             </span>
                                             <h6><span>Your Cart</span> <span
-                                                    class="ltn__secondary-color">{{ number_format($subtotal, 2) }}đ</span>
+                                                class="ltn__secondary-color" id="cart-subtotal">{{ number_format($subtotal, 0) }}đ</span>
                                             </h6>
                                         </a>
                                     </div>

@@ -15,7 +15,8 @@
                         <h6><a href="#">{{ $cart->product->name }}</a></h6>
                         <span class="mini-cart-quantity">
                             {{ $cart->quantity }} x
-                            {{ number_format(!empty($cart->product->sale_price) && $cart->product->sale_price > 0 ? $cart->product->sale_price : $cart->product->sell_price, 2) }}đ
+                            <span
+                                class="mini-cart-price">{{ number_format($cart->productVariant->sale_price, 2) }}đ</span>
                         </span>
                     </div>
                 </div>

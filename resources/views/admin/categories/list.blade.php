@@ -22,7 +22,7 @@
                             <thead class="bg-light bg-opacity-50">
                                 <tr>
                                     <th class="border-0 py-2 sortable" data-sort="id">ID</th>
-                                    <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục69</th>
+                                    <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục</th>
                                     <th class="border-0 py-2 sortable" data-sort="created_at">Ngày tạo</th>
                                     <th class="border-0 py-2 sortable" data-sort="updated_at">Ngày cập nhật</th>
                                     <th class="border-0 py-2">Trạng Thái</th>
@@ -90,8 +90,9 @@
                                                 <td>{{ $subcategory->updated_at }}</td>
                                                 <td>
                                                     <div class="form-check form-switch">
-                                                        <input class="form-check-input toggle-active" type="checkbox" role="switch"
-                                                            data-id="{{ $subcategory->id }}" data-parent-id="{{ $category->id }}" 
+                                                        <input class="form-check-input toggle-active" type="checkbox"
+                                                            role="switch" data-id="{{ $subcategory->id }}"
+                                                            data-parent-id="{{ $category->id }}"
                                                             {{ $subcategory->is_active ? 'checked' : '' }}
                                                             {{ !$category->is_active ? 'disabled' : '' }}>
                                                     </div>
@@ -181,7 +182,7 @@
                     let categoryId = this.getAttribute("data-id");
                     let isActive = this.checked ? 1 : 0;
                     let isParent = this.getAttribute("data-parent-id") ===
-                    null; // Kiểm tra danh mục cha/con
+                        null; // Kiểm tra danh mục cha/con
 
                     let url = isParent ?
                         `/categories/${categoryId}/toggle-active` :
@@ -210,22 +211,22 @@
                                             ".toggle-active");
                                         if (subCheckbox) {
                                             subCheckbox.disabled = isActive ===
-                                            0; // Nếu cha tắt, vô hiệu hóa danh mục con
+                                                0; // Nếu cha tắt, vô hiệu hóa danh mục con
                                             if (isActive === 0) {
                                                 subCheckbox.checked =
-                                                false; // Tắt danh mục con khi cha tắt
+                                                    false; 
                                             }
                                         }
                                         subcategory.style.display = isActive === 1 ?
                                             "table-row" :
-                                            "none"; // Hiện/tắt danh mục con
+                                            "none";
                                     });
                                 }
                             } else {
                                 console.error(
                                     "Không thể bật danh mục con nếu danh mục cha đang tắt.");
                                 this.checked = !
-                                isActive; // Hoàn tác checkbox nếu không thành công
+                                    isActive; 
                             }
                         })
                         .catch(error => console.error("Lỗi:", error));

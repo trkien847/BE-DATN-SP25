@@ -396,63 +396,99 @@ class ProductController extends Controller
         return view('admin.products.attributes', compact('attributes'));
     }
 
-    public function attributesCreate()
-    {
-        return view('admin.products.attributesCreate');
-    }
-
     public function attributesStore(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:attributes',
+            'slug' => 'required|string|max:255',
             'is_variant' => 'boolean',
             'is_active' => 'boolean',
         ]);
 
-        $attributes = new Attribute();
-        $attributes->name = $request->name;
-        $attributes->slug = $request->slug;
-        $attributes->is_variant = 1;
-        $attributes->is_active = 1;
-        $attributes->save();
+        $existingAttribute = Attribute::where('name', $request->name)
+            ->where('slug', $request->slug)
+            ->first();
 
-        $attributesValues = new AttributeValue();
-        $attributesValues->attribute_id = $attributes->id;
-        $attributesValues->value = $request->value;
-        $attributesValues->is_active = 1;
-        $attributesValues->save();
+        if ($existingAttribute) {
+
+            $existingValue = AttributeValue::where('attribute_id', $existingAttribute->id)
+                ->where('value', $request->value)
+                ->first();
+
+            if ($existingValue) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "Thuộc tính '$request->name' với slug '$request->slug' và giá trị '$request->value' đã tồn tại!");
+            }
+        }
+
+
+        $attribute = new Attribute();
+        $attribute->name = $request->name;
+        $attribute->slug = $request->slug;
+        $attribute->is_variant = 1;
+        $attribute->is_active = $request->has('is_active') ? $request->is_active : 1;
+        $attribute->save();
+
+        $attributeValue = new AttributeValue();
+        $attributeValue->attribute_id = $attribute->id;
+        $attributeValue->value = $request->value;
+        $attributeValue->is_active = 1;
+        $attributeValue->save();
 
         return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được thêm!');
-    }
-
-    public function attributesEdit($id)
-    {
-        $attribute = Attribute::with('values')->findOrFail($id);
-        return view('admin.products.attributesEdit', compact('attribute'));
     }
 
     public function attributesUpdate(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:attributes,slug,' . $id,
+            'slug' => 'required|string|max:255',
             'is_variant' => 'boolean',
             'is_active' => 'boolean',
         ]);
 
-        $attributes = Attribute::find($id);
-        $attributes->name = $request->name;
-        $attributes->slug = $request->slug;
-        $attributes->is_variant = 1;
-        $attributes->is_active = 1;
-        $attributes->save();
 
-        $attributesValues = AttributeValue::where('attribute_id', $id)->first();
-        $attributesValues->attribute_id = $attributes->id;
-        $attributesValues->value = $request->value;
-        $attributesValues->is_active = 1;
-        $attributesValues->save();
+        $attribute = Attribute::findOrFail($id);
+
+
+        $existingAttribute = Attribute::where('name', $request->name)
+            ->where('slug', $request->slug)
+            ->where('id', '!=', $id)
+            ->first();
+
+        if ($existingAttribute) {
+            $existingValue = AttributeValue::where('attribute_id', $existingAttribute->id)
+                ->where('value', $request->value)
+                ->first();
+
+            if ($existingValue) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "Thuộc tính '$request->name' với slug '$request->slug' và giá trị '$request->value' đã tồn tại!");
+            }
+        }
+
+
+        $attribute->name = $request->name;
+        $attribute->slug = $request->slug;
+        $attribute->is_variant = 1;
+        $attribute->is_active = $request->has('is_active') ? $request->is_active : 1;
+        $attribute->save();
+
+
+        $attributeValue = AttributeValue::where('attribute_id', $id)->first();
+        if ($attributeValue) {
+            $attributeValue->value = $request->value;
+            $attributeValue->is_active = 1;
+            $attributeValue->save();
+        } else {
+            $attributeValue = new AttributeValue();
+            $attributeValue->attribute_id = $attribute->id;
+            $attributeValue->value = $request->value;
+            $attributeValue->is_active = 1;
+            $attributeValue->save();
+        }
 
         return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được cập nhật!');
     }
@@ -497,12 +533,14 @@ class ProductController extends Controller
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
         })
-            ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
-                $query->whereIn('category_types.id', $categoryTypeIds);
-            })
-            ->where('id', '!=', $id)
-            ->limit(10)
-            ->get();
+        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+            $query->whereIn('category_types.id', $categoryTypeIds);
+        })
+        ->where('id', '!=', $id)
+        ->with('variants') 
+        ->limit(10)
+        ->get();
+
         return view('client.product.productct', compact(
             'product',
             'categories',
@@ -520,10 +558,13 @@ class ProductController extends Controller
 
     public function import()
     {
-        $products = Product::with('variants.attributeValues.attribute')
-            ->whereNull('import_at')
+        $products = Product::with(['variants' => function ($query) {
+            $query->whereNull('import_price');
+        }])
+            ->whereHas('variants', function ($query) {
+                $query->whereNull('import_price');
+            })
             ->get();
-
 
         $importedProducts = Product::whereNotNull('import_at')
             ->select('import_at')
