@@ -14,16 +14,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-// Route::get('/auto-login', function () {
-//     Auth::loginUsingId(1);
-//     return redirect('/');
-// });
 
-Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
-Route::post('/login', [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+Route::get('/loginForm',    [UserController::class, 'showLogin'])   ->name('login');
+Route::post('/login',       [UserController::class, 'login'])       ->name('login.submit');
+Route::get('/logout',       [UserController::class, 'logout'])      ->name('logout');
 Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
-Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+Route::post('/register',    [UserController::class, 'register'])    ->name('register.submit');
 
 
 Route::get('/', [HomeController::class, 'index'])->name('index');

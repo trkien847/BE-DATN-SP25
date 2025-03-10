@@ -54,7 +54,7 @@
                                                         href="product-details.html">{{ \Illuminate\Support\Str::limit($cart->product->name, 10, '...') }}</a>
                                                 </h4>
                                             </td>
-                                            <td class="cart-product-price">{{ number_format($cart->product->price) }}</td>
+                                            <td class="cart-product-price">{{ number_format($cart->productVariant->sale_price) }}</td>
                                             <td class="cart-product-quantity">
                                                 <div class="cart-plus-minus">
                                                     <input type="text" value="{{ $cart->quantity }}" name="qtybutton"
@@ -62,7 +62,7 @@
                                                 </div>
                                             </td>
                                             <td class="cart-product-subtotal">
-                                                {{ number_format(($cart->product->sale_price && $cart->product->sale_price > 0 ? $cart->product->sale_price : $cart->product->sell_price) * $cart->quantity) }}đ
+                                                {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
                                             </td>
                                         </tr>
                                     @endforeach

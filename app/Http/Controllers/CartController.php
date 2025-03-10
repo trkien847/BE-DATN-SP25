@@ -13,11 +13,11 @@ class CartController extends Controller
     {
         $carts = Cart::where('user_id', auth()->id())->get();
         $subtotal = $carts->sum(function ($cart) {
-            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
-                ? $cart->product->sale_price 
-                : $cart->product->sell_price;
+            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
             return $cart->quantity * $price;
-        }); 
+        });
         return view('client.cart.index', compact('carts', 'subtotal'));
     }
 
@@ -33,30 +33,37 @@ class CartController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Sản phẩm không tồn tại!']);
         }
 
+        // Kiểm tra xem người dùng đã chọn biến thể nào chưa
+        $selectedVariantId = $request->product_variant_id ?? $product->variants->first()->id;
+
         $cartItem = Cart::where('user_id', $user->id)
             ->where('product_id', $product->id)
+            ->where('product_variant_id', $selectedVariantId)
             ->first();
 
         if ($cartItem) {
-            $cartItem->quantity += 1;
+            $cartItem->quantity += $request->quantity ?? 1;
             $cartItem->save();
         } else {
             Cart::create([
                 'user_id' => $user->id,
                 'product_id' => $product->id,
-                'product_variant_id' => null,
-                'quantity' => 1,
+                'product_variant_id' => $selectedVariantId,
+                'quantity' => $request->quantity ?? 1,
             ]);
         }
 
-        // Lấy toàn bộ giỏ hàng để trả về
-        $carts = Cart::where('user_id', $user->id)->with('product')->get();
+
+        // Lấy toàn bộ giỏ hàng và load sản phẩm & biến thể
+        $carts = Cart::where('user_id', $user->id)
+            ->with(['product', 'productVariant']) 
+            ->get();
 
         // Tính tổng tiền giỏ hàng
         $subtotal = $carts->sum(function ($cart) {
-            $price = (!empty($cart->product->sale_price) && $cart->product->sale_price > 0)
-                ? $cart->product->sale_price
-                : $cart->product->sell_price;
+            $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
 
@@ -68,8 +75,8 @@ class CartController extends Controller
                 'product' => [
                     'name' => $cart->product->name,
                     'thumbnail' => asset('upload/' . $cart->product->thumbnail),
-                    'sale_price' => $cart->product->sale_price,
-                    'sell_price' => $cart->product->sell_price
+                    'sale_price' => $cart->productVariant->sale_price,
+                    'sell_price' => $cart->productVariant->price,
                 ]
             ];
         });

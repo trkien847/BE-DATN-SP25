@@ -33,8 +33,12 @@ class ProductVariant extends Model
     }
     protected function totalStock(): Attribute
     {
-        return Attribute::make(
-            get: fn () => $this->variants()->sum('stock')
-        );
+        $attribute = Attribute::make();
+        $attribute->stock = $this->variants()->sum('stock');
+        return $attribute;
+    }
+    public function cartVariant()
+    {
+        return $this->hasMany(Cart::class, 'product_variant_id');
     }
 }

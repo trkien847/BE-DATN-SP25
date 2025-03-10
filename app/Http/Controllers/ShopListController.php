@@ -40,11 +40,11 @@ class ShopListController extends Controller
             $brands = $products->pluck('brand')->unique()->filter();
             $carts = Cart::where('user_id', auth()->id())->get();
             $subtotal = $carts->sum(function ($cart) {
-                $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0 
-                    ? $cart->product->sale_price 
-                    : $cart->product->sell_price;
+                $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0 
+                    ? $cart->productVariant->sale_price 
+                    : $cart->productVariant->sell_price;
                 return $cart->quantity * $price;
-            }); 
+            });
             return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
         }
     }
