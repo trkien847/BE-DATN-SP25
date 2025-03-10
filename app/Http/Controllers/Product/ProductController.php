@@ -367,14 +367,39 @@ class ProductController extends Controller
 
     public function getProduct($id)
     {
-        $product = Product::with('categories')->findOrFail($id);
+        $product = Product::with([
+            'categories',
+            'variants.attributeValues.attribute' // Eager load attribute values và attribute
+        ])->findOrFail($id);
 
         return response()->json([
+            'id' => $product->id,
             'name' => $product->name,
             'thumbnail' => $product->thumbnail,
-            'sale_price' => $product->sale_price ?? $product->sell_price,
-            'sell_price' => $product->sell_price,
-            'categories' => $product->categories
+            'sale_price' => $product->variants->isNotEmpty()
+                ? ($product->variants->pluck('sale_price')->filter()->first() ?? $product->variants->pluck('price')->first())
+                : ($product->sale_price ?? $product->sell_price),
+            'sell_price' => $product->variants->isNotEmpty()
+                ? $product->variants->pluck('price')->first()
+                : $product->sell_price,
+            'categories' => $product->categories,
+            'variants' => $product->variants->map(function ($variant) {
+                return [
+                    'id' => $variant->id,
+                    'price' => $variant->price,
+                    'sale_price' => $variant->sale_price,
+                    'stock' => $variant->stock,
+                    'attributes' => $variant->attributeValues->map(function ($attrValue) {
+                        return [
+                            'attribute' => [
+                                'name' => $attrValue->attribute->name,
+                                'slug' => $attrValue->attribute->slug
+                            ],
+                            'value' => $attrValue->value
+                        ];
+                    })
+                ];
+            })
         ]);
     }
 
