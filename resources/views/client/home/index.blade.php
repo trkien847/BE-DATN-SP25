@@ -222,7 +222,7 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                        <a href="">
+                                                        <a href="{{ route('products.productct', $product->id) }}">
                                                             <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                                 alt="{{ $product->name }}">
                                                         </a>
@@ -250,13 +250,13 @@
                                                                         <i class="far fa-eye"></i>
                                                                     </a>
                                                                 </li>
-                                                                <li>
+                                                                {{-- <li>
                                                                     <a href="#" class="add-to-cart-btn"
                                                                         data-id="{{ $product->id }}"
                                                                         title="Thêm vào giỏ hàng">
                                                                         <i class="fas fa-shopping-cart"></i>
                                                                     </a>
-                                                                </li>
+                                                                </li> --}}
                                                             </ul>
                                                         </div>
                                                     </div>
@@ -390,7 +390,7 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
                             <div class="product-img">
-                                <a href="">
+                                <a href="{{ route('products.productct', $product->id) }}">
                                     <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}">
                                 </a>
                                 <div class="product-badge">
@@ -416,25 +416,30 @@
                                                 <i class="far fa-eye"></i>
                                             </a>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a href="#" class="add-to-cart-btn" data-id="{{ $product->id }}"
                                                 title="Thêm vào giỏ hàng">
                                                 <i class="fas fa-shopping-cart"></i>
                                             </a>
-                                        </li>
+                                        </li> --}}
                                     </ul>
                                 </div>
                             </div>
                             <div class="product-info">
                                 <h2 class="product-title">
-                                    <a href="product-details.html">{{ $product->name }}</a>
+                                    <a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                 </h2>
                                 <div class="product-price">
-                                    @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                        <span>{{ number_format($product->sale_price) }}đ</span>
-                                        <del>{{ number_format($product->sell_price) }}đ</del>
+                                    @php
+                                        $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
+                                        $regularPrice = $product->variants->min('price');
+                                    @endphp
+
+                                    @if (!empty($salePrice) && $salePrice > 0)
+                                        <span>{{ number_format($salePrice) }}đ</span>
+                                        <del>{{ number_format($regularPrice) }}đ</del>
                                     @else
-                                        <span>{{ number_format($product->sell_price) }}đ</span>
+                                        <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
                                 </div>
                             </div>
@@ -817,6 +822,30 @@
 @endsection
 
 @push('js')
+    @if (session('no_access'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Toastify({
+                    text: "{{ session('no_access') }}",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                    stopOnFocus: true,
+                    close: true,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        padding: '12px 20px',
+                        borderRadius: '4px',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                    }
+                }).showToast();
+            });
+        </script>
+    @endif
+
+
     <script>
         let selectedVariantId = null; // Biến lưu ID biến thể đã chọn
 
@@ -866,6 +895,7 @@
                             data-variant-id="${variant.id}"
                             data-price="${variant.price}"
                             data-sale-price="${variant.sale_price}"
+                            data-stock="${variant.stock}"
                             data-variant-index="${index}">
                             ${attributesHtml ? attributesHtml + '<br>' : ''}
                             Giá: <span>${new Intl.NumberFormat().format(variant.sale_price || variant.price)}đ</span>
@@ -885,17 +915,18 @@
                                 'variant-id'); // Lưu ID biến thể đã chọn
                             const variantPrice = $(this).data('sale-price') || $(this).data(
                                 'price');
-                            const variantStock = $(this).data('stock'); // Lấy số lượng tồn kho
+                            const variantStock = $(this).data(
+                                'stock');
+
                             // Cập nhật giá chính
                             $('#quick_view_modal .product-price span').text(
                                 new Intl.NumberFormat().format(variantPrice) + 'đ'
                             );
 
-
-                            if (variant.stock > 0) {
+                            if (variantStock > 0) { // ✅ Dùng variantStock thay vì variant.stock
                                 $('.cart-plus-minus-box')
                                     .val(1)
-                                    .attr('max', variant.stock)
+                                    .attr('max', variantStock)
                                     .prop('disabled', false);
                                 $('#quick-add-to-cart-btn').prop('disabled', false);
                             } else {
@@ -910,7 +941,6 @@
                             $('.variant-btn').removeClass('active');
                             $(this).addClass('active');
                         });
-
                     } else {
                         $('#quick_view_modal .modal-product-variants .variant-list').html(
                             'Không có biến thể');
@@ -932,6 +962,7 @@
                 alert("Vui lòng chọn một biến thể trước khi thêm vào giỏ hàng!");
                 return;
             }
+
             $.ajax({
                 url: "{{ route('cart.add') }}",
                 type: "POST",
@@ -944,6 +975,7 @@
                 success: function(response) {
                     if (response.status === "success") {
                         $(".mini-cart-quantity").text(response.cart_count);
+
                         let cartHtml = "";
                         response.cart_items.forEach(item => {
                             let price = item.product.sale_price && item.product.sale_price > 0 ?
@@ -964,6 +996,17 @@
 
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
+                        $("#cart-subtotal").text(response.subtotal); // ✅ Cập nhật giá trên header
+
+                        Toastify({
+                            text: "Sản phẩm đã được thêm vào giỏ hàng!",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#4caf50",
+                            stopOnFocus: true
+                        }).showToast();
                         $('#quick_view_modal').modal('hide');
                     }
                 },
@@ -977,6 +1020,21 @@
 @endpush
 @push('styles')
     <style>
+        .toastify {
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toastify-success {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+
+        .toastify-error {
+            background: linear-gradient(to right, #ff5f6d, #ffc371);
+        }
+
         .modal-product-variants {
             margin: 15px 0;
         }
