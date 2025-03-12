@@ -5,6 +5,19 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+.variant-group {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.variant-group:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.variant-group.selected {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+</style>
 </head>
 @if(session('error'))
 <script>
@@ -239,133 +252,91 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                    <h4>Thêm Biến Thể</h4>
-                    <div id="variant-container">
-                        @foreach ($product->variants as $index => $variant)
-                            <div class="variant-row">
-                                <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->id }}">
-
-                                {{-- Chọn thuộc tính của biến thể --}}
-                                <label>Thuộc Tính</label>
-                                <select name="variants[{{ $index }}][attribute_value_id]" class="form-control variant-select">
-                                    @foreach($attributes as $attribute)
+                        <h4>Chọn Biến Thể</h4>
+                        <div id="variant-container" class="grid grid-cols-4 gap-4">
+                            @foreach($attributes as $attribute)
+                                <div class="variant-group border p-4 rounded hover:shadow-lg transition-transform transform hover:scale-105">
+                                    <strong class="variant-name" style="cursor: pointer;">{{ $attribute->name }}</strong>
+                                    <div class="variant-options" style="display: none; margin-top: 10px;">
                                         @foreach($attribute->values as $value)
-                                            <option value="{{ $value->id }}" 
-                                                {{ $variant->attributeValues->contains('id', $value->id) ? 'selected' : '' }}>
-                                                {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
-                                            </option>
+                                            <div>
+                                                <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}" class="variant-checkbox" 
+                                                @if(in_array($value->id, $selectedVariantIds)) checked @endif>
+                                                <label>{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}</label>
+                                            </div>
                                         @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div id="selected-variants" style="margin-top: 20px;">
+                            <h4>Biến Thể Đã Chọn</h4>
+                            <ul id="selected-variants-list">
+                                @foreach($product->variants as $variant)
+                                    @foreach($variant->attributeValues as $attributeValue)
+                                        <li>{{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }}</li>
                                     @endforeach
-                                </select>
-
-                                {{-- Nhập giá của biến thể --}}
-                                <label>Giá Biến Thể</label>
-                                <input type="number" name="variants[{{ $index }}][price]" class="form-control" 
-                                    value="{{ $variant->price }}" required>
-
-                                {{-- Nhập số lượng --}}
-                                <label>Số Lượng</label>
-                                <input type="number" name="variants[{{ $index }}][stock]" class="form-control" 
-                                    value="{{ $variant->stock }}" required>
-
-                                {{-- Nút xóa biến thể --}}
-                                <button type="button" class="btn btn-danger remove-variant" data-id="{{ $variant->id }}">Xóa</button>
-                            </div>
-                        @endforeach
-                    </div>
-
-
-                        <button type="button" id="add-variant" class="btn btn-secondary">Thêm Biến Thể</button>
-
+                                @endforeach
+                            </ul>
+                        </div>
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
+
 
                 </form>
             </div>
         </div>
     </div>
-<script>
-    document.getElementById('add-variant').addEventListener('click', function () {
-        let container = document.getElementById('variant-container');
-        let index = container.getElementsByClassName('variant-row').length;
-
-        let html = `
-            <div class="variant-row">
-                <label>Thuộc Tính</label>
-                <select name="variants[${index}][attribute_value_id]" class="form-control variant-select">
-                    <option value="">Chọn biến thể</option>
-                    @foreach($attributes as $attribute)
-                        @foreach($attribute->values as $value)
-                            <option value="{{ $value->id }}">
-                                {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
-                            </option>
-                        @endforeach
-                    @endforeach
-                </select>
-
-                <label>Giá Biến Thể</label>
-                <input type="number" name="variants[${index}][price]" class="form-control" required>
-
-                <label>Giảm giá Biến Thể</label>
-                <input type="number" name="variants[${index}][sale_price]" class="form-control" required>
-
-                <label>Số Lượng</label>
-                <input type="number" name="variants[${index}][stock]" class="form-control" required>
-
-                <button type="button" class="btn btn-danger remove-variant">Xóa</button>
-            </div>
-        `;
-
-        container.insertAdjacentHTML('beforeend', html);
-        updateRemoveButtons();
-        updateVariantOptions();
-    });
-
-    function updateRemoveButtons() {
-        document.querySelectorAll('.remove-variant').forEach(button => {
-            button.onclick = function () {
-                this.closest('.variant-row').remove();
-                updateVariantOptions();
-            };
-        });
-    }
-
-    function updateVariantOptions() {
-        let selectedValues = new Set();
-
-        
-        document.querySelectorAll('.variant-select').forEach(select => {
-            let value = select.value;
-            if (value) selectedValues.add(value);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    $(document).ready(function() {
+        // Toggle display of variant options
+        $('.variant-name').on('click', function() {
+            $(this).next('.variant-options').slideToggle();
         });
 
-        
-        document.querySelectorAll('.variant-select').forEach(select => {
-            let currentValue = select.value;
-            select.querySelectorAll('option').forEach(option => {
-                if (option.value !== "" && selectedValues.has(option.value) && option.value !== currentValue) {
-                    option.hidden = true;
-                } else {
-                    option.hidden = false;
-                }
+        // Update selected variants list
+        $('.variant-checkbox').on('change', function() {
+            let selectedVariantsList = $('#selected-variants-list');
+            selectedVariantsList.empty();
+
+            $('.variant-checkbox:checked').each(function() {
+                let displayText = $(this).data('display');
+                selectedVariantsList.append('<li>' + displayText + '</li>');
             });
+
+            // Add zoom effect to selected checkboxes
+            $('.variant-checkbox').closest('.variant-group').removeClass('selected');
+            $('.variant-checkbox:checked').closest('.variant-group').addClass('selected');
         });
-    }
 
-    
-    document.addEventListener('change', function (event) {
-        if (event.target.classList.contains('variant-select')) {
-            updateVariantOptions();
-        }
+        // Initialize selected variants list on page load
+        $('.variant-checkbox:checked').each(function() {
+            let displayText = $(this).data('display');
+            $('#selected-variants-list').append('<li>' + displayText + '</li>');
+            $(this).closest('.variant-group').addClass('selected');
+        });
+
+        // Form submission validation
+        $('form').on('submit', function(e) {
+            let hasError = false;
+            if ($('.variant-checkbox:checked').length === 0) {
+                hasError = true;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cảnh báo!',
+                    text: 'Vui lòng chọn ít nhất một biến thể!',
+                    confirmButtonText: 'OK'
+                });
+            }
+
+            if (hasError) {
+                e.preventDefault();
+            }
+        });
     });
-
-    
-    document.addEventListener("DOMContentLoaded", function() {
-        updateRemoveButtons();
-        updateVariantOptions();
-    });
-
-</script>
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

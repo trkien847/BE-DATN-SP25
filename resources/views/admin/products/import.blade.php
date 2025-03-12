@@ -40,7 +40,23 @@
     border-radius: 5px;
     margin-bottom: 15px;
   }
+  .price-input {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap; /* Cho phép các input xuống dòng nếu không đủ chỗ */
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: #fff;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
 
+.price-input input {
+  flex: 1;
+  min-width: 150px; /* Đảm bảo input không quá nhỏ */
+}
   .product-item,
   .variant-item {
     display: flex;
@@ -112,14 +128,20 @@
             @if($product->variants->isNotEmpty())
             <div class="variant-list" id="variants-{{ $product->id }}">
               @foreach($product->variants as $variant)
+
               <div class="variant-item">
-                <input type="checkbox" name="variants[]" value="{{ $variant->id }}" class="variant-checkbox" data-product-id="{{ $product->id }}" data-price="{{ $variant->price }}">
+                <input type="checkbox" name="variants[]" value="{{ $variant->id }}" class="variant-checkbox" 
+                      data-product-id="{{ $product->id }}" 
+                      data-price="{{ $variant->price }}" 
+                      data-sale-price="{{ $variant->sale_price ?? 0 }}" 
+                      data-stock="{{ $variant->stock ?? 0 }}">
                 <label>{{ $variant->sku }} -
                   @foreach($variant->attributeValues as $attrValue)
                   {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} giá({{ number_format($variant->price, 0, ',', '.') }})
                   @endforeach
                 </label>
               </div>
+
               @endforeach
             </div>
             @endif
@@ -177,7 +199,6 @@ $(document).ready(function() {
     }
   });
 
-
   $('.variant-checkbox').on('change', function() {
     updatePriceInputs();
   });
@@ -193,15 +214,62 @@ $(document).ready(function() {
         const variantId = $(this).val();
         const variantLabel = $(this).next('label').text();
         const variantPrice = $(this).data('price');
+        const variantSalePrice = $(this).data('sale-price'); 
+        const variantStock = $(this).data('stock'); 
+        
         const inputHtml = `
           <div class="price-input">
-            <label>${variantLabel}</label>
-            <input type="number" name="import_prices[${variantId}]" class="form-control import-price-input" placeholder="Nhập giá cho ${variantLabel}" step="0.01" required data-price="${variantPrice}">
+            <div class="variant-info">
+              <label class="variant-label">${variantLabel}</label>
+              <span class="variant-hint">Thông tin hiện tại: Giá bán: ${Number(variantPrice).toLocaleString('vi-VN')} ₫ 
+                ${variantSalePrice ? '| Giá sale: ' + Number(variantSalePrice).toLocaleString('vi-VN') + ' ₫' : ''} 
+                | Tồn kho: ${variantStock}</span>
+            </div>
+            <div class="input-group">
+              <div class="input-wrapper">
+                <span class="input-unit">Giá nhập</span>
+                <input type="number" name="import_prices[${variantId}]" 
+                      class="form-control import-price-input" 
+                      placeholder="Giá nhập mới" 
+                      step="0.01" 
+                      min="0" 
+                      required 
+                      data-price="${variantPrice}">
+              </div>
+              <div class="input-wrapper">
+                <span class="input-unit">Giá bán</span>
+                <input type="number" name="prices[${variantId}]" 
+                      class="form-control price-input" 
+                      placeholder="Giá bán mới" 
+                      step="0.01" 
+                      min="0" 
+                      value="${variantPrice}" 
+                      required>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-unit">Giá sale</span>
+                <input type="number" name="sale_prices[${variantId}]" 
+                      class="form-control sale-price-input" 
+                      placeholder="Giá sale mới" 
+                      step="0.01" 
+                      min="0" 
+                      value="${variantSalePrice || ''}">
+              </div>
+              <div class="input-wrapper">
+                <span class="input-unit">Số lượng</span>
+                <input type="number" name="stocks[${variantId}]" 
+                      class="form-control stock-input" 
+                      placeholder="Số lượng mới" 
+                      step="1" 
+                      min="0" 
+                      value="${variantStock}" 
+                      required>
+              </div>
+            </div>
           </div>
         `;
         priceInputs.append(inputHtml);
       });
-
       
       $('#price-inputs .price-input').hide().fadeIn(300);
     } else {
@@ -209,27 +277,54 @@ $(document).ready(function() {
     }
   }
 
- 
   $('#importForm').on('submit', function(e) {
     let hasError = false;
-    $('.import-price-input').each(function() {
-      const importPrice = parseFloat($(this).val());
-      const sellPrice = parseFloat($(this).data('price'));
-      
-      if (importPrice > sellPrice) {
+    let errorMessage = '';
+
+    // Check each variant's pricing and stock
+    $('.price-input').each(function() {
+      const $container = $(this);
+      const variantLabel = $container.find('.variant-label').text();
+      const importPrice = parseFloat($container.find('.import-price-input').val()) || 0;
+      const sellPrice = parseFloat($container.find('.price-input').val()) || 0;
+      const salePrice = parseFloat($container.find('.sale-price-input').val()) || 0;
+      const stock = parseFloat($container.find('.stock-input').val()) || 0;
+
+      // Check if selling price is less than import price
+      if (sellPrice < importPrice) {
         hasError = true;
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: `Giá nhập (${importPrice}) không được lớn hơn giá bán (${sellPrice}) cho biến thể: ${$(this).prev('label').text()}`,
-          confirmButtonText: 'OK'
-        });
-        return false; 
+        errorMessage += `Giá bán (${sellPrice.toLocaleString('vi-VN')} ₫) nhỏ hơn giá nhập (${importPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
+      }
+
+      // Check for negative values
+      if (importPrice < 0) {
+        hasError = true;
+        errorMessage += `Giá nhập không được âm (${importPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
+      }
+      if (sellPrice < 0) {
+        hasError = true;
+        errorMessage += `Giá bán không được âm (${sellPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
+      }
+      if (salePrice < 0) {
+        hasError = true;
+        errorMessage += `Giá sale không được âm (${salePrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
+      }
+      if (stock < 0) {
+        hasError = true;
+        errorMessage += `Số lượng không được âm (${stock}) cho biến thể: ${variantLabel}\n`;
       }
     });
 
     if (hasError) {
-      e.preventDefault(); 
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi nhập liệu!',
+        text: errorMessage,
+        confirmButtonText: 'OK',
+        whiteSpace: 'pre-wrap' // Allows line breaks in the message
+      });
+      return false;
     }
   });
 });

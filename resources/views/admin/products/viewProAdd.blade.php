@@ -30,6 +30,17 @@
             border-color: #dc3545 !important;
             animation: shake 0.3s;
         }
+        .variant-group {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.variant-group:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.variant-group.selected {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -258,9 +269,26 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                        <h4>Thêm Biến Thể</h4>
-                        <div id="variant-container"></div>
-                        <button type="button" id="add-variant" class="btn btn-secondary">Thêm Biến Thể</button>
+                        <h4>Chọn Biến Thể</h4>
+                        <div id="variant-container" class="grid grid-cols-4 gap-4">
+                            @foreach($attributes as $attribute)
+                                <div class="variant-group border p-4 rounded hover:shadow-lg transition-transform transform hover:scale-105">
+                                    <strong class="variant-name" style="cursor: pointer;">{{ $attribute->name }}</strong>
+                                    <div class="variant-options" style="display: none; margin-top: 10px;">
+                                        @foreach($attribute->values as $value)
+                                            <div>
+                                                <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}" class="variant-checkbox">
+                                                <label>{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div id="selected-variants" style="margin-top: 20px;">
+                            <h4>Biến Thể Đã Chọn</h4>
+                            <ul id="selected-variants-list"></ul>
+                        </div>
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
 
@@ -269,172 +297,44 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-$(document).ready(function() {
-  
-  $('#add-variant').on('click', function() {
-    let container = $('#variant-container');
-    let index = container.find('.variant-row').length;
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+                $('.variant-name').on('click', function() {
+                    $(this).next('.variant-options').slideToggle();
+                });
 
-    let html = `
-      <div class="variant-row" style="display: none;">
-        <label>Thuộc Tính</label>
-        <select name="variants[${index}][attribute_value_id]" class="form-control variant-select">
-          <option value="">Chọn biến thể</option>
-          @foreach($attributes as $attribute)
-            @foreach($attribute->values as $value)
-              <option value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}">
-                {{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}
-              </option>
-            @endforeach
-          @endforeach
-        </select>
+                $('.variant-checkbox').on('change', function() {
+                    let selectedVariantsList = $('#selected-variants-list');
+                    selectedVariantsList.empty();
 
-        <label>Giá Biến Thể</label>
-        <input type="number" name="variants[${index}][price]" class="form-control variant-price" required min="0">
+                    $('.variant-checkbox:checked').each(function() {
+                        let displayText = $(this).data('display');
+                        selectedVariantsList.append('<li>' + displayText + '</li>');
+                    });
 
-        <label>Giảm giá Biến Thể</label>
-        <input type="number" name="variants[${index}][sale_price]" class="form-control variant-sale-price" required min="0">
+                    $('.variant-checkbox').closest('.variant-group').removeClass('selected');
+                    $('.variant-checkbox:checked').closest('.variant-group').addClass('selected');
+                });
 
-        <label>Số Lượng</label>
-        <input type="number" name="variants[${index}][stock]" class="form-control variant-stock" required min="0">
+                $('form').on('submit', function(e) {
+                    let hasError = false;
+                    if ($('.variant-checkbox:checked').length === 0) {
+                        hasError = true;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Cảnh báo!',
+                            text: 'Vui lòng chọn ít nhất một biến thể!',
+                            confirmButtonText: 'OK'
+                        });
+                    }
 
-        <button type="button" class="btn btn-danger remove-variant">Xóa</button>
-      </div>
-    `;
-
-    container.append(html);
-    container.find('.variant-row:last').slideDown(300); 
-    updateRemoveButtons();
-    updateVariantOptions();
-  });
-
- 
-  function updateRemoveButtons() {
-    $('.remove-variant').off('click').on('click', function() {
-      let row = $(this).closest('.variant-row');
-      row.slideUp(300, function() { 
-        row.remove();
-        updateVariantOptions();
-      });
-    });
-  }
-
-  
-  function updateVariantOptions() {
-    let selectedValues = new Set();
-
-    $('.variant-select').each(function() {
-      let value = $(this).val();
-      if (value) selectedValues.add(value);
-    });
-
-    $('.variant-select').each(function() {
-      $(this).find('option').each(function() {
-        if ($(this).val() && selectedValues.has($(this).val()) && $(this).val() !== $(this).parent().val()) {
-          $(this).hide();
-        } else {
-          $(this).show();
-        }
-      });
-    });
-  }
-
- 
-  $(document).on('input', '.variant-price, .variant-sale-price, .variant-stock', function() {
-    let row = $(this).closest('.variant-row');
-    let price = parseFloat(row.find('.variant-price').val()) || 0;
-    let salePrice = parseFloat(row.find('.variant-sale-price').val()) || 0;
-    let stock = parseFloat(row.find('.variant-stock').val()) || 0;
-
-   
-    if (price < 0) {
-      row.find('.variant-price').addClass('error-input');
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi!',
-        text: 'Giá biến thể không được là số âm!',
-        confirmButtonText: 'OK'
-      });
-      return;
-    } else {
-      row.find('.variant-price').removeClass('error-input');
-    }
-
-    
-    if (salePrice < 0) {
-      row.find('.variant-sale-price').addClass('error-input');
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi!',
-        text: 'Giảm giá biến thể không được là số âm!',
-        confirmButtonText: 'OK'
-      });
-      return;
-    } else if (salePrice > price) {
-      row.find('.variant-sale-price').addClass('error-input');
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi!',
-        text: 'Giảm giá biến thể không được lớn hơn giá bán!',
-        confirmButtonText: 'OK'
-      });
-      return;
-    } else {
-      row.find('.variant-sale-price').removeClass('error-input');
-    }
-
-    
-    if (stock < 0) {
-      row.find('.variant-stock').addClass('error-input');
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi!',
-        text: 'Số lượng không được là số âm!',
-        confirmButtonText: 'OK'
-      });
-      return;
-    } else {
-      row.find('.variant-stock').removeClass('error-input');
-    }
-  });
-
- 
-  $('form').on('submit', function(e) {
-    let hasError = false;
-    $('.variant-row').each(function() {
-      let price = parseFloat($(this).find('.variant-price').val()) || 0;
-      let salePrice = parseFloat($(this).find('.variant-sale-price').val()) || 0;
-      let stock = parseFloat($(this).find('.variant-stock').val()) || 0;
-
-      if (price < 0 || salePrice < 0 || stock < 0 || salePrice > price) {
-        hasError = true;
-        $(this).find('.variant-price, .variant-sale-price, .variant-stock').each(function() {
-          if (parseFloat($(this).val()) < 0 || ($(this).hasClass('variant-sale-price') && parseFloat($(this).val()) > price)) {
-            $(this).addClass('error-input');
-          }
-        });
-      }
-    });
-
-    if (hasError) {
-      e.preventDefault();
-      Swal.fire({
-        icon: 'warning',
-        title: 'Cảnh báo!',
-        text: 'Vui lòng kiểm tra lại các giá trị nhập vào!',
-        confirmButtonText: 'OK'
-      });
-    }
-  });
-
-  
-  $(document).on('change', '.variant-select', function() {
-    updateVariantOptions();
-  });
-});
-</script>
+                    if (hasError) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
 
 
     <script src="https://cdn.tailwindcss.com"></script>

@@ -88,7 +88,7 @@ class ProductController extends Controller
             'brand_id' => 'required',
             'sale_price_start_at' => 'nullable|date',
             'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -97,33 +97,11 @@ class ProductController extends Controller
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
             'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
-            'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
-        }
-
-        $price = $request->input('price');
-        $sell_price = $request->input('sell_price');
-        $sale_price = $request->input('sale_price');
-
-        $customErrors = [];
-
-        if ($price > $sell_price) {
-            $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
-        }
-
-        if (!is_null($sale_price) && $sale_price > $sell_price) {
-            $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
-        }
-
-        if (!empty($customErrors)) {
-            return redirect()->back()
-                ->withErrors($customErrors)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
@@ -168,24 +146,24 @@ class ProductController extends Controller
         }
 
         if ($request->has('variants')) {
-            foreach ($request->variants as $variant) {
-                $productVariant = ProductVariant::create([
-                    'product_id' => $product->id,
-                    'price' => $variant['price'],
-                    'sale_price' => $variant['sale_price'],
-                    'stock' => $variant['stock'],
-                ]);
+            foreach ($request->variants as $attributeId => $variantValues) {
+                foreach ($variantValues as $valueId) {
+                    $productVariant = ProductVariant::create([
+                        'product_id' => $product->id,
+                        'sale_price_start_at' => $request->sale_price_start_at,
+                        'sale_price_end_at' => $request->sale_price_end_at,
+                    ]);
 
+                    AttributeValueProductVariant::create([
+                        'product_variant_id' => $productVariant->id,
+                        'attribute_value_id' => $valueId,
+                    ]);
 
-                AttributeValueProductVariant::create([
-                    'product_variant_id' => $productVariant->id,
-                    'attribute_value_id' => $variant['attribute_value_id'],
-                ]);
-
-                AttributeValueProduct::create([
-                    'product_id' => $product->id,
-                    'attribute_value_id' => $variant['attribute_value_id'],
-                ]);
+                    AttributeValueProduct::create([
+                        'product_id' => $product->id,
+                        'attribute_value_id' => $valueId,
+                    ]);
+                }
             }
         }
 
@@ -203,14 +181,18 @@ class ProductController extends Controller
                 'variants.attributeValues.attribute',
                 'attributeValues.attribute'
             ])
-            ->where('id', $id)->first();
+            ->where('id', $id)->firstOrFail();
 
         $attributes = Attribute::with('values')->get();
         $brands = Brand::all();
         $categories = Category::with('categoryTypes')->get();
         $productGallery = ProductGalleries::where('product_id', $id)->get();
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
-        return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'attributes'));
+
+        // Lấy danh sách các ID của các giá trị thuộc tính đã chọn
+        $selectedVariantIds = $product->variants->pluck('attributeValues.*.id')->flatten()->toArray();
+
+        return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'attributes', 'selectedVariantIds'));
     }
 
     public function update(Request $request, $id)
@@ -223,7 +205,6 @@ class ProductController extends Controller
             'brand_id' => 'required',
             'sale_price_start_at' => 'nullable|date',
             'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -232,33 +213,11 @@ class ProductController extends Controller
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
             'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
             'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
-            'thumbnail.image' => 'Ảnh không hợp lệ, vui lòng chọn tệp ảnh.',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
-        }
-
-        $price = $request->input('price');
-        $sell_price = $request->input('sell_price');
-        $sale_price = $request->input('sale_price');
-
-        $customErrors = [];
-
-        if ($price > $sell_price) {
-            $customErrors['price'] = 'Giá nhập không được lớn hơn giá bán.';
-        }
-
-        if (!is_null($sale_price) && $sale_price > $sell_price) {
-            $customErrors['sale_price'] = 'Giá khuyến mãi không được lớn hơn giá bán.';
-        }
-
-        if (!empty($customErrors)) {
-            return redirect()->back()
-                ->withErrors($customErrors)
                 ->withInput()
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
@@ -316,33 +275,41 @@ class ProductController extends Controller
                 ]);
             }
         }
+        $variantIds = [];
+
         if ($request->has('variants')) {
-            foreach ($request->variants as $variantData) {
-                if (isset($variantData['id']) && !empty($variantData['id'])) {
+            foreach ($request->variants as $attributeId => $valueIds) {
 
-                    $variant = ProductVariant::findOrFail($variantData['id']);
-                    $variant->update([
-                        'price' => $variantData['price'],
-                        'stock' => $variantData['stock'],
-                    ]);
-                } else {
+                foreach ($valueIds as $valueId) {
 
-                    $variant = ProductVariant::create([
-                        'product_id' => $product->id,
-                        'price' => $variantData['price'],
-                        'sale_price' => $variantData['sale_price'],
-                        'stock' => $variantData['stock'],
-                    ]);
-                    AttributeValueProductVariant::create([
-                        'product_variant_id' => $variant->id,
-                        'attribute_value_id' => $variantData['attribute_value_id'],
-                    ]);
-                    AttributeValueProduct::create([
-                        'product_id' => $product->id,
-                        'attribute_value_id' => $variantData['attribute_value_id'],
-                    ]);
+                    $variant = ProductVariant::where('product_id', $product->id)
+                        ->whereHas('attributeValues', function ($query) use ($valueId) {
+                            $query->where('attribute_value_id', $valueId);
+                        })->first();
+
+                    if (!$variant) {
+
+                        $variant = ProductVariant::create([
+                            'product_id' => $product->id,
+                            'sale_price_start_at' => $request->sale_price_start_at,
+                            'sale_price_end_at' => $request->sale_price_end_at,
+                        ]);
+
+
+                        AttributeValueProductVariant::create([
+                            'product_variant_id' => $variant->id,
+                            'attribute_value_id' => $valueId,
+                        ]);
+
+
+                        AttributeValueProduct::create([
+                            'product_id' => $product->id,
+                            'attribute_value_id' => $valueId,
+                        ]);
+                    }
+
+                    $variantIds[] = $variant->id;
                 }
-                $variantIds[] = $variant->id;
             }
         }
 
@@ -369,7 +336,7 @@ class ProductController extends Controller
     {
         $product = Product::with([
             'categories',
-            'variants.attributeValues.attribute' // Eager load attribute values và attribute
+            'variants.attributeValues.attribute'
         ])->findOrFail($id);
 
         return response()->json([
@@ -558,13 +525,13 @@ class ProductController extends Controller
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
         })
-        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
-            $query->whereIn('category_types.id', $categoryTypeIds);
-        })
-        ->where('id', '!=', $id)
-        ->with('variants') 
-        ->limit(10)
-        ->get();
+            ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+                $query->whereIn('category_types.id', $categoryTypeIds);
+            })
+            ->where('id', '!=', $id)
+            ->with('variants')
+            ->limit(10)
+            ->get();
 
         return view('client.product.productct', compact(
             'product',
@@ -584,19 +551,19 @@ class ProductController extends Controller
     public function import()
     {
         $products = Product::with(['variants' => function ($query) {
-            $query->whereNull('import_price');
+            $query->where('stock', 0);
         }])
             ->whereHas('variants', function ($query) {
-                $query->whereNull('import_price');
+                $query->where('stock', 0);
             })
             ->get();
-
+    
         $importedProducts = Product::whereNotNull('import_at')
             ->select('import_at')
             ->selectRaw('GROUP_CONCAT(name) as product_names')
             ->groupBy('import_at')
             ->get();
-
+    
         return view('admin.products.import', compact('products', 'importedProducts'));
     }
 
@@ -613,6 +580,9 @@ class ProductController extends Controller
         $products = $request->input('products');
         $variants = $request->input('variants');
         $importPrices = $request->input('import_prices');
+        $prices = $request->input('prices');
+        $sale_price = $request->input('sale_prices');
+        $stock = $request->input('stocks');
         $importAt = $request->input('import_at');
 
         Product::whereIn('id', $products)->update([
@@ -624,6 +594,9 @@ class ProductController extends Controller
             if (isset($importPrices[$variantId])) {
                 ProductVariant::where('id', $variantId)->update([
                     'import_price' => $importPrices[$variantId],
+                    'price' => $prices[$variantId],
+                    'sale_price' => $sale_price[$variantId],
+                    'stock' => $stock[$variantId],
                     'updated_at' => now(),
                 ]);
             }

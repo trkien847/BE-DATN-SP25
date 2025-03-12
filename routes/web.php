@@ -35,6 +35,8 @@ Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name(
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 
 Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
+Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
+Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
