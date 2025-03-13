@@ -62,6 +62,21 @@
                                                 <td class="cart-product-subtotal">
                                                     {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
                                                 </td>
+
+                                                <td class="cart-product-attributes">{{ $cart->productVariant->id }}</td>
+
+                                                <td class="cart-product-attributes-name">
+                                                @foreach ($cart->productVariant->attributeValues as $attrValue)
+                                                    {{ $attrValue->attribute->name }}
+                                                @endforeach
+                                                </td>
+
+                                                <td class="cart-product-attributes-value">
+                                                @foreach ($cart->productVariant->attributeValues as $attrValue)
+                                                    {{ $attrValue->attribute->slug }}{{ $attrValue->value }}
+                                                @endforeach
+                                                </td>
+
                                             </tr>
                                         @endforeach
                                         <tr class="cart-coupon-row">
@@ -86,7 +101,7 @@
                                 <h4>Thông tin Sikibidi</h4>
                                 <table class="table">
                                     <tbody id="cart-details">
-                                        <!-- Các sản phẩm được chọn sẽ hiển thị ở đây -->
+                                        
                                     </tbody>
                                     <tbody id="totals-section">
                                         @if ($appliedCoupon)
@@ -102,7 +117,14 @@
                                     </tbody>
                                 </table>
                                 <div class="btn-wrapper text-right">
-                                    <a href="checkout.html" class="theme-btn-1 btn btn-effect-1">Thanh toán</a>
+                                    <form id="checkout-form" action="{{ route('checkout') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="selected_products" id="selected-products">
+                                        <input type="hidden" name="coupon_code" id="coupon-code-hidden">
+                                        <input type="hidden" name="discount" id="discount-hidden">
+                                        <input type="hidden" name="grand_total" id="grand-total-hidden">
+                                        <button type="submit" class="theme-btn-1 btn btn-effect-1">Thanh toán</button>
+                                    </form>
                                 </div>
                             </div>
 
@@ -116,7 +138,7 @@
         <div class="coupon-content">
             <h3>Danh sách mã giảm giá</h3>
             <div id="coupon-list">
-                <!-- Danh sách mã giảm giá sẽ được thêm bằng JS -->
+               
             </div>
             <button class="btn theme-btn-2 btn-effect-2" id="close-coupons">Đóng</button>
         </div>
@@ -144,7 +166,7 @@
 @push('js')
     <script>
     $(document).ready(function() {
-    // Vô hiệu hóa mini cart
+    
     if ($("#cart-page").length) {
         $(".mini-cart-icon-2 a.ltn__utilize-toggle").off("click");
         $(".mini-cart-icon-2 a.ltn__utilize-toggle").css("pointer-events", "none");
@@ -154,12 +176,10 @@
     const coupons = @json($coupons);
     const initialAppliedCoupon = @json(session('applied_coupon'));
 
-    // Xử lý checkbox "chọn tất cả" restriction
     $('#select-all').on('change', function() {
         $('.cart-item-checkbox').prop('checked', this.checked).trigger('change');
     });
 
-    // Xử lý checkbox trong bảng trên cùng
     $(document).on('change', '.cart-item-checkbox', function() {
         let $row = $(this).closest('tr');
         let isChecked = $(this).is(':checked');
@@ -171,7 +191,7 @@
         } else {
             $row.show();
             removeFromCartDetails(cartId);
-            removeAppliedCoupon(); // Xóa mã giảm giá khi bỏ chọn
+            removeAppliedCoupon(); 
         }
 
         if ($('.cart-item-checkbox:checked').length === $('.cart-item-checkbox').length) {
@@ -183,7 +203,7 @@
         updateCartTotal();
     });
 
-   // Xử lý checkbox trong #cart-details
+   
    $(document).on('change', '.cart-details-checkbox', function() {
         let $detailsRow = $(this).closest('tr');
         let cartId = $detailsRow.data('cart-id');
@@ -193,12 +213,12 @@
             $cartRow.show();
             $cartRow.find('.cart-item-checkbox').prop('checked', false);
             removeFromCartDetails(cartId);
-            removeAppliedCoupon(); // Xóa mã giảm giá khi bỏ chọn
+            removeAppliedCoupon(); 
             updateCartTotal();
         }
     });
 
-    // Xử lý tăng/giảm số lượng
+  
     $('.qtybutton').off('click');
     $(document).on('click', '.qtybutton', function() {
         let $button = $(this);
@@ -213,7 +233,7 @@
         }, 500);
     });
 
-    // Xử lý thay đổi số lượng
+    
     $('.cart-plus-minus-box').on('change', function() {
         const $row = $(this).closest('tr');
         const cartId = $row.data('cart-id');
@@ -254,7 +274,7 @@
         });
     });
 
-    // Xử lý xóa sản phẩm
+    
     $(document).on('click', '.cart-product-remove', function() {
         let $row = $(this).closest('tr');
         let cartId = $row.data('cart-id');
@@ -284,7 +304,7 @@
         });
     });
 
-     // Xử lý áp dụng mã giảm giá
+     
      $('#apply-coupon').on('click', function() {
         const couponCode = $('#coupon-code').val().trim();
         if (!couponCode) {
@@ -331,7 +351,7 @@
         });
     });
 
-     // Xử lý xóa sản phẩm show-coupons
+    
      $(document).on('click', '.cart-product-remove', function() {
         let $row = $(this).closest('tr');
         let cartId = $row.data('cart-id');
@@ -348,7 +368,6 @@
                     $row.remove();
                     removeFromCartDetails(cartId);
 
-                    // Nếu sản phẩm bị xóa là sản phẩm áp dụng mã, xóa mã giảm giá
                     if (initialAppliedCoupon && initialAppliedCoupon.cart_id == cartId) {
                         $('#discount-row').remove();
                         $('#applied-coupon-text').remove();
@@ -358,7 +377,7 @@
                             type: 'POST',
                             data: {
                                 _token: "{{ csrf_token() }}",
-                                'cart-coupon': '', // Gửi rỗng để xóa mã
+                                'cart-coupon': '', 
                                 selected_cart_ids: []
                             }
                         });
@@ -378,7 +397,7 @@
         });
     });
 
-    // Hiển thị mã giảm giá cart-coupon addToCartDetails
+    
     $('#show-coupons').on('click', function() {
         const selectedProductIds = $('.cart-item-checkbox:checked').map(function() {
             return $(this).data('product-id');
@@ -386,7 +405,7 @@
 
         let couponHtml = '';
         coupons.forEach(coupon => {
-            const restriction = coupon.restriction || {}; // Sửa từ restriction thành restriction
+            const restriction = coupon.restriction || {}; 
             let validProducts = [];
             
             if (restriction.valid_products) {
@@ -433,10 +452,8 @@
         }
     });
 
-    // Khởi tạo ban đầu
     updateCartTotal();
 
-    // Kiểm tra mã giảm giá khi load trang
     if (!initialAppliedCoupon) {
         $('#discount-row').remove();
         $('#applied-coupon-text').remove();
@@ -444,7 +461,7 @@
     }
 });
 
-// Hàm thêm sản phẩm vào #cart-details
+
 function addToCartDetails($row) {
         let productName = $row.find('.cart-product-info h4 a').text().trim();
         let price = parseFloat($row.find('.cart-product-price').text().replace(/[,.đ]/g, ''));
@@ -461,7 +478,7 @@ function addToCartDetails($row) {
         $('#cart-details').append(html);
     }
 
-// Hàm cập nhật Cart Totals removeFromCartDetails
+
 function addToCartDetails($row) {
     let productName = $row.find('.cart-product-info h4 a').text().trim();
     let price = parseFloat($row.find('.cart-product-price').text().replace(/[,.đ]/g, ''));
@@ -478,7 +495,7 @@ function addToCartDetails($row) {
     $('#cart-details').append(html);
 }
 
-// Hàm cập nhật Cart Totals
+
 function updateCartDetails($row) {
     let productName = $row.find('.cart-product-info h4 a').text().trim();
     let price = parseFloat($row.find('.cart-product-price').text().replace(/[,.đ]/g, ''));
@@ -492,12 +509,12 @@ function updateCartDetails($row) {
     `);
 }
 
-// Hàm xóa sản phẩm khỏi #cart-details
+
 function removeFromCartDetails(cartId) {
         $(`#cart-details tr[data-cart-id="${cartId}"]`).remove();
     }
 
-// Hàm cập nhật tổng tiền removeAppliedCoupon
+
 function updateCartTotal() {
         let total = 0;
         $("#cart-details tr").each(function() {
@@ -520,7 +537,7 @@ function updateCartTotal() {
     }
 
     
-    // Hàm xóa mã giảm giá
+
     function removeAppliedCoupon() {
         if ($('#discount-row').length) {
             $('#discount-row').remove();
@@ -531,7 +548,7 @@ function updateCartTotal() {
                 type: 'POST',
                 data: {
                     _token: "{{ csrf_token() }}",
-                    'cart-coupon': '', // Gửi rỗng để xóa mã
+                    'cart-coupon': '', 
                     selected_cart_ids: []
                 },
                 success: function(response) {
@@ -541,10 +558,10 @@ function updateCartTotal() {
                 }
             });
         }
-        updateCartTotal(); // Cập nhật lại tổng tiền sau khi xóa mã
+        updateCartTotal(); 
     }
 
-// Hàm hiển thị toast
+
 function showToast(message, type = "success") {
     let bgColor = type === "success" ? "#4caf50" : "#f44336";
     Toastify({
@@ -557,7 +574,51 @@ function showToast(message, type = "success") {
         stopOnFocus: true
     }).showToast();
 }
+
+
+$('#checkout-form').on('submit', function(e) {
+    e.preventDefault();
+
+   
+    let selectedProducts = [];
+    $('.cart-item-checkbox:checked').each(function() {
+        let $row = $(this).closest('tr');
+        let product = {
+            id: $row.data('product-id'),
+            name: $row.find('.cart-product-info h4 a').text().trim(),
+            thumbnail: $row.find('.cart-product-image img').attr('src'),
+            quantity: parseInt($row.find('.cart-plus-minus-box').val()),
+            price: parseFloat($row.find('.cart-product-price').text().replace(/[,.đ]/g, '')),
+
+            id_variant: $row.find('.cart-product-attributes').text().trim(),
+            name_variant: $row.find('.cart-product-attributes-name').text().trim(),  
+            variant_value: $row.find('.cart-product-attributes-value').text().trim(),
+        };
+        selectedProducts.push(product);
+    });
+
+   
+    if (selectedProducts.length === 0) {
+        showToast("Vui lòng chọn ít nhất một sản phẩm để thanh toán!", "error");
+        return;
+    }
+
+    
+    let couponCode = $('#applied-coupon-text').length ? $('#applied-coupon-text').text().split(' ')[3] : '';
+    let discount = $('#discount-row').length ? parseFloat($('#discount-row td:last-child').text().replace(/[^0-9]/g, '')) : 0;
+    let grandTotal = parseFloat($('#cart-grand-total').text().replace(/[^0-9]/g, ''));
+
+    
+    $('#selected-products').val(JSON.stringify(selectedProducts));
+    $('#coupon-code-hidden').val(couponCode);
+    $('#discount-hidden').val(discount);
+    $('#grand-total-hidden').val(grandTotal);
+
+
+    this.submit();
+});
     </script>
+    
 @endpush
 @push('css')
     <style>

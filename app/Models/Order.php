@@ -25,9 +25,25 @@ class Order extends Model
         'coupon_discount_value',
     ];
 
-    public function orderStatus()
+    public function orderStatuses() 
     {
-        return $this->belongsTo(OrderOrderStatus::class, 'id', 'order_id');
+        return $this->hasMany(OrderOrderStatus::class, 'order_id', 'id');
+    }
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+    }
+
+    public function latestOrderStatus()
+    {
+        return $this->hasOneThrough(
+            OrderStatus::class,
+            OrderOrderStatus::class,
+            'order_id',         
+            'id',             
+            'id',             
+            'order_status_id' 
+        )->latest('created_at'); 
     }
 
     public function orderStatusDetails()
