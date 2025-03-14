@@ -15,17 +15,22 @@ class OrderOrderStatus extends Model
         'order_status_id',
         'modified_by',
         'note',
-        'employee_evidence',
+        'evidence',
         'customer_confirmation',
     ];
 
     public function orderStatus()
     {
-        return $this->belongsTo(OrderOrderStatus::class, 'id', 'order_id');
+        return $this->belongsTo(OrderStatus::class, 'order_status_id', 'id');
     }
 
-    public function orders()
+   
+    public function order()
     {
-        return $this->hasMany(Order::class, 'order_status_id');
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+    public function modifier()
+    {
+        return $this->belongsTo(User::class, 'modified_by', 'id');
     }
 }

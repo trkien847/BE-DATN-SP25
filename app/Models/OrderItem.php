@@ -21,4 +21,18 @@ class OrderItem extends Model
         'price_variant',
         'quantity_variant',
     ];
+
+    public function orderStatuses()
+    {
+        return $this->hasMany(OrderOrderStatus::class, 'order_id', 'id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id', 'id');
+    }
 }
