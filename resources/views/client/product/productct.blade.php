@@ -11,7 +11,7 @@
 <div class="ltn__utilize-overlay"></div>
 
 <!-- BREADCRUMB AREA START -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -263,6 +263,7 @@
                                                     text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
                                                     text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
                                                     hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
+                                                    data-variant-id="{{ $variant->id }}"
                                                     data-price="{{ $variant->price }}"
                                                     data-sale-price="{{ $variant->sale_price }}"
                                                     data-stock="{{ $variant->stock }}">
@@ -338,15 +339,17 @@
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
                                         <li>
-                                            <div class="cart-plus-minus">
-                                                <input type="text" value="02" name="qtybutton" class="cart-plus-minus-box">
-                                            </div>
+                                        <div class="cart-plus-minus">
+                                                    <input type="number" value="1" name="qtybutton"
+                                                        class="cart-plus-minus-box" id="quantity-input" min="1">
+                                                </div>
                                         </li>
                                         <li>
-                                            <a href="#" class="theme-btn-1 btn btn-effect-1" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#add_to_cart_modal">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <span>Thêm vào giỏ hàng</span>
-                                            </a>
+                                        <button id="add-to-cart-btn" class="theme-btn-1 btn btn-effect-1"
+                                                    title="Add to Cart" data-product-id="{{ $product->id }}">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                    <span>ADD TO CART</span>
+                                                </button>
                                         </li>
                                     </ul>
                                 </div>
@@ -689,3 +692,95 @@
 @include('client.components.WishlistModal')
 <!-- MODAL AREA END -->
 @endsection
+
+@push('js')
+    <script>
+        let selectedVariantId = null;
+
+        document.querySelectorAll('.variant-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.variant-btn').forEach(btn => btn.classList.remove('zoomed'));
+                this.classList.add('zoomed');
+
+                selectedVariantId = this.getAttribute('data-variant-id');
+            });
+        });
+
+        document.getElementById('add-to-cart-btn').addEventListener('click', function(event) {
+            event.preventDefault();
+
+            let quantity = document.getElementById('quantity-input').value;
+            let productId = document.getElementById('add-to-cart-btn').getAttribute('data-product-id');
+
+            if (!selectedVariantId) {
+                showToast("Vui lòng chọn một biến thể trước khi thêm vào giỏ hàng!", "error");
+                return;
+            }
+
+            fetch("{{ route('cart.add') }}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        product_variant_id: selectedVariantId,
+                        quantity: quantity
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        showToast("Đã thêm vào giỏ hàng!", "success");
+
+                        // ✅ Cập nhật tổng số lượng sản phẩm trong giỏ hàng
+                        $(".cart-count").text(data.cart_count);
+
+                        // ✅ Cập nhật danh sách sản phẩm trong giỏ hàng
+                        let cartHtml = "";
+                        data.cart_items.forEach(item => {
+                            let price = item.product.sale_price && item.product.sale_price > 0 ?
+                                parseFloat(item.product.sale_price) :
+                                parseFloat(item.product.sell_price);
+
+                            cartHtml += `
+                    <div class="mini-cart-item clearfix">
+                        <div class="mini-cart-img">
+                            <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
+                        </div>
+                        <div class="mini-cart-info">
+                            <h6><a href="#">${item.product.name}</a></h6>
+                            <span class="mini-cart-quantity">${item.quantity} x ${price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                    </div>`;
+                        });
+
+                        $(".mini-cart-list").html(cartHtml);
+
+                        // ✅ Cập nhật tổng tiền trên header & giỏ hàng
+                        $(".mini-cart-sub-total span").text(data.subtotal);
+                        $("#cart-subtotal").text(data.subtotal);
+                    } else {
+                        showToast("Lỗi: " + data.message, "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi:", error);
+                    showToast("Đã xảy ra lỗi khi thêm vào giỏ hàng!", "error");
+                });
+        });
+
+
+        function showToast(message, type = "success") {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: type === "success" ? "#4CAF50" : "#FF3B30",
+                close: true
+            }).showToast();
+        }
+    </script>
+@endpush
