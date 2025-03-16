@@ -163,14 +163,24 @@
                 <div class="dropdown topbar-item">
                     <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
-                        <span class="d-flex align-items-center">
-                            <img class="rounded-circle" width="32"
-                                src="{{ asset('admin/images/users/avatar-1.jpg') }}" alt="avatar-3">
+                        <span class="d-flex align-items-center position-relative">
+                            @php
+                                $currentUser = Auth::user(); // Lấy thông tin người dùng hiện tại
+                            @endphp
+                            <img class="rounded-circle" width="42" height="42"
+                            src="{{ $currentUser->avatar ? asset('storage/' . $currentUser->avatar) : asset('storage/avatars/default.jpg') }}" 
+                            alt="{{ $currentUser->avatar ? 'Ảnh đại diện' : 'Ảnh mặc định' }}" 
+                            style="object-fit: cover;"
+                            onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
+                            <!-- Chấm xanh hoạt động -->
+                            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
+                                  style="width: 12px; height: 12px;"></span>
                         </span>
                     </a>
+
                     <div class="dropdown-menu dropdown-menu-end">
                         <!-- item-->
-                        <h6 class="dropdown-header">Welcome Gaston!</h6>
+                        <h6 class="dropdown-header">Xin chào <span class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
 
                         <a class="dropdown-item" href="apps-chat.html">
                             <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span
@@ -194,7 +204,7 @@
 
                         <a class="dropdown-item text-danger" href="auth-signin.html">
                             <i class="bx bx-log-out fs-18 align-middle me-1"></i><span
-                                class="align-middle">Logout</span>
+                                class="align-middle">Đăng xuất</span>
                         </a>
                     </div>
                 </div>

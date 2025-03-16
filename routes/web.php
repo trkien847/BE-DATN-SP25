@@ -204,6 +204,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
 
+
+Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
+  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
   // Quản lý người dùng
   Route::get('/admin/users', [UserManagementController::class, 'index'])->name('users.list');
   Route::get('/admin/users/{id}', [UserManagementController::class, 'detail'])->name('users.detail');
@@ -220,4 +226,5 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/roles/{id}/edit', [UserManagementController::class, 'rolesEdit'])->name('roles.edit');
   Route::put('/admin/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
   Route::delete('/admin/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
+});
 });
