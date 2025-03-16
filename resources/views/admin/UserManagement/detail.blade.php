@@ -18,15 +18,14 @@
             <div class="card-body">
                 <div class="row">
                     <!-- Ảnh đại diện -->
+                    {{-- Nếu avatar lỗi hoặc ko có ảnh sẽ hiện ảnh mặc định --}}
                     <div class="col-md-4 text-center">
-                        @if($user->avatar)
-                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="Ảnh đại diện" class="img-fluid rounded-circle" style="width: 250px; height: 250px; object-fit: cover;">
-                        @else
-                            <img src="{{ asset('storage/avatars/default.png') }}" alt="Ảnh mặc định" class="img-fluid rounded-circle" style="width: 250px; height: 250px; object-fit: cover;">
-                        @endif
+                        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.jpg') }}" 
+                             alt="{{ $user->avatar ? 'Ảnh đại diện' : 'Ảnh mặc định' }}" 
+                             class="img-fluid rounded-circle" 
+                             style="width: 250px; height: 250px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
                     </div>
-                    
-                    
                 
                     <!-- Thông tin người dùng -->
                     <div class="col-md-8">

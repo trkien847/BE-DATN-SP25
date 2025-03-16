@@ -90,6 +90,7 @@
                                                 @endif
                                             
                                                 @if (Auth::check())
+                                                
                                                     {{-- <li><a href="{{ route('account') }}">My Account</a></li> --}}
                                                     <li><a href="{{ route('logout') }}">Logout</a></li>
                                                 @endif
