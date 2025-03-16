@@ -183,10 +183,14 @@
             </td>
             
             <td>
-                <span class="badge {{ $user->status == 1 ? 'bg-success' : 'bg-secondary' }}">
-                    {{ $user->status == 'Online' ? 'Online' : 'Offline' }}
-                </span>
-            </td>
+              {{-- Debug giá trị status --}}
+              <span style="display: none;">{{ $user->status }}</span>
+          
+              <span class="badge {{ $user->status === 'Online' ? 'bg-success' : 'bg-danger' }}">
+                  {{ $user->status === 'Online' ? 'Online' : 'Offline' }}
+              </span>
+          </td>
+          
             <td>
               <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
                 <i class="bx bx-edit fs-16"></i>
