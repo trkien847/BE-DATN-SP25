@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\AiTgCtroller;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -75,6 +76,12 @@ Route::get('/thank-you', function () {
 
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
+
+// Ai thích hợp
+Route::get('/ai-tg', function () {
+    return view('ai.aitg'); 
+})->name('ai-tg');
+Route::match(['get', 'post'], '/api/virtual-assistant', [AiTgCtroller::class, 'handleRequest']);
 // Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
 // Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
 // Route::post('/admin/categories/store', [CategoryController::class, 'store'])->name('categories.store');

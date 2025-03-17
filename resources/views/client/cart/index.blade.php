@@ -219,12 +219,19 @@
     });
 
   
+    // Handle quantity button clicks
     $('.qtybutton').off('click');
     $(document).on('click', '.qtybutton', function() {
         let $button = $(this);
         let $input = $button.siblings('input.cart-plus-minus-box');
         let oldValue = parseInt($input.val());
-        let newVal = $button.hasClass('inc') ? oldValue + 1 : (oldValue > 1 ? oldValue - 1 : 1);
+
+        let newVal = oldValue;
+        if ($button.hasClass('inc')) {
+            newVal = oldValue + 1;
+        } else if ($button.hasClass('dec') && oldValue > 1) {
+            newVal = oldValue - 1;
+        }
 
         $input.val(newVal);
         clearTimeout(updateTimer);
@@ -234,7 +241,8 @@
     });
 
     
-    $('.cart-plus-minus-box').on('change', function() {
+   // Handle quantity changes
+   $('.cart-plus-minus-box').on('change', function() {
         const $row = $(this).closest('tr');
         const cartId = $row.data('cart-id');
         const quantity = parseInt($(this).val(), 10);
@@ -245,6 +253,7 @@
         }
 
         $row.addClass('updating');
+
         $.ajax({
             url: "{{ route('cart.update') }}",
             type: 'POST',
@@ -255,12 +264,12 @@
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    const price = parseFloat($row.find('.cart-product-price').text().replace(/[,.đ]/g, ''));
+                    const price = parseFloat($row.find('.cart-product-price').text()
+                        .replace(/[,.đ]/g, ''));
                     const newSubtotal = price * quantity;
-                    $row.find('.cart-product-subtotal').text(new Intl.NumberFormat('vi-VN').format(newSubtotal) + 'đ');
-                    if ($row.find('.cart-item-checkbox').is(':checked')) {
-                        updateCartDetails($row);
-                    }
+                    $row.find('.cart-product-subtotal').text(
+                        new Intl.NumberFormat('vi-VN').format(newSubtotal) + 'đ'
+                    );
                     updateCartTotal();
                     showToast("Cập nhật giỏ hàng thành công!", "success");
                 }
@@ -275,34 +284,29 @@
     });
 
     
-    $(document).on('click', '.cart-product-remove', function() {
-        let $row = $(this).closest('tr');
-        let cartId = $row.data('cart-id');
+   // Xử lý xóa sản phẩm
+   $(document).on('click', '.cart-product-remove', function() {
+    let cartRow = $(this).closest('tr');
+    let cartId = cartRow.data('cart-id');
 
-        $.ajax({
-            url: "{{ route('cart.remove') }}",
-            type: "POST",
-            data: {
-                _token: "{{ csrf_token() }}",
-                cart_id: cartId
-            },
-            success: function(response) {
-                if (response.status === "success") {
-                    $row.remove();
-                    removeFromCartDetails(cartId);
-                    updateCartTotal();
-                    if ($('.cart-item-checkbox').length === $('.cart-item-checkbox:checked').length) {
-                        $('#select-all').prop('checked', true);
-                    } else {
-                        $('#select-all').prop('checked', false);
-                    }
-                    showToast(response.message, "success");
-                } else {
-                    showToast(response.message, "error");
-                }
+    $.ajax({
+        url: "{{ route('cart.remove') }}",
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            cart_id: cartId
+        },
+        success: function(response) {
+            if (response.status === "success") {
+                cartRow.remove();
+                updateCartTotal();
+                showToast(response.message, "success");
+            } else {
+                showToast(response.message, "error");
             }
-        });
+        }
     });
+});
 
      
      $('#apply-coupon').on('click', function() {
@@ -515,26 +519,23 @@ function removeFromCartDetails(cartId) {
     }
 
 
+// Các hàm helper
 function updateCartTotal() {
-        let total = 0;
-        $("#cart-details tr").each(function() {
-            let subtotal = parseFloat($(this).find('td:last-child').text().replace(/[^0-9]/g, ''));
-            total += subtotal;
-        });
+    let total = 0;
 
-        total = isNaN(total) ? 0 : total;
+    $(".cart-product-subtotal").each(function() {
+        let value = $(this).text().replace(/[^0-9]/g, ''); // Chỉ giữ lại số
+        let price = value ? parseFloat(value) : 0; // Nếu rỗng thì gán 0 để tránh NaN
+        total += price;
+    });
 
-        const discount = $('#discount-row').length ? parseFloat($('#discount-row td:last-child').text().replace(/[^0-9]/g, '')) : 0;
-        total -= discount;
+    // Kiểm tra nếu total hợp lệ, nếu không gán 0
+    total = isNaN(total) ? 0 : total;
 
-        $("#cart-grand-total").text(total.toLocaleString('vi-VN') + "đ");
-
-        if (total > 0) {
-            $('.theme-btn-1').removeClass('disabled').prop('disabled', false);
-        } else {
-            $('.theme-btn-1').addClass('disabled').prop('disabled', true);
-        }
-    }
+    $("#cart-subtotal").text(total.toLocaleString('vi-VN') + "đ");
+    $(".mini-cart-sub-total span").text(total.toLocaleString('vi-VN') + "đ");
+    $("#cart-grand-total").text(total.toLocaleString('vi-VN') + "đ");
+}
 
     
 
