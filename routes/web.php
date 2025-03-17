@@ -32,10 +32,10 @@ Route::get('/forgot-password',                  [UserController::class, 'showFor
 Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])       ->name('password.email');
 Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])       ->name('password.reset');
 Route::post('/reset-password',                  [UserController::class, 'resetPassword'])       ->name('password.update');
-Route::middleware(['auth'])->group(function () {
-  Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store'); // Thêm
-  Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']); // Sửa
-  Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']); // Xóa
+Route::middleware(['check.auth'])->group(function () {
+  Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
+  Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
+  Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']); 
 });
 
 
