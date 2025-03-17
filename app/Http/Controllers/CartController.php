@@ -158,13 +158,13 @@ class CartController extends Controller
         $appliedCoupon = null;
         if (!empty($couponCode)) {
             $appliedCoupon = Coupon::where('code', $couponCode)
-                ->where('is_active', 1) 
+                ->where('is_active', 1)
                 ->where(function ($query) {
-                    $query->where('is_expired', 0) 
+                    $query->where('is_expired', 0)
                         ->orWhere(function ($query) {
                             $query->where('is_expired', 1)
                                 ->where('start_date', '<=', now())
-                                ->where('end_date', '>=', now()); 
+                                ->where('end_date', '>=', now());
                         });
                 })
                 ->first();
@@ -189,7 +189,7 @@ class CartController extends Controller
             'subtotal' => $subtotal,
             'user' => $user,
             'userAddress' => $userAddress,
-            'appliedCoupon' => $appliedCoupon 
+            'appliedCoupon' => $appliedCoupon
         ]);
     }
 
@@ -202,7 +202,7 @@ class CartController extends Controller
             'address' => 'required|string|max:255',
             'payment_method' => 'required|in:cash,vnpay',
             'selected_products' => 'required|json',
-            'total_amount' => 'required|numeric', 
+            'total_amount' => 'required|numeric',
         ]);
 
         $code = 'ORDER-' . time() . '-' . auth()->id();
@@ -227,10 +227,10 @@ class CartController extends Controller
             $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
             $vnp_ReturnUrl = route('checkout.return');
 
-            $vnp_TxnRef = $code; 
+            $vnp_TxnRef = $code;
             $vnp_OrderInfo = "Thanh toán đơn hàng #$code";
             $vnp_OrderType = 'billpayment';
-            $vnp_Amount = $grandTotal * 100; 
+            $vnp_Amount = $grandTotal * 100;
             $vnp_Locale = 'vn';
             $vnp_IpAddr = $request->ip();
             $vnp_CreateDate = date('YmdHis');
@@ -275,14 +275,14 @@ class CartController extends Controller
                 ]
             ]);
 
-            return redirect($vnp_Url); 
+            return redirect($vnp_Url);
         }
 
         try {
             $order = new Order();
             $order->code = $code;
             $order->user_id = auth()->id();
-            $order->payment_id = 1; 
+            $order->payment_id = 1;
             $order->phone_number = $validatedData['phone'];
             $order->email = $validatedData['email'];
             $order->fullname = $validatedData['name'];
@@ -300,7 +300,7 @@ class CartController extends Controller
 
             $orderStatus = new OrderOrderStatus();
             $orderStatus->order_id = $order->id;
-            $orderStatus->order_status_id = 1; 
+            $orderStatus->order_status_id = 1;
             $orderStatus->note = 'Đơn hàng mới được tạo.';
             $orderStatus->save();
 
@@ -388,7 +388,7 @@ class CartController extends Controller
 
                 $orderStatus = new OrderOrderStatus();
                 $orderStatus->order_id = $order->id;
-                $orderStatus->order_status_id = 1; 
+                $orderStatus->order_status_id = 1;
                 $orderStatus->note = 'Đơn hàng mới được tạo.';
                 $orderStatus->save();
 
@@ -509,6 +509,8 @@ class CartController extends Controller
         $cartItems = $carts->map(function ($cart) {
             return [
                 'id' => $cart->id,
+                'product_id' => $cart->product_id,
+                'product_variant_id' => $cart->product_variant_id,
                 'quantity' => $cart->quantity,
                 'product' => [
                     'name' => $cart->product->name,
@@ -530,11 +532,8 @@ class CartController extends Controller
     public function remove(Request $request)
     {
         $cart = Cart::find($request->cart_id);
-        if ($cart) {
-            $cart->delete();
-            return response()->json(['status' => 'success', 'message' => 'Xóa sản phẩm khỏi giỏ hàng thành công!']);
-        }
-        return response()->json(['status' => 'error', 'message' => 'Sản phẩm không tồn tại trong giỏ hàng!']);
+        $cart->delete();
+        return response()->json(['status' => 'success', 'message' => 'Xóa sản phẩm khỏi giỏ hàng thành công!']);
     }
     public function update(Request $request)
     {
