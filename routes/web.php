@@ -20,11 +20,23 @@ use App\Models\Cart;
 use App\Models\User;
 
 
-Route::get('/loginForm',    [UserController::class, 'showLogin'])->name('login');
-Route::post('/login',       [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout',       [UserController::class, 'logout'])->name('logout');
-Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
-Route::post('/register',    [UserController::class, 'register'])->name('register.submit');
+Route::post('/login',                           [UserController::class, 'login'])               ->name('login.submit');
+Route::get('/logout',                           [UserController::class, 'logout'])              ->name('logout');
+Route::get('/loginForm',                        [UserController::class, 'showLogin'])           ->name('login');
+Route::get('/registerForm',                     [UserController::class, 'showRegister'])        ->name('register');
+Route::post('/register',                        [UserController::class, 'register'])            ->name('register.submit');
+Route::get('/profile',                          [UserController::class, 'showProfile'])         ->name('profile');
+Route::put('/profile',                          [UserController::class, 'updateProfile'])       ->name('profile.update');
+Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])      ->name('password.request');
+Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])       ->name('password.email');
+Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])       ->name('password.reset');
+Route::post('/reset-password',                  [UserController::class, 'resetPassword'])       ->name('password.update');
+Route::middleware(['auth'])->group(function () {
+  Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store'); // Thêm
+  Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']); // Sửa
+  Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']); // Xóa
+});
+
 
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
@@ -37,7 +49,7 @@ Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name(
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 
 Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
-Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
+Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');  
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
