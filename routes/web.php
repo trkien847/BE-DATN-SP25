@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\AiTgCtroller;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -20,11 +21,23 @@ use App\Models\Cart;
 use App\Models\User;
 
 
-Route::get('/loginForm',    [UserController::class, 'showLogin'])->name('login');
-Route::post('/login',       [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout',       [UserController::class, 'logout'])->name('logout');
-Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
-Route::post('/register',    [UserController::class, 'register'])->name('register.submit');
+Route::post('/login',                           [UserController::class, 'login'])               ->name('login.submit');
+Route::get('/logout',                           [UserController::class, 'logout'])              ->name('logout');
+Route::get('/loginForm',                        [UserController::class, 'showLogin'])           ->name('login');
+Route::get('/registerForm',                     [UserController::class, 'showRegister'])        ->name('register');
+Route::post('/register',                        [UserController::class, 'register'])            ->name('register.submit');
+Route::get('/profile',                          [UserController::class, 'showProfile'])         ->name('profile');
+Route::put('/profile',                          [UserController::class, 'updateProfile'])       ->name('profile.update');
+Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])      ->name('password.request');
+Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])       ->name('password.email');
+Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])       ->name('password.reset');
+Route::post('/reset-password',                  [UserController::class, 'resetPassword'])       ->name('password.update');
+Route::middleware(['check.auth'])->group(function () {
+  Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
+  Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
+  Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']); 
+});
+
 
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
@@ -37,7 +50,7 @@ Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name(
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 
 Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
-Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
+Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');  
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
@@ -63,6 +76,12 @@ Route::get('/thank-you', function () {
 
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
+
+// Ai thích hợp
+Route::get('/ai-tg', function () {
+    return view('ai.aitg'); 
+})->name('ai-tg');
+Route::match(['get', 'post'], '/api/virtual-assistant', [AiTgCtroller::class, 'handleRequest']);
 // Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
 // Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
 // Route::post('/admin/categories/store', [CategoryController::class, 'store'])->name('categories.store');

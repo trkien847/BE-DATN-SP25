@@ -38,21 +38,23 @@
             <div class="row">
                 <div class="col-lg-6">
                     <div class="account-login-inner">
-                        <form action="{{route('login.submit')}}" method="POST" class="ltn__form-box contact-form-box">
+                        <form action="{{ route('login.submit') }}" method="POST" class="ltn__form-box contact-form-box">
                             @csrf
-                            <input type="text" name="email" placeholder="Email*">
+                            <input type="text" name="email" placeholder="Email*" value="{{ old('email') }}">
                             @error('email')
-                                <span class="text-danger">{{ $message }}</span>
+                                <div class="text-danger">{{ $message }}</div> <!-- Thay span bằng div -->
                             @enderror
+
                             <input type="password" name="password" placeholder="Password*">
                             @error('password')
-                                <span class="text-danger">{{ $message }}</span>
+                                <div class="text-danger">{{ $message }}</div>
                             @enderror
+
                             <div class="btn-wrapper mt-0">
                                 <button class="theme-btn-1 btn btn-block" type="submit">SIGN IN</button>
                             </div>
                             <div class="go-to-btn mt-20">
-                                <a href="#"><small>FORGOTTEN YOUR PASSWORD?</small></a>
+                                <a href="{{ route('password.request') }}"><small>FORGOTTEN YOUR PASSWORD?</small></a>
                             </div>
                         </form>
                     </div>
@@ -63,7 +65,7 @@
                         <p>Add items to your wishlistget personalised recommendations <br>
                             check out more quickly track your orders register</p>
                         <div class="btn-wrapper">
-                            <a href="{{route('register')}}" class="theme-btn-1 btn black-btn">CREATE ACCOUNT</a>
+                            <a href="{{ route('register') }}" class="theme-btn-1 btn black-btn">CREATE ACCOUNT</a>
                         </div>
                     </div>
                 </div>
