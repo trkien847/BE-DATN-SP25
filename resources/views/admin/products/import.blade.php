@@ -234,38 +234,77 @@ td, th {
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Chọn sản phẩm heheboy</label>
-        <div class="product-list">
-          @foreach($products as $product)
-          <div class="product-item">
-            <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
-            <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
-            @if($product->variants->isNotEmpty())
-            <div class="variant-list" id="variants-{{ $product->id }}">
-              @foreach($product->variants as $variant)
+    <label class="form-label">Chọn sản phẩm heheboy</label>
+    <div class="product-list">
+        <!-- Sản phẩm đã nhập -->
+        <h5 class="text-success mt-4">Sản phẩm đã nhập</h5>
+        @if($importedProductsList->isNotEmpty())
+            @foreach($importedProductsList as $product)
+                <div class="product-item">
+                    <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
+                    <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
+                    @if($product->variants->isNotEmpty())
+                        <div class="variant-list" id="variants-{{ $product->id }}">
+                            @foreach($product->variants as $variant)
+                                <div class="variant-item">
+                                    <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                        data-price="{{ $variant->price }}" 
+                                        data-sale-price="{{ $variant->sale_price ?? '' }}" 
+                                        data-stock="{{ $variant->stock }}" 
+                                        data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
+                                        data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
+                                        data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
+                                        {{ in_array($variant->id, $importedVariantIds) ? 'checked' : '' }}>
+                                    <label>
+                                        @foreach($variant->attributeValues as $attrValue)
+                                            {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
+                                        @endforeach
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <p class="text-muted">Không có sản phẩm đã nhập.</p>
+        @endif
 
-              <div class="variant-item">
-              <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
-                data-price="{{ $variant->price }}" 
-                data-sale-price="{{ $variant->sale_price ?? '' }}" 
-                data-stock="{{ $variant->stock }}" 
-                data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
-                data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
-                data-product-name="{{ $variant->product->name ?? 'Không có tên' }}">
-                <label>
-                  @foreach($variant->attributeValues as $attrValue)
-                  {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
-                  @endforeach
-                </label>
-              </div>
-
-              @endforeach
-            </div>
-            @endif
-          </div>
-          @endforeach
-        </div>
-      </div>
+        <!-- Sản phẩm chưa nhập -->
+        <h5 class="text-danger mt-4">Sản phẩm chưa nhập</h5>
+        @if($notImportedProductsList->isNotEmpty())
+            @foreach($notImportedProductsList as $product)
+                <div class="product-item">
+                    <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
+                    <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
+                    @if($product->variants->isNotEmpty())
+                        <div class="variant-list" id="variants-{{ $product->id }}">
+                            @foreach($product->variants as $variant)
+                                <div class="variant-item">
+                                    <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                        data-price="{{ $variant->price }}" 
+                                        data-sale-price="{{ $variant->sale_price ?? '' }}" 
+                                        data-stock="{{ $variant->stock }}" 
+                                        data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
+                                        data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
+                                        data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
+                                        {{ !in_array($variant->id, $importedVariantIds) ? '' : 'disabled' }}>
+                                    <label>
+                                        @foreach($variant->attributeValues as $attrValue)
+                                            {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
+                                        @endforeach
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <p class="text-muted">Không có sản phẩm chưa nhập.</p>
+        @endif
+    </div>
+</div>
 
       <div id="price-inputs" class="mb-3" style="display: none;"></div>
 

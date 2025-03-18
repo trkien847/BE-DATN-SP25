@@ -539,15 +539,28 @@ class ProductController extends Controller
 
     // nhập 
     public function import()
-    {
-        $products = Product::with('variants')->get();
+{
+    $products = Product::with('variants')->get();
 
-        $importedProducts = ProductImport::with(['details.product'])
-            ->orderBy('imported_at', 'desc')
-            ->get();
+    $importedProducts = ProductImport::with(['details.product', 'details'])
+        ->orderBy('imported_at', 'desc')
+        ->get();
 
-        return view('admin.products.import', compact('products', 'importedProducts'));
-    }
+    // Lấy danh sách các product_id và variant_id đã được nhập (chuyển thành mảng)
+    $importedProductIds = $importedProducts->pluck('details')->flatten()->pluck('product_id')->unique()->toArray();
+    $importedVariantIds = $importedProducts->pluck('details')->flatten()->pluck('product_variant_id')->unique()->toArray();
+
+    // Phân loại sản phẩm
+    $importedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
+        return in_array($product->id, $importedProductIds) || $product->variants->pluck('id')->intersect($importedVariantIds)->isNotEmpty();
+    });
+
+    $notImportedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
+        return !in_array($product->id, $importedProductIds) && $product->variants->pluck('id')->diff($importedVariantIds)->isNotEmpty();
+    });
+
+    return view('admin.products.import', compact('products', 'importedProducts', 'importedProductsList', 'notImportedProductsList', 'importedVariantIds'));
+}
 
     public function importStore(Request $request)
     {
@@ -559,35 +572,35 @@ class ProductController extends Controller
             'import_prices.*' => 'required|numeric|min:0',
             'quantities.*' => 'required|integer|min:1',
         ]);
-    
+
         $products = $request->input('products');
         $variants = $request->input('variants');
         $importPrices = $request->input('import_prices');
-        $quantities = $request->input('quantities', []); 
+        $quantities = $request->input('quantities', []);
         $prices = $request->input('prices');
-        $salePrices = $request->input('sale_prices');   
+        $salePrices = $request->input('sale_prices');
         $importAt = $request->input('import_at');
         $name_vars = $request->input('name_vars');
         $sale_price_start_at = $request->input('sale_price_start_at');
         $sale_price_end_at = $request->input('sale_price_end_at');
-    
-       
+
+
         $import = ProductImport::create([
-            'user_id' => auth()->id(), 
-            'imported_by' => auth()->user()->fullname ?? 'Unknown', 
+            'user_id' => auth()->id(),
+            'imported_by' => auth()->user()->fullname ?? 'Unknown',
             'imported_at' => $importAt,
         ]);
-    
-      
+
+
         Product::whereIn('id', $products)->update([
             'import_at' => $importAt,
             'updated_at' => now(),
         ]);
-    
-        
+
+
         foreach ($variants as $index => $variantId) {
             if (isset($importPrices[$variantId])) {
-                $quantity = $quantities[$variantId] ?? 1; 
+                $quantity = $quantities[$variantId] ?? 1;
                 $productId = ProductVariant::find($variantId)->product_id;
                 $import->details()->create([
                     'import_id' => $import->id,
@@ -596,7 +609,7 @@ class ProductController extends Controller
                     'name_vari' => $name_vars[$variantId],
                     'price' => $importPrices[$variantId],
                 ]);
-    
+
 
                 ProductVariant::where('id', $variantId)->update([
                     'import_price' => $importPrices[$variantId],
@@ -609,7 +622,7 @@ class ProductController extends Controller
                 ]);
             }
         }
-    
+
         return redirect()->route('products.import')->with('success', 'Đã nhập hàng và cập nhật giá/biến thể thành công!');
     }
 }
