@@ -216,14 +216,6 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div>
-                                <label for="timestampInput" class="form-label">Ngày Giờ Bắt Đầu Giảm Giá</label>
-                                <input type="datetime-local" id="timestampInput" name="sale_price_start_at" class="form-control" value="{{$product->sale_price_start_at}}">
-                            </div>
-                            <div>
-                                <label for="timestampInput" class="form-label">Ngày Giờ Kết Thúc Giảm Giá</label>
-                                <input type="datetime-local" id="sale_price_end_at" name="sale_price_end_at" class="form-control" value="{{$product->sale_price_end_at}}">
-                            </div>
                         </div>  
                         <a href="#" class="btn-next2 text-white bg-teal-500 w-100 block text-center p-2 rounded-md mt-4">
                             Tiếp theo
@@ -254,30 +246,28 @@
                     <div class="form4" style="display: none;">
                         <h4>Chọn Biến Thể</h4>
                         <div id="variant-container" class="grid grid-cols-4 gap-4">
-                            @foreach($attributes as $attribute)
-                                <div class="variant-group border p-4 rounded hover:shadow-lg transition-transform transform hover:scale-105">
-                                    <strong class="variant-name" style="cursor: pointer;">{{ $attribute->name }}</strong>
+                            @php
+                                $groupedAttributes = $attributes->groupBy('name');
+                            @endphp
+                            @foreach ($groupedAttributes as $name => $group)
+                                <div class="variant-group border p-4 rounded">
+                                    <strong class="variant-name" data-name="{{ $name }}" style="cursor: pointer;">
+                                        {{ $name }}
+                                    </strong>
                                     <div class="variant-options" style="display: none; margin-top: 10px;">
-                                        @foreach($attribute->values as $value)
-                                            <div>
-                                                <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}" class="variant-checkbox" 
-                                                @if(in_array($value->id, $selectedVariantIds)) checked @endif>
-                                                <label>{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}</label>
-                                            </div>
+                                        @foreach ($group as $attribute)
+                                            @foreach ($attribute->values as $value)
+                                                <div>
+                                                    <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" 
+                                                        id="variant-{{ $attribute->id }}-{{ $value->id }}"
+                                                        @if(in_array($value->id, $selectedVariantIds)) checked @endif>
+                                                    <label for="variant-{{ $attribute->id }}-{{ $value->id }}">{{ $attribute->slug }} {{ $value->value }}</label>
+                                                </div>
+                                            @endforeach
                                         @endforeach
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
-                        <div id="selected-variants" style="margin-top: 20px;">
-                            <h4>Biến Thể Đã Chọn</h4>
-                            <ul id="selected-variants-list">
-                                @foreach($product->variants as $variant)
-                                    @foreach($variant->attributeValues as $attributeValue)
-                                        <li>{{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }}</li>
-                                    @endforeach
-                                @endforeach
-                            </ul>
                         </div>
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
@@ -290,49 +280,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    $(document).ready(function() {
-        // Toggle display of variant options
-        $('.variant-name').on('click', function() {
-            $(this).next('.variant-options').slideToggle();
-        });
-
-        // Update selected variants list
-        $('.variant-checkbox').on('change', function() {
-            let selectedVariantsList = $('#selected-variants-list');
-            selectedVariantsList.empty();
-
-            $('.variant-checkbox:checked').each(function() {
-                let displayText = $(this).data('display');
-                selectedVariantsList.append('<li>' + displayText + '</li>');
-            });
-
-            // Add zoom effect to selected checkboxes
-            $('.variant-checkbox').closest('.variant-group').removeClass('selected');
-            $('.variant-checkbox:checked').closest('.variant-group').addClass('selected');
-        });
-
-        // Initialize selected variants list on page load
-        $('.variant-checkbox:checked').each(function() {
-            let displayText = $(this).data('display');
-            $('#selected-variants-list').append('<li>' + displayText + '</li>');
-            $(this).closest('.variant-group').addClass('selected');
-        });
-
-        // Form submission validation
-        $('form').on('submit', function(e) {
-            let hasError = false;
-            if ($('.variant-checkbox:checked').length === 0) {
-                hasError = true;
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Cảnh báo!',
-                    text: 'Vui lòng chọn ít nhất một biến thể!',
-                    confirmButtonText: 'OK'
-                });
-            }
-
-            if (hasError) {
-                e.preventDefault();
+    document.querySelectorAll('.variant-name').forEach(item => {
+        item.addEventListener('click', function() {
+            const options = this.nextElementSibling;
+            if (options.style.display === 'none') {
+                options.style.display = 'block';
+            } else {
+                options.style.display = 'none';
             }
         });
     });

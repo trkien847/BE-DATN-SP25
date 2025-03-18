@@ -240,14 +240,6 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div>
-                                <label for="timestampInput" class="form-label">Ngày Giờ Bắt Đầu Giảm Giá</label>
-                                <input type="datetime-local" id="timestampInput" name="sale_price_start_at" class="form-control">
-                            </div>
-                            <div>
-                                <label for="timestampInput" class="form-label">Ngày Giờ Kết Thúc Giảm Giá</label>
-                                <input type="datetime-local" id="sale_price_end_at" name="sale_price_end_at" class="form-control">
-                            </div>
                         </div>  
                         <a href="#" class="btn-next2 text-white bg-teal-500 w-100 block text-center p-2 rounded-md mt-4">
                             Tiếp theo
@@ -271,23 +263,26 @@
                     <div class="form4" style="display: none;">
                         <h4>Chọn Biến Thể</h4>
                         <div id="variant-container" class="grid grid-cols-4 gap-4">
-                            @foreach($attributes as $attribute)
-                                <div class="variant-group border p-4 rounded hover:shadow-lg transition-transform transform hover:scale-105">
-                                    <strong class="variant-name" style="cursor: pointer;">{{ $attribute->name }}</strong>
+                            @php
+                                $groupedAttributes = $attributes->groupBy('name');
+                            @endphp
+                            @foreach ($groupedAttributes as $name => $group)
+                                <div class="variant-group border p-4 rounded">
+                                    <strong class="variant-name" data-name="{{ $name }}" style="cursor: pointer;">
+                                        {{ $name }}
+                                    </strong>
                                     <div class="variant-options" style="display: none; margin-top: 10px;">
-                                        @foreach($attribute->values as $value)
-                                            <div>
-                                                <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" data-display="{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}" class="variant-checkbox">
-                                                <label>{{ $attribute->name }}: {{ $attribute->slug }}{{ $value->value }}</label>
-                                            </div>
+                                        @foreach ($group as $attribute)
+                                            @foreach ($attribute->values as $value)
+                                                <div>
+                                                    <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" id="variant-{{ $attribute->id }}-{{ $value->id }}">
+                                                    <label for="variant-{{ $attribute->id }}-{{ $value->id }}">{{ $attribute->slug }} {{ $value->value }}</label>
+                                                </div>
+                                            @endforeach
                                         @endforeach
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
-                        <div id="selected-variants" style="margin-top: 20px;">
-                            <h4>Biến Thể Đã Chọn</h4>
-                            <ul id="selected-variants-list"></ul>
                         </div>
                         <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
                     </div>
@@ -299,43 +294,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-                $('.variant-name').on('click', function() {
-                    $(this).next('.variant-options').slideToggle();
-                });
-
-                $('.variant-checkbox').on('change', function() {
-                    let selectedVariantsList = $('#selected-variants-list');
-                    selectedVariantsList.empty();
-
-                    $('.variant-checkbox:checked').each(function() {
-                        let displayText = $(this).data('display');
-                        selectedVariantsList.append('<li>' + displayText + '</li>');
-                    });
-
-                    $('.variant-checkbox').closest('.variant-group').removeClass('selected');
-                    $('.variant-checkbox:checked').closest('.variant-group').addClass('selected');
-                });
-
-                $('form').on('submit', function(e) {
-                    let hasError = false;
-                    if ($('.variant-checkbox:checked').length === 0) {
-                        hasError = true;
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Cảnh báo!',
-                            text: 'Vui lòng chọn ít nhất một biến thể!',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-
-                    if (hasError) {
-                        e.preventDefault();
-                    }
-                });
+        document.querySelectorAll('.variant-name').forEach(item => {
+            item.addEventListener('click', function() {
+                const options = this.nextElementSibling;
+                if (options.style.display === 'none') {
+                    options.style.display = 'block';
+                } else {
+                    options.style.display = 'none';
+                }
             });
-        </script>
-
+        });
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -489,17 +458,9 @@
                     previousErrorBox.remove();
                 }
                 const brandSelect = document.getElementById('brandSelect');
-                const timestampInput = document.getElementById('timestampInput');
-                const sale_price_end_at = document.getElementById('sale_price_end_at');
                 let errorMessage = "";
                 if (brandSelect.value.trim() === "") {
                     errorMessage += "<li>Vui lòng chọn nhan hang.</li>";
-                }
-                if (timestampInput.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Ngay bat dau giam gia.</li>";
-                }
-                if (sale_price_end_at.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Ngay ket thuc giam gia.</li>";
                 }
                
                 

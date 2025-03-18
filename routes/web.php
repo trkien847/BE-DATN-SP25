@@ -127,6 +127,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
+  
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
 

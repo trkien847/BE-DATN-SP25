@@ -20,7 +20,9 @@ use App\Models\CategoryTypeProduct;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use App\Models\ProductGalleries;
+use App\Models\ProductImport;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -86,8 +88,6 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
-            'sale_price_start_at' => 'nullable|date',
-            'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
             'thumbnail' => 'nullable',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
@@ -95,8 +95,6 @@ class ProductController extends Controller
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
-            'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
         ]);
 
         if ($validator->fails()) {
@@ -118,8 +116,6 @@ class ProductController extends Controller
             $product->thumbnail = $imageName;
         }
         $product->sku = $request->sku;
-        $product->sale_price_start_at = $request->sale_price_start_at;
-        $product->sale_price_end_at = $request->sale_price_end_at;
         $product->is_active = 1;
         $product->save();
 
@@ -150,8 +146,6 @@ class ProductController extends Controller
                 foreach ($variantValues as $valueId) {
                     $productVariant = ProductVariant::create([
                         'product_id' => $product->id,
-                        'sale_price_start_at' => $request->sale_price_start_at,
-                        'sale_price_end_at' => $request->sale_price_end_at,
                     ]);
 
                     AttributeValueProductVariant::create([
@@ -189,7 +183,6 @@ class ProductController extends Controller
         $productGallery = ProductGalleries::where('product_id', $id)->get();
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
 
-        // Lấy danh sách các ID của các giá trị thuộc tính đã chọn
         $selectedVariantIds = $product->variants->pluck('attributeValues.*.id')->flatten()->toArray();
 
         return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'attributes', 'selectedVariantIds'));
@@ -203,16 +196,12 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
-            'sale_price_start_at' => 'nullable|date',
-            'sale_price_end_at' => 'nullable|date|after_or_equal:sale_price_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'sale_price_start_at.date' => 'Ngày bắt đầu giảm giá phải là định dạng ngày.',
-            'sale_price_end_at.after_or_equal' => 'Ngày kết thúc giảm giá phải sau hoặc bằng ngày bắt đầu.',
         ]);
 
         if ($validator->fails()) {
@@ -240,8 +229,6 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->sell_price = $request->sell_price;
         $product->sale_price = $request->sale_price;
-        $product->sale_price_start_at = $request->sale_price_start_at;
-        $product->sale_price_end_at = $request->sale_price_end_at;
         $product->is_active = 1;
         $product->save();
 
@@ -548,22 +535,17 @@ class ProductController extends Controller
     }
 
 
+
+
+    // nhập 
     public function import()
     {
-        $products = Product::with(['variants' => function ($query) {
-            $query->where('stock', 0);
-        }])
-            ->whereHas('variants', function ($query) {
-                $query->where('stock', 0);
-            })
+        $products = Product::with('variants')->get();
+
+        $importedProducts = ProductImport::with(['details.product'])
+            ->orderBy('imported_at', 'desc')
             ->get();
-    
-        $importedProducts = Product::whereNotNull('import_at')
-            ->select('import_at')
-            ->selectRaw('GROUP_CONCAT(name) as product_names')
-            ->groupBy('import_at')
-            ->get();
-    
+
         return view('admin.products.import', compact('products', 'importedProducts'));
     }
 
@@ -575,33 +557,59 @@ class ProductController extends Controller
             'variants' => 'required|array',
             'import_prices' => 'required|array',
             'import_prices.*' => 'required|numeric|min:0',
+            'quantities.*' => 'required|integer|min:1',
         ]);
-
+    
         $products = $request->input('products');
         $variants = $request->input('variants');
         $importPrices = $request->input('import_prices');
+        $quantities = $request->input('quantities', []); 
         $prices = $request->input('prices');
-        $sale_price = $request->input('sale_prices');
-        $stock = $request->input('stocks');
+        $salePrices = $request->input('sale_prices');   
         $importAt = $request->input('import_at');
-
+        $name_vars = $request->input('name_vars');
+        $sale_price_start_at = $request->input('sale_price_start_at');
+        $sale_price_end_at = $request->input('sale_price_end_at');
+    
+       
+        $import = ProductImport::create([
+            'user_id' => auth()->id(), 
+            'imported_by' => auth()->user()->fullname ?? 'Unknown', 
+            'imported_at' => $importAt,
+        ]);
+    
+      
         Product::whereIn('id', $products)->update([
             'import_at' => $importAt,
             'updated_at' => now(),
         ]);
-
-        foreach ($variants as $variantId) {
+    
+        
+        foreach ($variants as $index => $variantId) {
             if (isset($importPrices[$variantId])) {
+                $quantity = $quantities[$variantId] ?? 1; 
+                $productId = ProductVariant::find($variantId)->product_id;
+                $import->details()->create([
+                    'import_id' => $import->id,
+                    'product_id' => $productId,
+                    'quantity' => $quantities[$variantId],
+                    'name_vari' => $name_vars[$variantId],
+                    'price' => $importPrices[$variantId],
+                ]);
+    
+
                 ProductVariant::where('id', $variantId)->update([
                     'import_price' => $importPrices[$variantId],
-                    'price' => $prices[$variantId],
-                    'sale_price' => $sale_price[$variantId],
-                    'stock' => $stock[$variantId],
+                    'price' => $prices[$variantId] ?? 0,
+                    'sale_price' => $salePrices[$variantId] ?? 0,
+                    'stock' => DB::raw("stock + $quantity"),
+                    'sale_price_start_at' => $sale_price_start_at[$variantId],
+                    'sale_price_end_at' => $sale_price_end_at[$variantId],
                     'updated_at' => now(),
                 ]);
             }
         }
-
-        return redirect()->route('products.list')->with('success', 'Đã cập nhật giá nhập biến thể và thời gian nhập sản phẩm thành công!');
+    
+        return redirect()->route('products.import')->with('success', 'Đã nhập hàng và cập nhật giá/biến thể thành công!');
     }
 }
