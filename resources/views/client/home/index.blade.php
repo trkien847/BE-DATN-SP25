@@ -858,8 +858,7 @@
                 method: 'GET',
                 success: function(response) {
                     console.log(response);
-                    $('#quick_view_modal').attr('data-product-id', response.id);
-                    // Cập nhật hình ảnh sản phẩm
+                    $('#quick_view_modal').attr('data-product-id', response.id); // Cập nhật productId
                     $('#quick_view_modal .modal-product-img').html(`
                 <a href="{{ route('products.productct', ':id') }}" target="_blank">
                     <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
@@ -867,8 +866,6 @@
             `.replace(':id', response.id));
 
                     $('#quick_view_modal h3').text(response.name);
-
-                    // Cập nhật giá chính
                     $('#quick_view_modal .product-price span').text(
                         new Intl.NumberFormat().format(response.sale_price) + 'đ'
                     );
@@ -876,13 +873,12 @@
                         new Intl.NumberFormat().format(response.sell_price) + 'đ'
                     );
 
-                    // Cập nhật danh mục
                     let categoriesHtml = response.categories.map(category =>
                         `<a href="#">${category.name}</a>`
                     ).join(", ");
                     $('#quick_view_modal .modal-product-meta span').html(categoriesHtml);
 
-                    // Cập nhật danh sách biến thể
+                    // Làm mới danh sách biến thể
                     if (response.variants && response.variants.length > 0) {
                         let variantsHtml = '<div class="variant-buttons">';
                         variantsHtml += response.variants.map((variant, index) => {
@@ -892,6 +888,7 @@
 
                             return `
                         <button class="btn btn-outline-primary variant-btn"
+                            data-product-id="${response.id}"
                             data-variant-id="${variant.id}"
                             data-price="${variant.price}"
                             data-sale-price="${variant.sale_price}"
@@ -909,21 +906,18 @@
                         variantsHtml += '</div>';
                         $('#quick_view_modal .modal-product-variants .variant-list').html(variantsHtml);
 
-                        // Xử lý khi chọn biến thể
-                        $('.variant-btn').on('click', function() {
-                            selectedVariantId = $(this).data(
-                                'variant-id'); // Lưu ID biến thể đã chọn
+                        // Xóa sự kiện cũ và gắn sự kiện mới
+                        $('.variant-btn').off('click').on('click', function() {
                             const variantPrice = $(this).data('sale-price') || $(this).data(
                                 'price');
-                            const variantStock = $(this).data(
-                                'stock');
+                            const variantStock = $(this).data('stock');
 
                             // Cập nhật giá chính
                             $('#quick_view_modal .product-price span').text(
                                 new Intl.NumberFormat().format(variantPrice) + 'đ'
                             );
 
-                            if (variantStock > 0) { // ✅ Dùng variantStock thay vì variant.stock
+                            if (variantStock > 0) {
                                 $('.cart-plus-minus-box')
                                     .val(1)
                                     .attr('max', variantStock)
@@ -937,14 +931,19 @@
                                 $('#quick-add-to-cart-btn').prop('disabled', true);
                             }
 
-                            // Đánh dấu nút được chọn
                             $('.variant-btn').removeClass('active');
                             $(this).addClass('active');
                         });
                     } else {
-                        $('#quick_view_modal .modal-product-variants .variant-list').html(
-                            'Không có biến thể');
+                        $('#quick_view_modal .modal-product-variants .variant-list').html('');
+                        $('.cart-plus-minus-box')
+                            .val(1)
+                            .attr('max', response.stock || 0)
+                            .prop('disabled', false);
+                        $('#quick-add-to-cart-btn').prop('disabled', false);
                     }
+
+                    $('#quick_view_modal').modal('show'); // Hiển thị modal sau khi load xong
                 },
                 error: function(xhr) {
                     console.log("Lỗi khi tải dữ liệu:", xhr);
@@ -955,27 +954,25 @@
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();
 
-            let productId = $('#quick_view_modal').data('product-id');
+            let selectedButton = $('.variant-btn.active'); // Lấy nút biến thể được chọn
+            let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
+                'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
+            let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') :
+            null; // Lấy variant_id từ nút
             let quantity = $('.cart-plus-minus-box').val();
-
-            if (!selectedVariantId) {
-                alert("Vui lòng chọn một biến thể trước khi thêm vào giỏ hàng!");
-                return;
-            }
-
             $.ajax({
                 url: "{{ route('cart.add') }}",
                 type: "POST",
                 data: {
                     _token: "{{ csrf_token() }}",
                     product_id: productId,
-                    product_variant_id: selectedVariantId,
+                    product_variant_id: selectedVariantId, // Null nếu không có biến thể
                     quantity: quantity
                 },
                 success: function(response) {
                     if (response.status === "success") {
+                        console.log(response.cart_items);
                         $(".mini-cart-quantity").text(response.cart_count);
-
                         let cartHtml = "";
                         response.cart_items.forEach(item => {
                             let price = item.product.sale_price && item.product.sale_price > 0 ?
@@ -983,20 +980,22 @@
                                 parseFloat(item.product.sell_price);
 
                             cartHtml += `
-                    <div class="mini-cart-item clearfix">
-                        <div class="mini-cart-img">
-                            <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
-                        </div>
-                        <div class="mini-cart-info">
-                            <h6><a href="#">${item.product.name}</a></h6>
-                            <span class="mini-cart-quantity">${item.quantity} x ${price.toLocaleString('vi-VN')}đ</span>
-                        </div>
-                    </div>`;
+                        <div class="mini-cart-item clearfix">
+                            <div class="mini-cart-img">
+                                <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
+                            </div>
+                            <div class="mini-cart-info">
+                                <h6><a href="#">${item.product.name}</a></h6>
+                                <span class="mini-cart-quantity">
+                                    ${item.quantity} x 
+                                    <span class="mini-cart-price">${price.toLocaleString('vi-VN')}đ</span>
+                                </span>
+                            </div>
+                        </div>`;
                         });
-
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
-                        $("#cart-subtotal").text(response.subtotal); // ✅ Cập nhật giá trên header
+                        $("#cart-subtotal").text(response.subtotal);
 
                         Toastify({
                             text: "Sản phẩm đã được thêm vào giỏ hàng!",

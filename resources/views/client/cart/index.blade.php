@@ -235,7 +235,6 @@
             });
 
 
-            // Handle quantity button clicks
             $('.qtybutton').off('click');
             $(document).on('click', '.qtybutton', function() {
                 let $button = $(this);
@@ -269,7 +268,6 @@
                 }
 
                 $row.addClass('updating');
-
                 $.ajax({
                     url: "{{ route('cart.update') }}",
                     type: 'POST',
