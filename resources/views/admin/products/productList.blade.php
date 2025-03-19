@@ -222,7 +222,6 @@
       <th scope="col">Ngày nhập</th>
       <th scope="col">Ảnh</th>
       <th scope="col">Danh mục</th>
-      <th scope="col">Mô Tả</th>
       <th scope="col">Biến thể</th>
       <th scope="col">Trạng Thái</th>
       <th scope="col">Nhà Cung Cấp</th>
@@ -262,12 +261,7 @@
           </div>
         @endforeach
       </td>
-      <td>
-        {!! Str::limit($product->content, 100, '...') !!}
-        @if(strlen($product->content) > 100)
-          <a href="javascript:void(0)" class="show-full-content" data-content="{!! htmlentities($product->content) !!}" data-product-id="{{ $product->id }}">Xem thêm</a>
-        @endif
-      </td>
+      
       <td>
         <div class="variant-container" data-product-id="{{ $product->id }}">
           @if($product->variants->isNotEmpty())

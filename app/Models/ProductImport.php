@@ -9,7 +9,7 @@ class ProductImport extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['user_id', 'imported_by', 'imported_at'];
+    protected $fillable = ['user_id', 'imported_by', 'imported_at', 'is_active'];
 
     public function details()
     {

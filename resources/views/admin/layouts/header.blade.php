@@ -48,12 +48,13 @@
                             class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">3<span
                                 class="visually-hidden">unread messages</span></span>
                     </button>
+
                     <div class="dropdown-menu py-0 dropdown-lg dropdown-menu-end"
                         aria-labelledby="page-header-notifications-dropdown">
                         <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
+                                    <h6 class="m-0 fs-16 fw-semibold"> Thông báo</h6>
                                 </div>
                                 <div class="col-auto">
                                     <a href="javascript: void(0);" class="text-dark text-decoration-underline">
@@ -77,72 +78,7 @@
                                     </div>
                                 </div>
                             </a>
-                            <!-- Item -->
-                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <div class="avatar-sm me-2">
-                                            <span class="avatar-title bg-soft-info text-info fs-20 rounded-circle">
-                                                D
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0 fw-semibold">Donoghue Susan</p>
-                                        <p class="mb-0 text-wrap">
-                                            Hi, How are you? What about our next meeting
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                            <!-- Item -->
-                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <img src="{{ asset('admin/images/users/avatar-3.jpg') }}"
-                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-3" />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0 fw-semibold">Jacob Gines</p>
-                                        <p class="mb-0 text-wrap">
-                                            Answered to your comment on the cash flow forecast's graph 🔔.
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                            <!-- Item -->
-                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <div class="avatar-sm me-2">
-                                            <span
-                                                class="avatar-title bg-soft-warning text-warning fs-20 rounded-circle">
-                                                <iconify-icon icon="solar:leaf-bold-duotone"></iconify-icon>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0 fw-semibold text-wrap">You have received <b>20</b> new
-                                            messages in the
-                                            conversation</p>
-                                    </div>
-                                </div>
-                            </a>
-                            <!-- Item -->
-                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <img src="{{ asset('admin/images/users/avatar-5.jpg') }}"
-                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-5" />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0 fw-semibold">Shawn Bunch</p>
-                                        <p class="mb-0 text-wrap">
-                                            Commented on Admin
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
+                            
                         </div>
                         <div class="text-center py-3">
                             <a href="javascript:void(0);" class="btn btn-primary btn-sm">View All Notification
@@ -150,8 +86,57 @@
                         </div>
                     </div>
                 </div>
+<!-- Nếu bạn load file app.js -->
 
-                <!-- Theme Setting -->
+@if(auth()->check() && auth()->user()->role_id == 3)
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let lastChecked = new Date();
+
+            function checkNotifications() {
+                fetch("{{ route('notifications.check') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ last_checked: lastChecked.toISOString() }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.imports && data.imports.length > 0) {
+                        data.imports.forEach(importItem => {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Thông báo',
+                                html: `${importItem.message} (Ngày nhập: ${importItem.imported_at} bởi ${importItem.imported_by})<br>
+                                       <form action="{{ url('products/import/confirm') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                           @csrf
+                                           @method('PATCH')
+                                           <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
+                                       </form>
+                                       <form action="{{ url('products/import/reject') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                           @csrf
+                                           @method('PATCH')
+                                           <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
+                                       </form>`,
+                                showConfirmButton: false,
+                            });
+                        });
+                        lastChecked = new Date();
+                    }
+                })
+                .catch(error => console.log('Error:', error))
+                .finally(() => {
+                    setTimeout(checkNotifications, 3000); // Kiểm tra lại sau 5 giây
+                });
+            }
+
+            checkNotifications();
+        });
+    </script>
+@endif    <!-- Theme Setting -->
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"
                         data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">

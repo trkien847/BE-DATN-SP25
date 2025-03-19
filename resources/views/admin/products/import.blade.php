@@ -196,7 +196,7 @@ td, th {
 .header-row {
     display: flex;
     align-items: center; /* Căn giữa theo chiều dọc */
-    gap: 500px; /* Khoảng cách giữa tiêu đề và hình ảnh */
+    gap: 400px; /* Khoảng cách giữa tiêu đề và hình ảnh */
 }
 
 .header-image {
@@ -205,15 +205,7 @@ td, th {
     object-fit: contain; /* Đảm bảo hình ảnh không bị méo */
 }
 </style>
-
-<div class="container">
-  <div class="form-container">
-  <div class="header-row">
-      <h4 class="text-secondary mb-4">NHẬP SẢN PHẨM</h4>
-      <img src="https://media4.giphy.com/media/Um3ljJl8jrnHy/giphy.webp?cid=ecf05e47a67hlasek37i2ut7sg8u5psxkkovu16o250uamnn&ep=v1_gifs_search&rid=giphy.webp&ct=g" alt="Import Icon" class="header-image">
-  </div>
-
-    @if(session('success'))
+@if(session('success'))
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
@@ -225,133 +217,364 @@ td, th {
       });
     </script>
     @endif
+<div class="container">
 
-    <form id="importForm" action="{{ route('products.import.store') }}" method="POST">
-      @csrf
-      <div class="mb-3">
-        <label for="import_at" class="form-label">Thời gian nhập</label>
-        <input type="datetime-local" name="import_at" id="import_at" class="form-control" required>
-      </div>
 
-      <div class="mb-3">
-    <label class="form-label">Chọn sản phẩm heheboy</label>
-    <div class="product-list">
-        <!-- Sản phẩm đã nhập -->
-        <h5 class="text-success mt-4">Sản phẩm đã nhập</h5>
-        @if($importedProductsList->isNotEmpty())
-            @foreach($importedProductsList as $product)
-                <div class="product-item">
-                    <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
-                    <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
-                    @if($product->variants->isNotEmpty())
-                        <div class="variant-list" id="variants-{{ $product->id }}">
-                            @foreach($product->variants as $variant)
-                                <div class="variant-item">
-                                    <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
-                                        data-price="{{ $variant->price }}" 
-                                        data-sale-price="{{ $variant->sale_price ?? '' }}" 
-                                        data-stock="{{ $variant->stock }}" 
-                                        data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
-                                        data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
-                                        data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
-                                        {{ in_array($variant->id, $importedVariantIds) ? 'checked' : '' }}>
-                                    <label>
-                                        @foreach($variant->attributeValues as $attrValue)
-                                            {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
-                                        @endforeach
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        @else
-            <p class="text-muted">Không có sản phẩm đã nhập.</p>
-        @endif
 
-        <!-- Sản phẩm chưa nhập -->
-        <h5 class="text-danger mt-4">Sản phẩm chưa nhập</h5>
-        @if($notImportedProductsList->isNotEmpty())
-            @foreach($notImportedProductsList as $product)
-                <div class="product-item">
-                    <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
-                    <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
-                    @if($product->variants->isNotEmpty())
-                        <div class="variant-list" id="variants-{{ $product->id }}">
-                            @foreach($product->variants as $variant)
-                                <div class="variant-item">
-                                    <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
-                                        data-price="{{ $variant->price }}" 
-                                        data-sale-price="{{ $variant->sale_price ?? '' }}" 
-                                        data-stock="{{ $variant->stock }}" 
-                                        data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
-                                        data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
-                                        data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
-                                        {{ !in_array($variant->id, $importedVariantIds) ? '' : 'disabled' }}>
-                                    <label>
-                                        @foreach($variant->attributeValues as $attrValue)
-                                            {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
-                                        @endforeach
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        @else
-            <p class="text-muted">Không có sản phẩm chưa nhập.</p>
-        @endif
+  <div id="importFormzz" class="form-container" style="display: none;">
+    <div class="header-row">
+        <h4 class="text-secondary mb-4">NHẬP SẢN PHẨM</h4>
+        <img src="https://media4.giphy.com/media/Um3ljJl8jrnHy/giphy.webp?cid=ecf05e47a67hlasek37i2ut7sg8u5psxkkovu16o250uamnn&ep=v1_gifs_search&rid=giphy.webp&ct=g" alt="Import Icon" class="header-image">
     </div>
+
+    
+    
+
+      <form id="importForm" action="{{ route('products.import.store') }}" method="POST">
+        @csrf
+        <div class="mb-3">
+          <label for="import_at" class="form-label">Thời gian nhập</label>
+          <input type="datetime-local" name="import_at" id="import_at" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Chọn sản phẩm heheboy</label>
+          <div class="product-list">
+              <!-- Sản phẩm đã nhập -->
+                    <h5 class="text-success mt-4">Sản phẩm đã nhập</h5>
+                    @if($importedProductsList->isNotEmpty())
+                        @foreach($importedProductsList as $product)
+                            <div class="product-item">
+                                <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
+                                <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
+                                @if($product->variants->isNotEmpty())
+                                    <div class="variant-list" id="variants-{{ $product->id }}">
+                                        @foreach($product->variants as $variant)
+                                            <div class="variant-item">
+                                                <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                                    data-price="{{ $variant->price }}" 
+                                                    data-sale-price="{{ $variant->sale_price ?? '' }}" 
+                                                    data-stock="{{ $variant->stock }}" 
+                                                    data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
+                                                    data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
+                                                    data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
+                                                    {{ in_array($variant->id, $importedVariantIds) ? 'checked' : '' }}>
+                                                <label>
+                                                    @foreach($variant->attributeValues as $attrValue)
+                                                        {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
+                                                    @endforeach
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted">Không có sản phẩm đã nhập.</p>
+                    @endif
+
+                    <!-- Sản phẩm chưa nhập -->
+                    <h5 class="text-danger mt-4">Sản phẩm chưa nhập</h5>
+                    @if($notImportedProductsList->isNotEmpty())
+                        @foreach($notImportedProductsList as $product)
+                            <div class="product-item">
+                                <input type="checkbox" name="products[]" value="{{ $product->id }}" class="product-checkbox" data-product-id="{{ $product->id }}">
+                                <label>{{ $product->name }} (Mã sản phẩm: {{ $product->sku }})</label>
+                                @if($product->variants->isNotEmpty())
+                                    <div class="variant-list" id="variants-{{ $product->id }}">
+                                        @foreach($product->variants as $variant)
+                                            <div class="variant-item">
+                                                <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                                    data-price="{{ $variant->price }}" 
+                                                    data-sale-price="{{ $variant->sale_price ?? '' }}" 
+                                                    data-stock="{{ $variant->stock }}" 
+                                                    data-sale-start="{{ $variant->sale_price_start_at ? \Carbon\Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : '' }}" 
+                                                    data-sale-end="{{ $variant->sale_price_end_at ? \Carbon\Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : '' }}"
+                                                    data-product-name="{{ $variant->product->name ?? 'Không có tên' }}"
+                                                    {{ !in_array($variant->id, $importedVariantIds) ? '' : 'disabled' }}>
+                                                <label>
+                                                    @foreach($variant->attributeValues as $attrValue)
+                                                        {{ $attrValue->attribute->name }}: {{ $attrValue->attribute->slug }}{{ $attrValue->value }} 
+                                                    @endforeach
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted">Không có sản phẩm chưa nhập.</p>
+                    @endif
+                </div>
+        </div>
+
+        <div id="price-inputs" class="mb-3" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary">Xác nhân</button>
+        <button type="button" id="hideImportForm" class="btn btn-secondary">Hủy</button>
+      </form>
+
+      
+  </div>
+  
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Lịch sử nhập hàng</h2>
+    <button id="showImportForm" class="btn btn-success">Nhập hàng</button>
 </div>
 
-      <div id="price-inputs" class="mb-3" style="display: none;"></div>
+  <script>
+          document.getElementById("showImportForm").addEventListener("click", function () {
+              document.getElementById("importFormzz").style.display = "block";
+              this.style.display = "none"; // Ẩn nút "Nhập hàng" khi form xuất hiện
+          });
 
-      <button type="submit" class="btn btn-primary">Xác nhân</button>
-      <a href="{{ route('products.list') }}" class="btn btn-secondary">Quay lại</a>
-    </form>
-  </div>
+          document.getElementById("hideImportForm").addEventListener("click", function () {
+              document.getElementById("importFormzz").style.display = "none";
+              document.getElementById("showImportForm").style.display = "block"; // Hiện lại nút "Nhập hàng"
+          });
+  </script>
 
-  <h2>Lịch sử nhập hàng</h2>
+<form id="searchForm" class="mb-3">
+    <div class="row gx-2 align-items-end">
+        <div class="col-md-auto">
+            <label for="from_date" class="form-label">Từ ngày:</label>
+            <input type="date" id="from_date" name="from_date" class="form-control">
+        </div>
+        <div class="col-md-auto">
+            <label for="to_date" class="form-label">Đến ngày:</label>
+            <input type="date" id="to_date" name="to_date" class="form-control">
+        </div>
+        <div class="col-md-auto">
+            <label for="imported_by" class="form-label">Người nhập:</label>
+            <input type="text" id="imported_by" name="imported_by" class="form-control" placeholder="Nhập tên">
+        </div>
+        <div class="col-md-auto">
+            <button type="button" id="searchBtn" class="btn btn-primary">Tìm kiếm</button>
+        </div>
+    </div>
+</form>
+
+
+
 <table class="table">
     <thead>
         <tr>
-            <th>Ngày Báo</th>
-            <th>Người báo</th>
-            <th>Những sản phẩm trên thớt</th>
-            <th>Giá Thất thoát tổng</th>
+            <th>Ngày nhập</th>
+            <th>Người nhập</th>
+            <th>Số tiền thất thoát</th>
+            <th>Số lượng nhận lại</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
         </tr>
     </thead>
-    <tbody>
-        @foreach ($importedProducts as $import)
+    <tbody id="importTableBody">
+    @foreach ($importedProducts as $import)
             <tr>
                 <td>{{ $import->imported_at }}</td>
                 <td>{{ $import->imported_by }}</td>
-                <td class="details-column">
-                    <ul class="import-details-list">
-                        @foreach ($import->details as $detail)
-                            <li class="import-detail-item">
-                                <span class="detail-product">{{ $detail->product->name }}</span>
-                                <span class="detail-variant">Biến thể: {{ $detail->name_vari }}</span>
-                                <span class="detail-variant">Giá nhập: {{ number_format($detail->price, 0, ',', '.') }} VND</span>
-                                <span class="detail-quantity">Số lượng: {{ $detail->quantity }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </td>
-                <td class="summary-column">
-                    <p><strong>Số tiền thất thoát:</strong> {{ number_format($import->details->sum(function ($detail) {
+                <td>
+                    {{ number_format($import->details->sum(function ($detail) {
                         return $detail->price * $detail->quantity;
-                    }), 0, ',', '.') }} VND</p>
-                    <p><strong>Số lượng nhận lại:</strong> {{ $import->details->sum('quantity') }}</p>
+                    }), 0, ',', '.') }} VND
+                </td>
+                <td>{{ $import->details->sum('quantity') }}</td>
+                <td>
+                    @if ($import->is_active == 0)
+                        <span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>
+                    @elseif ($import->is_active == 1)
+                        <span class="badge text-bg-success">Cấp trên đã bị lừa</span>
+                    @elseif ($import->is_active == 2)
+                        <span class="badge text-bg-danger">Cấp trên khôn quá</span>
+                    @endif
+                </td>
+                <td>
+                    <button class="btn btn-primary btn-sm view-details" 
+                        data-id="{{ $import->id }}" 
+                        data-imported="{{ $import->imported_at }}" 
+                        data-user="{{ $import->imported_by }}" 
+                        data-status="{{ $import->is_active }}">
+                        Xem chi tiết
+                    </button>
                 </td>
             </tr>
         @endforeach
     </tbody>
 </table>
+
+<div class="modal fade" id="importDetailsModal" tabindex="-1" aria-labelledby="importDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importDetailsLabel">Chi Tiết Nhập Hàng (Saygex69.com)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Ngày nhập:</strong> <span id="modal-imported-at"></span></p>
+                <p><strong>Người Chịu trận:</strong> <span id="modal-imported-by"></span></p>
+                <p><strong>Trạng thái:</strong> <span id="modal-status"></span></p>
+                
+                <h5>Danh sách sản phẩm nhập(Truy cập saygex69 để tham gia vào hội ae xã đoàn nhé)</h5>
+                <ul id="modal-import-details" class="list-group"></ul>
+            </div>
+        </div>
+    </div>
 </div>
 
+</div>
+<script>
+    // Hàm hiển thị trạng thái dựa trên giá trị status
+    function getStatusText(status) {
+        const statusValue = parseInt(status, 10) || 0;
+        switch (statusValue) {
+            case 0:
+                return '<span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>';
+            case 1:
+                return '<span class="badge text-bg-success">Cấp trên đã bị lừa</span>';
+            case 2:
+                return '<span class="badge text-bg-danger">Cấp trên khôn quá</span>';
+            default:
+                return '<span class="badge text-bg-secondary">Không xác định</span>';
+        }
+    }
+
+    // Hàm hiển thị trạng thái trong modal
+    function getModalStatusText(status) {
+        const statusValue = parseInt(status, 10) || 0;
+        switch (statusValue) {
+            case 0:
+                return '<span class="badge bg-warning text-dark">Đang chờ duyệt</span>';
+            case 1:
+                return '<span class="badge bg-success">Đã duyệt</span>';
+            case 2:
+                return '<span class="badge bg-danger">Bị từ chối</span>';
+            default:
+                return '<span class="badge bg-secondary">Không xác định</span>';
+        }
+    }
+
+    // Hàm render bảng nhập hàng
+    function renderImportTable(imports) {
+        const tableBody = document.getElementById("importTableBody");
+        tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+        if (!imports || imports.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Không có dữ liệu</td></tr>';
+            return;
+        }
+
+        imports.forEach(imported => {
+            const row = `
+                <tr>
+                    <td>${imported.imported_at}</td>
+                    <td>${imported.imported_by}</td>
+                    <td>${imported.total_loss} VND</td>
+                    <td>${imported.total_quantity}</td>
+                    <td>${getStatusText(imported.status)}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-details" 
+                            data-id="${imported.id}" 
+                            data-imported="${imported.imported_at}" 
+                            data-user="${imported.imported_by}" 
+                            data-status="${imported.status}">
+                            Xem chi tiết
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    // Hàm hiển thị chi tiết trong modal
+    function showImportDetails(importId, importedAt, importedBy, status) {
+        // Cập nhật thông tin cơ bản trong modal
+        document.getElementById("modal-imported-at").textContent = importedAt;
+        document.getElementById("modal-imported-by").textContent = importedBy;
+        document.getElementById("modal-status").innerHTML = getModalStatusText(status);
+
+        // Fetch chi tiết nhập hàng
+        fetch(`/admin/imports/${importId}/details`)
+            .then(response => {
+                if (!response.ok) throw new Error('Không thể lấy chi tiết nhập hàng');
+                return response.json();
+            })
+            .then(data => {
+                const detailsList = document.getElementById("modal-import-details");
+                detailsList.innerHTML = ""; // Xóa dữ liệu cũ
+
+                if (!data || data.length === 0) {
+                    detailsList.innerHTML = '<li class="list-group-item">Không có chi tiết</li>';
+                } else {
+                    data.forEach(detail => {
+                        const listItem = document.createElement("li");
+                        listItem.classList.add("list-group-item");
+                        listItem.innerHTML = `
+                            <strong>Sản phẩm:</strong> ${detail.product_name} <br>
+                            <strong>Biến thể:</strong> ${detail.name_vari} <br>
+                            <strong>Giá nhập:</strong> ${new Intl.NumberFormat('vi-VN').format(detail.price)} VND <br>
+                            <strong>Số lượng:</strong> ${detail.quantity}
+                        `;
+                        detailsList.appendChild(listItem);
+                    });
+                }
+
+                // Hiển thị modal
+                const modal = new bootstrap.Modal(document.getElementById('importDetailsModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error("Lỗi khi lấy chi tiết:", error);
+                alert("Đã có lỗi xảy ra khi lấy chi tiết nhập hàng. Vui lòng thử lại!");
+            });
+    }
+
+    // Hàm tìm kiếm nhập hàng
+    function searchImports() {
+        const fromDate = document.getElementById("from_date").value;
+        const toDate = document.getElementById("to_date").value;
+        const importedBy = document.getElementById("imported_by").value;
+
+        fetch("{{ route('products.import.search') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ from_date: fromDate, to_date: toDate, imported_by: importedBy })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Không thể tìm kiếm dữ liệu');
+            return response.json();
+        })
+        .then(data => {
+            renderImportTable(data);
+        })
+        .catch(error => {
+            console.error("Lỗi khi tìm kiếm:", error);
+            alert("Đã có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại!");
+        });
+    }
+
+    // Khởi tạo sự kiện khi trang tải
+    document.addEventListener("DOMContentLoaded", function () {
+        // Event delegation cho nút "Xem chi tiết"
+        document.getElementById("importTableBody").addEventListener("click", function (event) {
+            const button = event.target.closest(".view-details");
+            if (button) {
+                const importId = button.getAttribute("data-id");
+                const importedAt = button.getAttribute("data-imported");
+                const importedBy = button.getAttribute("data-user");
+                const status = button.getAttribute("data-status");
+                showImportDetails(importId, importedAt, importedBy, status);
+            }
+        });
+
+        // Sự kiện tìm kiếm
+        document.getElementById("searchBtn").addEventListener("click", searchImports);
+    });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>

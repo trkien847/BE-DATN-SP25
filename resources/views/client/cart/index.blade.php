@@ -512,11 +512,11 @@
             let cartId = $row.data('cart-id');
 
             let html = `
-        <tr data-cart-id="${cartId}">
-            <td><input type="checkbox" class="cart-details-checkbox" checked> ${productName}: ${new Intl.NumberFormat('vi-VN').format(price)}đ x ${quantity}</td>
-            <td>${new Intl.NumberFormat('vi-VN').format(subtotal)}đ</td>
-        </tr>
-    `;
+                <tr data-cart-id="${cartId}">
+                    <td><input type="checkbox" class="cart-details-checkbox" checked> ${productName}: ${new Intl.NumberFormat('vi-VN').format(price)}đ x ${quantity}</td>
+                    <td>${new Intl.NumberFormat('vi-VN').format(subtotal)}đ</td>
+                </tr>
+            `;
             $('#cart-details').append(html);
         }
 
@@ -707,6 +707,5 @@
             color: #888;
         }
 
-        .cart-product-subtotal {
     </style>
 @endpush

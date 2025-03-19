@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Models\Cart;
+use App\Models\ProductImportDetail;
 use App\Models\User;
 
 
@@ -128,8 +129,22 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
   
+  //nhập 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
+  Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');
+  Route::patch('notifications/mark-as-read/{id}', [ProductController::class, 'markNotificationAsRead'])->name('notifications.markAsRead');
+  Route::post('notifications/check', [ProductController::class, 'checkNotifications'])->name('notifications.check');
+  Route::patch('products/import/reject/{id}', [ProductController::class, 'rejectImport'])->name('products.import.reject');
+  Route::post('/products/search', [ProductController::class, 'search'])->name('products.import.search');
+  Route::get('/admin/imports/{id}/details', function ($id) {
+    $details = ProductImportDetail::where('import_id', $id)
+        ->join('products', 'product_import_details.product_id', '=', 'products.id')
+        ->select('products.name as product_name', 'product_import_details.*')
+        ->get();
+    
+    return response()->json($details);
+});
 
   // Quản lý thuộc tính sản phẩm
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');

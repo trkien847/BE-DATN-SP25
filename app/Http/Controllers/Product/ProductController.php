@@ -22,6 +22,8 @@ use App\Models\Product;
 use App\Models\ProductGalleries;
 use App\Models\ProductImport;
 use App\Models\ProductVariant;
+use App\Models\User;
+use App\Notifications\ImportPendingNotification;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -539,28 +541,52 @@ class ProductController extends Controller
 
     // nhập 
     public function import()
-{
-    $products = Product::with('variants')->get();
+    {
+        $products = Product::with('variants')->get();
 
-    $importedProducts = ProductImport::with(['details.product', 'details'])
-        ->orderBy('imported_at', 'desc')
-        ->get();
+        $importedProducts = ProductImport::with(['details.product', 'details'])
+            ->orderBy('imported_at', 'desc')
+            ->get();
+        $importedProductIds = $importedProducts->pluck('details')->flatten()->pluck('product_id')->unique()->toArray();
+        $importedVariantIds = $importedProducts->pluck('details')->flatten()->pluck('product_variant_id')->unique()->toArray();
+        $importedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
+            return in_array($product->id, $importedProductIds) || $product->variants->pluck('id')->intersect($importedVariantIds)->isNotEmpty();
+        });
+        $notImportedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
+            return !in_array($product->id, $importedProductIds) && $product->variants->pluck('id')->diff($importedVariantIds)->isNotEmpty();
+        });
 
-    // Lấy danh sách các product_id và variant_id đã được nhập (chuyển thành mảng)
-    $importedProductIds = $importedProducts->pluck('details')->flatten()->pluck('product_id')->unique()->toArray();
-    $importedVariantIds = $importedProducts->pluck('details')->flatten()->pluck('product_variant_id')->unique()->toArray();
+        return view('admin.products.import', compact('products', 'importedProducts', 'importedProductsList', 'notImportedProductsList', 'importedVariantIds'));
+    }
 
-    // Phân loại sản phẩm
-    $importedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
-        return in_array($product->id, $importedProductIds) || $product->variants->pluck('id')->intersect($importedVariantIds)->isNotEmpty();
-    });
+    public function search(Request $request)
+    {
+        $query = ProductImport::query();
 
-    $notImportedProductsList = $products->filter(function ($product) use ($importedProductIds, $importedVariantIds) {
-        return !in_array($product->id, $importedProductIds) && $product->variants->pluck('id')->diff($importedVariantIds)->isNotEmpty();
-    });
+        if ($request->from_date) {
+            $query->whereDate('imported_at', '>=', $request->from_date);
+        }
+        if ($request->to_date) {
+            $query->whereDate('imported_at', '<=', $request->to_date);
+        }
+        if ($request->imported_by) {
+            $query->where('imported_by', 'LIKE', '%' . $request->imported_by . '%');
+        }
 
-    return view('admin.products.import', compact('products', 'importedProducts', 'importedProductsList', 'notImportedProductsList', 'importedVariantIds'));
-}
+        $results = $query->with('details')->get()->map(function ($import) {
+            return [
+                'id' => $import->id,
+                'imported_at' => $import->imported_at,
+                'imported_by' => $import->imported_by,
+                'total_loss' => number_format($import->details->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.'),
+                'total_quantity' => $import->details->sum('quantity'),
+                'status' => $import->is_active == 0 ? 'Đang chờ cấp trên bị lừa' : ($import->is_active == 1 ? 'Cấp trên đã bị lừa' : 'Cấp trên khôn quá'),
+            ];
+        });
+
+        return response()->json($results);
+    }
+
 
     public function importStore(Request $request)
     {
@@ -583,12 +609,14 @@ class ProductController extends Controller
         $name_vars = $request->input('name_vars');
         $sale_price_start_at = $request->input('sale_price_start_at');
         $sale_price_end_at = $request->input('sale_price_end_at');
+        $isActive = auth()->user()->role_id == 3 ? 1 : 0;
 
 
         $import = ProductImport::create([
             'user_id' => auth()->id(),
             'imported_by' => auth()->user()->fullname ?? 'Unknown',
             'imported_at' => $importAt,
+            'is_active' => $isActive,
         ]);
 
 
@@ -610,7 +638,6 @@ class ProductController extends Controller
                     'price' => $importPrices[$variantId],
                 ]);
 
-
                 ProductVariant::where('id', $variantId)->update([
                     'import_price' => $importPrices[$variantId],
                     'price' => $prices[$variantId] ?? 0,
@@ -623,6 +650,75 @@ class ProductController extends Controller
             }
         }
 
+        if ($isActive == 0) {
+            $admins = User::where('role_id', 3)->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new ImportPendingNotification($import));
+            }
+        }
+
         return redirect()->route('products.import')->with('success', 'Đã nhập hàng và cập nhật giá/biến thể thành công!');
+    }
+
+
+    public function confirmImport(Request $request, $id)
+    {
+        $import = ProductImport::findOrFail($id);
+
+        if (auth()->user()->role_id != 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn nhập hàng.');
+        }
+
+        $import->update(['is_active' => 1]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
+    }
+
+    public function markNotificationAsRead(Request $request, $id)
+    {
+
+        if (!auth()->check()) {
+            return redirect()->back()->with('error', 'Bạn cần đăng nhập để thực hiện hành động này.');
+        }
+
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        return redirect()->back()->with('success', 'Đã đánh dấu thông báo là đã đọc.');
+    }
+
+    public function checkNotifications(Request $request)
+    {
+        if (!auth()->check() || auth()->user()->role_id != 3) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $lastChecked = $request->input('last_checked');
+        $pendingImports = ProductImport::where('is_active', 0)
+            ->where('created_at', '>', $lastChecked)
+            ->get();
+
+        $imports = $pendingImports->map(function ($import) {
+            return [
+                'message' => 'Bạn đang có một đơn hàng chờ xác nhận.',
+                'import_id' => $import->id,
+                'imported_at' => $import->imported_at,
+                'imported_by' => $import->imported_by,
+            ];
+        })->toArray();
+
+        return response()->json(['imports' => $imports]);
+    }
+
+    public function rejectImport(Request $request, $id)
+    {
+        $import = ProductImport::findOrFail($id);
+
+        if (auth()->user()->role_id != 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền từ chối đơn nhập hàng.');
+        }
+        $import->update(['is_active' => 2]);
+
+        return redirect()->back()->with('success', 'Đã từ chối đơn nhập hàng thành công!');
     }
 }
