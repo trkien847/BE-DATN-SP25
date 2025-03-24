@@ -157,7 +157,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
-
+  Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
 
 Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
 Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');

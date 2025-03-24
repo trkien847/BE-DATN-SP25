@@ -31,7 +31,7 @@ class AiTgCtroller extends Controller
         
         if (!empty($keywords['category'])) {
             $category = Category::where('name', 'like', '%' . $keywords['category'] . '%')
-                ->first(); // Xóa orWhere slug
+                ->first(); 
         
             if ($category) {
                 $productsQuery->whereHas('categories', function ($q) use ($category) {
@@ -158,7 +158,7 @@ class AiTgCtroller extends Controller
     private function searchByImage($image)
     {
         // Lấy tên file gốc từ ảnh tải lên
-        $thumbnail = $image->getClientOriginalName(); // Ví dụ: "prospan-red-l.jpg"
+        $thumbnail = $image->getClientOriginalName();
     
         // Tìm sản phẩm dựa trên tên file
         $products = Product::where('thumbnail', 'like', '%' . $thumbnail . '%')
@@ -168,7 +168,7 @@ class AiTgCtroller extends Controller
             ->where('is_active', 1)
             ->get();
     
-        // Tạo phản hồi
+        // Tạo phản hồi 
         $reply = $products->isEmpty()
             ? "Không tìm thấy sản phẩm nào giống với ảnh bạn cung cấp."
             : "Dưới đây là các sản phẩm tương tự:<br>" .

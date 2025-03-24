@@ -24,7 +24,7 @@
 </style>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
-        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG</h4>
+        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG bruh bruh lmao</h4>
         {{-- <button class="btn btn-success btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
           <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
         </button> --}}
@@ -52,53 +52,90 @@
             <a class="nav-link" href="#" data-status="7">Đã hủy</a>
         </li>
     </ul>
+    
     <div class="mt-3">
-        <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th scope="col">Mã đơn hàng</th>
-                    <th scope="col">Tên khách hàng</th>
-                    <th scope="col">Mã giảm giá</th>
-                    <th scope="col">Trạng thái</th>
-                    <th scope="col">Tổng hóa đơn</th>
-                    <th scope="col">Người xử lý</th>
-                    <th scope="col">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody id="orderBody">
-                @foreach($orders as $order)
-                <tr>
-                    <td>{{ $order->code }}</td>
-                    <td>{{ $order->fullname }}</td>
-                    <td>{{ $order->coupon_code ?? 'Không có' }}</td>
-                    <td class="status-cancelled">
-                        <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
-                            @php
-                            $latestStatus = $order->orderStatuses->sortByDesc('created_at')->first();
-                            $currentStatus = $latestStatus ? $latestStatus->orderStatus->name : '';
-                            @endphp
-                            <option value="1" {{ $currentStatus == 'Chờ xác nhận' ? 'selected' : '' }}>Chờ xác nhận</option>
-                            <option value="2" {{ $currentStatus == 'Chờ giao hàng' ? 'selected' : '' }}>Chờ giao hàng</option>
-                            <option value="3" {{ $currentStatus == 'Đang giao hàng' ? 'selected' : '' }}>Đang giao hàng</option>
-                            <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
-                            <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-                            <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
-                        </select>
-                        <div class="evidence-upload" style="display: none;">
-                            <input type="file" class="evidence-file" accept="image/*">
-                        </div>
-                    </td>
-                    <td>{{ number_format($order->total_amount, 0, ',', '.') }} VND</td>
-                    <td>{{ $latestStatus->modifier->fullname ?? 'Chưa có' }}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm detail-btn" data-order-id="{{ $order->id }}">Chi tiết đơn hàng</button>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <form id="filterForm" class="row g-3">
+            <div class="col-md-3">
+                <label for="startDate" class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="startDate" name="start_date">
+            </div>
+            <div class="col-md-3">
+                <label for="endDate" class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="endDate" name="end_date">
+            </div>
+            <div class="col-md-3">
+                <label for="customerName" class="form-label">Tên khách hàng</label>
+                <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Nhập tên khách hàng">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Nước lọc</button>
+                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">Không nước lọc</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-3">
+    <div class="mt-3 bulk-update-section" style="display: none;">
+            <select id="bulkStatus" class="form-select w-auto d-inline-block">
+                <option value="">Chọn trạng thái</option>
+                <option value="1">Chờ xác nhận</option>
+                <option value="2">Chờ giao hàng</option>
+                <option value="3">Đang giao hàng</option>
+                <option value="4">Đã giao hàng</option>
+            </select>
+            <button id="updateBulkStatus" class="btn btn-success">Cập nhật trạng thái</button>
         </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col" class="checkbox-column" style="display: none;"><input type="checkbox" id="selectAll"></th>
+                        <th scope="col">Mã đơn hàng</th>
+                        <th scope="col">Tên khách hàng</th>
+                        <th scope="col">Mã giảm giá</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Tổng hóa đơn</th>
+                        <th scope="col">Người xử lý</th>
+                        <th scope="col">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="orderBody">
+                    @foreach($orders as $order)
+                    <tr>
+                        <td class="checkbox-column" style="display: none;"><input type="checkbox" class="orderCheckbox" value="{{ $order->id }}"></td>
+                        <td>{{ $order->code }}</td>
+                        <td>{{ $order->fullname }}</td>
+                        <td>{{ $order->coupon_code ?? 'Không có' }}</td>
+                        <td class="status-cancelled">
+                            <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
+                                @php
+                                $latestStatus = $order->orderStatuses->sortByDesc('created_at')->first();
+                                $currentStatus = $latestStatus ? $latestStatus->orderStatus->name : '';
+                                @endphp
+                                <option value="1" {{ $currentStatus == 'Chờ xác nhận' ? 'selected' : '' }}>Chờ xác nhận</option>
+                                <option value="2" {{ $currentStatus == 'Chờ giao hàng' ? 'selected' : '' }}>Chờ giao hàng</option>
+                                <option value="3" {{ $currentStatus == 'Đang giao hàng' ? 'selected' : '' }}>Đang giao hàng</option>
+                                <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
+                                <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+                                <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
+                            </select>
+                            <div class="evidence-upload" style="display: none;">
+                                <input type="file" class="evidence-file" accept="image/*">
+                            </div>
+                        </td>
+                        <td>{{ number_format($order->total_amount, 0, ',', '.') }} VND</td>
+                        <td>{{ $latestStatus->modifier->fullname ?? 'Chưa có' }}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm detail-btn" data-order-id="{{ $order->id }}">Chi tiết đơn hàng</button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        
+        
     </div>
 
 
@@ -144,42 +181,167 @@
     </div>
 
 </div>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+const modifiedBy = {{ $currentUserId ?? 'null' }};
 
-// Lọc theo trạng thái
-document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const status = this.dataset.status;
 
-        fetch(`/admin/orders?status=${status}`, {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'text/html'
+// Hàm gắn sự kiện cho các phần tử .status-select
+function attachStatusEvents() {
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.dataset.orderId;
+            const statusId = this.value;
+            const evidenceUpload = this.closest('td').querySelector('.evidence-upload');
+            const evidenceFile = this.closest('td').querySelector('.evidence-file');
+
+            if (statusId == 6 || statusId == 7) {
+                evidenceUpload.style.display = 'block';
+                evidenceFile.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        uploadStatus(orderId, statusId, this.files[0]);
+                    }
+                }, { once: true });
+            } else {
+                evidenceUpload.style.display = 'none';
+                uploadStatus(orderId, statusId, null);
             }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newOrderBody = doc.querySelector('#orderBody');
-            document.getElementById('orderBody').innerHTML = newOrderBody.innerHTML;
-            document.querySelectorAll('#statusFilter .nav-link').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Không thể lọc đơn hàng: ' + error.message,
-                confirmButtonColor: '#d33'
-            });
+        });
+    });
+}
+
+function attachDetailEvents() {
+    document.querySelectorAll('.detail-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            
+        });
+    });
+}
+
+// Hàm lọc đơn hàng
+function filterOrders(status = '', startDate = '', endDate = '', customerName = '') {
+    const url = new URL('/admin/orders', window.location.origin);
+    if (status) url.searchParams.append('status', status);
+    if (startDate) url.searchParams.append('start_date', startDate);
+    if (endDate) url.searchParams.append('end_date', endDate);
+    if (customerName) url.searchParams.append('customer_name', customerName);
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'text/html'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newOrderBody = doc.querySelector('#orderBody');
+        document.getElementById('orderBody').innerHTML = newOrderBody.innerHTML;
+        const checkboxColumns = document.querySelectorAll('.checkbox-column');
+        const bulkUpdateSection = document.querySelector('.bulk-update-section');
+        if (status === '' && !startDate && !endDate && !customerName) {
+            checkboxColumns.forEach(col => col.style.display = 'none');
+            bulkUpdateSection.style.display = 'none';
+        } else {
+            checkboxColumns.forEach(col => col.style.display = 'table-cell');
+            bulkUpdateSection.style.display = 'block';
+        }
+
+        // Gắn lại sự kiện sau khi cập nhật nội dung
+        attachStatusEvents();
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Không thể lọc đơn hàng: ' + error.message,
+            confirmButtonColor: '#d33'
+        });
+    });
+}
+
+// Lọc theo form
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const status = document.querySelector('#statusFilter .nav-link.active').dataset.status || '';
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const customerName = document.getElementById('customerName').value;
+
+    filterOrders(status, startDate, endDate, customerName);
+});
+
+// Xóa bộ lọc
+document.getElementById('resetFilter').addEventListener('click', function() {
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('customerName').value = '';
+    const activeLink = document.querySelector('#statusFilter .nav-link.active');
+    const status = activeLink ? activeLink.dataset.status : '';
+    filterOrders(status);
+});
+
+$(document).ready(function() {
+    $('#selectAll').on('click', function() {
+        $('.orderCheckbox').prop('checked', this.checked);
+    });
+
+    $('#updateBulkStatus').on('click', function() {
+        const selectedOrders = $('.orderCheckbox:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        const newStatus = $('#bulkStatus').val();
+
+        if (selectedOrders.length === 0) {
+            alert('Vui lòng chọn ít nhất một đơn hàng!');
+            return;
+        }
+
+        if (!newStatus) {
+            alert('Vui lòng chọn trạng thái để cập nhật!');
+            return;
+        }
+
+        if (!modifiedBy) {
+            alert('Bạn cần đăng nhập để thực hiện thao tác này!');
+            return;
+        }
+
+        $.ajax({
+            url: '/update-bulk-status',
+            method: 'POST',
+            data: {
+                order_ids: selectedOrders,
+                status_id: newStatus,
+                modified_by: modifiedBy,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Cập nhật trạng thái thành công!');
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('Đã xảy ra lỗi: ' + xhr.responseJSON.message);
+            }
         });
     });
 });
+
+
+attachStatusEvents();
+document.getElementById('closeDetail').addEventListener('click', function() {
+    document.getElementById('orderDetail').style.display = 'none';
+});
+
 
 document.querySelectorAll('.detail-btn').forEach(button => {
     button.addEventListener('click', function() {

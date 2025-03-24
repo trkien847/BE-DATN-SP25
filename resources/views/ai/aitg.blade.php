@@ -172,11 +172,11 @@
             })
             .then(response => response.json())
             .then(data => {
-                output.innerHTML += `<p><strong>Trợ lý:</strong> ${data.reply}</p>`;
+                output.innerHTML += `<p><strong>TG EPA:</strong> ${data.reply}</p>`;
                 output.scrollTop = output.scrollHeight;
             })
             .catch(error => {
-                output.innerHTML += `<p><strong>Trợ lý:</strong> Có lỗi xảy ra: ${error.message}</p>`;
+                output.innerHTML += `<p><strong>TG EPA:</strong> Có lỗi xảy ra: ${error.message}</p>`;
             });
         }
 
