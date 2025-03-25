@@ -21,6 +21,53 @@
         max-height: 80vh; 
         overflow-y: auto; 
     }
+
+    .nav-link {
+    position: relative; 
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    padding: 8px 16px; 
+    display: inline-block;
+}
+
+.nav-link.active {
+    background-color: #007bff; 
+    color: white; 
+    transform: scale(1.1); 
+}
+
+
+.nav-link.clicked {
+    transform: scale(1.15); 
+    background-color: #0056b3; 
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+    z-index: 0;
+}
+
+.nav-link.clicked::after {
+    width: 100px; /* Kích thước tối đa của ripple */
+    height: 100px;
+    opacity: 0;
+}
+.nav-link.clicked {
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
 </style>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
@@ -29,6 +76,7 @@
           <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
         </button> --}}
     </div>
+
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
             <a class="nav-link active" href="#" data-status="">Tất cả đơn giao hàng</a>
@@ -45,6 +93,7 @@
         <li class="nav-item">
             <a class="nav-link" href="#" data-status="4">Đã giao hàng</a>
         </li>
+
         <li class="nav-item">
             <a class="nav-link" href="#" data-status="6">Hoàn thành</a>
         </li>
@@ -68,8 +117,8 @@
                 <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Nhập tên khách hàng">
             </div>
             <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary">Nước lọc</button>
-                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">Không nước lọc</button>
+                <button type="submit" class="btn btn-primary">SAYGEX</button>
+                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">KO SAYGEX</button>
             </div>
         </form>
     </div>
@@ -228,6 +277,16 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
     if (endDate) url.searchParams.append('end_date', endDate);
     if (customerName) url.searchParams.append('customer_name', customerName);
 
+    Swal.fire({
+        title: 'Mệt quá rồi Mệt quá rồi...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const startTime = Date.now();
+
     fetch(url, {
         method: 'GET',
         headers: {
@@ -241,18 +300,34 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
         const doc = parser.parseFromString(html, 'text/html');
         const newOrderBody = doc.querySelector('#orderBody');
         document.getElementById('orderBody').innerHTML = newOrderBody.innerHTML;
+
         const checkboxColumns = document.querySelectorAll('.checkbox-column');
         const bulkUpdateSection = document.querySelector('.bulk-update-section');
-        if (status === '' && !startDate && !endDate && !customerName) {
+
+        if (startDate || endDate || customerName) {
             checkboxColumns.forEach(col => col.style.display = 'none');
             bulkUpdateSection.style.display = 'none';
         } else {
-            checkboxColumns.forEach(col => col.style.display = 'table-cell');
-            bulkUpdateSection.style.display = 'block';
+            if (status === '6' || status === '7' || status === '4') {
+                checkboxColumns.forEach(col => col.style.display = 'none');
+                bulkUpdateSection.style.display = 'none';
+            } else {
+                checkboxColumns.forEach(col => col.style.display = 'table-cell');
+                bulkUpdateSection.style.display = 'block';
+            }
         }
-
-        // Gắn lại sự kiện sau khi cập nhật nội dung
         attachStatusEvents();
+
+        const elapsedTime = Date.now() - startTime;
+        const minDisplayTime = 1000; 
+
+        if (elapsedTime < minDisplayTime) {
+            setTimeout(() => {
+                Swal.close();
+            }, minDisplayTime - elapsedTime);
+        } else {
+            Swal.close();
+        }
     })
     .catch(error => {
         Swal.fire({
@@ -271,6 +346,11 @@ document.getElementById('filterForm').addEventListener('submit', function(e) {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const customerName = document.getElementById('customerName').value;
+    const checkboxColumns = document.querySelectorAll('.checkbox-column');
+    const bulkUpdateSection = document.querySelector('.bulk-update-section');
+
+    checkboxColumns.forEach(col => col.style.display = 'none');
+    bulkUpdateSection.style.display = 'none';
 
     filterOrders(status, startDate, endDate, customerName);
 });
@@ -476,5 +556,42 @@ function uploadStatus(orderId, statusId, file) {
         });
     });
 }
+
+
+document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault(); 
+
+        document.querySelectorAll('#statusFilter .nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const status = this.dataset.status;
+
+        this.classList.add('clicked');
+        setTimeout(() => {
+            this.classList.remove('clicked');
+        }, 300);
+
+        const checkboxColumns = document.querySelectorAll('.checkbox-column');
+        const bulkUpdateSection = document.querySelector('.bulk-update-section');
+        const filterForm = document.getElementById('filterForm');
+
+        
+        if (status === '6' || status === '7' || status === '4') {
+           
+            checkboxColumns.forEach(col => col.style.display = 'none');
+            bulkUpdateSection.style.display = 'none';
+        } else {
+           
+            checkboxColumns.forEach(col => col.style.display = 'table-cell');
+            bulkUpdateSection.style.display = 'block';
+        }
+
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const customerName = document.getElementById('customerName').value;
+
+        filterOrders(status, startDate, endDate, customerName);
+    });
+});
 </script>
 @endsection

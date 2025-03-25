@@ -107,15 +107,17 @@
   .variant-item:hover {
     background-color: #f5f5f5;
   }
-  .variant-count {
-    margin-top: 5px;
+
+  .variant-list {
+    margin-top: 10px;
   }
-  .variant-count .badge {
+
+    .variant-count .badge {
     font-size: 12px;
     padding: 5px 8px;
   }
-  .variant-list {
-    margin-top: 10px;
+  .variant-count {
+    margin-top: 5px;
   }
   .search-bar button:hover {
     background-color: rgb(179, 0, 9);
@@ -224,7 +226,6 @@
       <th scope="col">Danh mục</th>
       <th scope="col">Biến thể</th>
       <th scope="col">Trạng Thái</th>
-      <th scope="col">Nhà Cung Cấp</th>
       <th scope="col">Hành Động</th>
     </tr>
   </thead>
@@ -262,54 +263,55 @@
         @endforeach
       </td>
       
-      <td>
-        <div class="variant-container" data-product-id="{{ $product->id }}">
-          @if($product->variants->isNotEmpty())
-            
-            <div class="variant-item" style="cursor: pointer;" onclick="toggleVariants({{ $product->id }})">
-              <strong>Tên biến thể:</strong>
-              @foreach($product->variants[0]->attributeValues as $value)
-                {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
-              @endforeach <br>
-              <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($product->variants[0]->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
-              <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($product->variants[0]->price, 0, ',', '.') }} VND</span> <br>
-              <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($product->variants[0]->sale_price, 0, ',', '.') }} VND</span> <br>
-              <strong>Số lượng:</strong> {{ $product->variants[0]->stock }} <br>
-            </div>
-           
-            @if($product->variants->count() > 1)
-              <div class="variant-count" onclick="toggleVariants({{ $product->id }})" style="cursor: pointer;">
-                <span class="badge bg-primary rounded-circle" title="Xem thêm biến thể">+{{ $product->variants->count() - 1 }}</span>
+        <td>
+          <div class="variant-container" data-product-id="{{ $product->id }}">
+            @if($product->variants->isNotEmpty())
+              <div class="variant-item">
+                <strong>Tên biến thể:</strong>
+                @foreach($product->variants[0]->attributeValues as $value)
+                  {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
+                @endforeach <br>
+                <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($product->variants[0]->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
+                <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($product->variants[0]->price, 0, ',', '.') }} VND</span> <br>
+                <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($product->variants[0]->sale_price, 0, ',', '.') }} VND</span> <br>
+                <strong>Số lượng:</strong> {{ $product->variants[0]->stock }} <br>
               </div>
               
-              <div class="variant-list" id="variant-list-{{ $product->id }}" style="display: none;">
-                @foreach($product->variants->slice(1) as $variant)
-                  <div class="variant-item">
-                    <strong>Tên biến thể:</strong>
-                    @foreach($variant->attributeValues as $value)
-                      {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
-                    @endforeach <br>
-                    <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($variant->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
-                    <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($variant->price, 0, ',', '.') }} VND</span> <br>
-                    <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($variant->sale_price, 0, ',', '.') }} VND</span> <br>
-                    <strong>Số lượng:</strong> {{ $variant->stock }} <br>
-                    <hr>
-                  </div>
-                @endforeach
-              </div>
+              @if($product->variants->count() > 1)
+                <div class="variant-count">
+                  <span class="badge bg-primary rounded-circle" title="Xem thêm biến thể">+{{ $product->variants->count() - 1 }}</span>
+                </div>
+                
+                <div class="variant-list" id="variant-list-{{ $product->id }}" style="display: none;">
+                  @foreach($product->variants->slice(1) as $variant)
+                    <div class="variant-item">
+                      <strong>Tên biến thể:</strong>
+                      @foreach($variant->attributeValues as $value)
+                        {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
+                      @endforeach <br>
+                      <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($variant->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
+                      <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($variant->price, 0, ',', '.') }} VND</span> <br>
+                      <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($variant->sale_price, 0, ',', '.') }} VND</span> <br>
+                      <strong>Số lượng:</strong> {{ $variant->stock }} <br>
+                      <hr>
+                    </div>
+                  @endforeach
+                </div>
+              @endif
+            @else
+              <span>Không có biến thể</span>
             @endif
-          @else
-            <span>Không có biến thể</span>
-          @endif
-        </div>
-      </td>
+          </div>
+        </td>
+
+
+
       <td>
         <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
           {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
           {{ $product->variants_sum_stock }}
         </span>
       </td>
-      <td>{{ $product->brand->name ?? 'Không có thương hiệu' }}</td>
       <td>
         <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm ripple">
           <i class="bx bx-edit fs-16"></i>
@@ -330,13 +332,7 @@
   </tbody>
 </table>
 
-<div id="content-overlay" class="content-overlay" style="display: none;">
-  <div class="overlay-content">
-    <h5>Nội dung sản phẩm</h5>
-    <div id="full-content"></div>
-    <button id="close-overlay" class="btn btn-secondary mt-3">Đóng</button>
-  </div>
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
@@ -349,15 +345,6 @@ function toggleSubcategories(categoryId) {
   }
 }
 
-function toggleVariants(productId) {
-  const variantList = $(`#variant-list-${productId}`);
-  if (variantList.is(':visible')) {
-    variantList.slideUp(300);
-  } else {
-    variantList.slideDown(300);
-  }
-}
-
 function toggleSubcategories(categoryId) {
   const subcategoriesDiv = document.getElementById(`subcategories-${categoryId}`);
   if (subcategoriesDiv.style.display === 'none') {
@@ -367,41 +354,19 @@ function toggleSubcategories(categoryId) {
   }
 }
 
-function toggleVariants(productId) {
-  const variantList = $(`#variant-list-${productId}`);
-  if (variantList.is(':visible')) {
-    variantList.slideUp(300);
-  } else {
-    variantList.slideDown(300);
-  }
-}
-
 $(document).ready(function() {
-  
-  $('.show-full-content').on('click', function() {
-    const content = $(this).data('content');
-    $('#full-content').html(content);
-    $('#content-overlay').fadeIn(300).find('.overlay-content').addClass('active');
-  });
-
- 
-  $('#close-overlay').on('click', function() {
-    $('#content-overlay').find('.overlay-content').removeClass('active');
-    setTimeout(function() {
-      $('#content-overlay').fadeOut(300);
-    }, 300);
-  });
-
-  
-  $('#content-overlay').on('click', function(e) {
-    if (e.target === this) {
-      $('#content-overlay').find('.overlay-content').removeClass('active');
-      setTimeout(function() {
-        $('#content-overlay').fadeOut(300);
-      }, 300);
+  $('.variant-container').hover(
+    function() { 
+      const productId = $(this).data('product-id');
+      $(`#variant-list-${productId}`).slideDown(300);
+    },
+    function() { 
+      const productId = $(this).data('product-id');
+      $(`#variant-list-${productId}`).slideUp(300);
     }
-  });
+  );
 });
+
 </script>
   </div>
 

@@ -661,18 +661,7 @@ class ProductController extends Controller
     }
 
 
-    public function confirmImport(Request $request, $id)
-    {
-        $import = ProductImport::findOrFail($id);
-
-        if (auth()->user()->role_id != 3) {
-            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn nhập hàng.');
-        }
-
-        $import->update(['is_active' => 1]);
-
-        return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
-    }
+   
 
     public function markNotificationAsRead(Request $request, $id)
     {
@@ -721,4 +710,19 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Đã từ chối đơn nhập hàng thành công!');
     }
+
+    public function confirmImport(Request $request, $id)
+    {
+        $import = ProductImport::findOrFail($id);
+
+        if (auth()->user()->role_id != 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn nhập hàng.');
+        }
+
+        $import->update(['is_active' => 1]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
+    }
+
+
 }

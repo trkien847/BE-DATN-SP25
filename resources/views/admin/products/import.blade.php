@@ -43,7 +43,7 @@
   .price-input {
   margin-top: 10px;
   display: flex;
-  flex-wrap: wrap; /* Cho phép các input xuống dòng nếu không đủ chỗ */
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 10px;
@@ -55,7 +55,7 @@
 
 .price-input input {
   flex: 1;
-  min-width: 150px; /* Đảm bảo input không quá nhỏ */
+  min-width: 150px; 
 }
   .product-item,
   .variant-item {
@@ -117,8 +117,8 @@
 
 .details-column {
     padding: 10px;
-    max-width: 400px; /* Giới hạn chiều rộng để tránh tràn */
-    overflow-x: auto; /* Cho phép cuộn ngang nếu nội dung dài */
+    max-width: 400px; 
+    overflow-x: auto; 
 }
 
 .import-details-list {
@@ -129,25 +129,25 @@
 
 .import-detail-item {
     display: flex;
-    justify-content: space-between; /* Phân bố đều các phần */
+    justify-content: space-between; 
     align-items: center;
     padding: 5px 0;
-    border-bottom: 1px solid #eee; /* Đường phân cách */
+    border-bottom: 1px solid #eee; 
     background-color: #fff;
     transition: background-color 0.3s;
 }
 
 .import-detail-item:hover {
-    background-color: #f9f9f9; /* Hiệu ứng hover */
+    background-color: #f9f9f9; 
 }
 
 .detail-product {
     font-weight: bold;
     color: #2c3e50;
     flex: 2;
-    white-space: nowrap; /* Ngăn ngắt dòng */
+    white-space: nowrap; 
     overflow: hidden;
-    text-overflow: ellipsis; /* Thêm dấu ... nếu tràn */
+    text-overflow: ellipsis;
 }
 
 .detail-variant {
@@ -167,7 +167,7 @@
     white-space: nowrap;
 }
 
-/* Đảm bảo bảng không bị tràn */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -190,19 +190,19 @@ td, th {
 }
 
 .summary-column strong {
-    color: #e74c3c; /* Màu nổi bật cho tiêu đề */
+    color: #e74c3c;
 }
 
 .header-row {
     display: flex;
-    align-items: center; /* Căn giữa theo chiều dọc */
-    gap: 400px; /* Khoảng cách giữa tiêu đề và hình ảnh */
+    align-items: center; 
+    gap: 400px; 
 }
 
 .header-image {
-    width: 300px; /* Điều chỉnh kích thước hình ảnh */
-    height: 150px; /* Điều chỉnh kích thước hình ảnh */
-    object-fit: contain; /* Đảm bảo hình ảnh không bị méo */
+    width: 300px; 
+    height: 150px;
+    object-fit: contain;
 }
 </style>
 @if(session('success'))
@@ -227,9 +227,6 @@ td, th {
         <img src="https://media4.giphy.com/media/Um3ljJl8jrnHy/giphy.webp?cid=ecf05e47a67hlasek37i2ut7sg8u5psxkkovu16o250uamnn&ep=v1_gifs_search&rid=giphy.webp&ct=g" alt="Import Icon" class="header-image">
     </div>
 
-    
-    
-
       <form id="importForm" action="{{ route('products.import.store') }}" method="POST">
         @csrf
         <div class="mb-3">
@@ -239,7 +236,8 @@ td, th {
 
         <div class="mb-3">
           <label class="form-label">Chọn sản phẩm heheboy</label>
-          <div class="product-list">
+
+          <div class="product-list" style="margin-top: 5px;">
               <!-- Sản phẩm đã nhập -->
                     <h5 class="text-success mt-4">Sản phẩm đã nhập</h5>
                     @if($importedProductsList->isNotEmpty())
@@ -310,6 +308,40 @@ td, th {
                 </div>
         </div>
 
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+           
+            const searchBar = `
+                <div class="d-flex">
+                    <input type="text" id="product-search" class="form-control me-2" placeholder="Tìm kiếm sản phẩm theo tên hoặc mã SKU...">
+                    <button id="clear-search" class="btn btn-outline-secondary" type="button">Xóa</button>
+                </div>
+            `;
+        
+            document.querySelector('.product-list').insertAdjacentHTML('beforebegin', searchBar);
+            document.getElementById('product-search').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const productItems = document.querySelectorAll('.product-item');
+                
+                productItems.forEach(function(item) {
+                    const productText = item.querySelector('label').textContent.toLowerCase();
+                    if (productText.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            document.getElementById('clear-search').addEventListener('click', function() {
+                document.getElementById('product-search').value = '';
+                document.querySelectorAll('.product-item').forEach(function(item) {
+                    item.style.display = '';
+                });
+            });
+        });
+        </script>
         <div id="price-inputs" class="mb-3" style="display: none;"></div>
 
         <button type="submit" class="btn btn-primary">Xác nhân</button>
@@ -319,44 +351,44 @@ td, th {
       
   </div>
   
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  
     <h2>Lịch sử nhập hàng</h2>
+   
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form id="searchForm" class="mb-3">
+        <div class="row gx-2 align-items-end">
+            <div class="col-md-auto">
+                <label for="from_date" class="form-label">Từ ngày:</label>
+                <input type="date" id="from_date" name="from_date" class="form-control">
+            </div>
+            <div class="col-md-auto">
+                <label for="to_date" class="form-label">Đến ngày:</label>
+                <input type="date" id="to_date" name="to_date" class="form-control">
+            </div>
+            <div class="col-md-auto">
+                <label for="imported_by" class="form-label">Người nhập:</label>
+                <input type="text" id="imported_by" name="imported_by" class="form-control" placeholder="Nhập tên">
+            </div>
+            <div class="col-md-auto">
+                <button type="button" id="searchBtn" class="btn btn-primary">Tìm kiếm</button>
+            </div>
+        </div>
+    </form>
+
     <button id="showImportForm" class="btn btn-success">Nhập hàng</button>
 </div>
-
-  <script>
+<script>
           document.getElementById("showImportForm").addEventListener("click", function () {
               document.getElementById("importFormzz").style.display = "block";
-              this.style.display = "none"; // Ẩn nút "Nhập hàng" khi form xuất hiện
+              this.style.display = "none"; 
           });
 
           document.getElementById("hideImportForm").addEventListener("click", function () {
               document.getElementById("importFormzz").style.display = "none";
-              document.getElementById("showImportForm").style.display = "block"; // Hiện lại nút "Nhập hàng"
+              document.getElementById("showImportForm").style.display = "block";
           });
   </script>
-
-<form id="searchForm" class="mb-3">
-    <div class="row gx-2 align-items-end">
-        <div class="col-md-auto">
-            <label for="from_date" class="form-label">Từ ngày:</label>
-            <input type="date" id="from_date" name="from_date" class="form-control">
-        </div>
-        <div class="col-md-auto">
-            <label for="to_date" class="form-label">Đến ngày:</label>
-            <input type="date" id="to_date" name="to_date" class="form-control">
-        </div>
-        <div class="col-md-auto">
-            <label for="imported_by" class="form-label">Người nhập:</label>
-            <input type="text" id="imported_by" name="imported_by" class="form-control" placeholder="Nhập tên">
-        </div>
-        <div class="col-md-auto">
-            <button type="button" id="searchBtn" class="btn btn-primary">Tìm kiếm</button>
-        </div>
-    </div>
-</form>
-
-
 
 <table class="table">
     <thead>
@@ -423,8 +455,11 @@ td, th {
 </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-    // Hàm hiển thị trạng thái dựa trên giá trị status
+    // nhìn vào note mà tập giải thích
+    // Hàm hiển thị trạng thái dựa trên giá trị status 
     function getStatusText(status) {
         const statusValue = parseInt(status, 10) || 0;
         switch (statusValue) {
@@ -489,12 +524,9 @@ td, th {
 
     // Hàm hiển thị chi tiết trong modal
     function showImportDetails(importId, importedAt, importedBy, status) {
-        // Cập nhật thông tin cơ bản trong modal
         document.getElementById("modal-imported-at").textContent = importedAt;
         document.getElementById("modal-imported-by").textContent = importedBy;
         document.getElementById("modal-status").innerHTML = getModalStatusText(status);
-
-        // Fetch chi tiết nhập hàng
         fetch(`/admin/imports/${importId}/details`)
             .then(response => {
                 if (!response.ok) throw new Error('Không thể lấy chi tiết nhập hàng');
@@ -502,7 +534,7 @@ td, th {
             })
             .then(data => {
                 const detailsList = document.getElementById("modal-import-details");
-                detailsList.innerHTML = ""; // Xóa dữ liệu cũ
+                detailsList.innerHTML = "";
 
                 if (!data || data.length === 0) {
                     detailsList.innerHTML = '<li class="list-group-item">Không có chi tiết</li>';
@@ -519,8 +551,6 @@ td, th {
                         detailsList.appendChild(listItem);
                     });
                 }
-
-                // Hiển thị modal
                 const modal = new bootstrap.Modal(document.getElementById('importDetailsModal'));
                 modal.show();
             })
@@ -559,7 +589,6 @@ td, th {
 
     // Khởi tạo sự kiện khi trang tải
     document.addEventListener("DOMContentLoaded", function () {
-        // Event delegation cho nút "Xem chi tiết"
         document.getElementById("importTableBody").addEventListener("click", function (event) {
             const button = event.target.closest(".view-details");
             if (button) {
@@ -570,13 +599,10 @@ td, th {
                 showImportDetails(importId, importedAt, importedBy, status);
             }
         });
-
-        // Sự kiện tìm kiếm
         document.getElementById("searchBtn").addEventListener("click", searchImports);
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
 <script>
 $(document).ready(function() {
   $('#import_at').on('change', function() {
@@ -620,11 +646,10 @@ $(document).ready(function() {
             const variantPrice = $(this).data('price');
             const variantSalePrice = $(this).data('sale-price') || ''; 
             const variantStock = $(this).data('stock');
-            const variantSaleStart = $(this).data('sale-start') || ''; // Giá trị thời gian bắt đầu hiện tại
-            const variantSaleEnd = $(this).data('sale-end') || '';     // Giá trị thời gian kết thúc hiện tại
-            const productName = $(this).data('product-name') || 'Không xác định'; // Tên sản phẩm
+            const variantSaleStart = $(this).data('sale-start') || ''; 
+            const variantSaleEnd = $(this).data('sale-end') || '';     
+            const productName = $(this).data('product-name') || 'Không xác định'; 
             
-            // Đặt giá trị mặc định cho stock là 0 nếu đã có stock > 0
             const defaultStock = variantStock > 0 ? 0 : variantStock;
 
             const inputHtml = `
@@ -714,12 +739,10 @@ $(document).ready(function() {
 }
 
 
-
   $('#importForm').on('submit', function(e) {
     let hasError = false;
     let errorMessage = '';
 
-    // Check each variant's pricing and stock
     $('.price-input').each(function() {
       const $container = $(this);
       const variantLabel = $container.find('.variant-label').text();
@@ -728,13 +751,10 @@ $(document).ready(function() {
       const salePrice = parseFloat($container.find('.sale-price-input').val()) || 0;
       const stock = parseFloat($container.find('.stock-input').val()) || 0;
 
-      // Check if selling price is less than import price
       if (sellPrice < importPrice) {
         hasError = true;
         errorMessage += `Giá bán (${sellPrice.toLocaleString('vi-VN')} ₫) nhỏ hơn giá nhập (${importPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
       }
-
-      // Check for negative values
       if (importPrice < 0) {
         hasError = true;
         errorMessage += `Giá nhập không được âm (${importPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
@@ -760,7 +780,7 @@ $(document).ready(function() {
         title: 'Lỗi nhập liệu!',
         text: errorMessage,
         confirmButtonText: 'OK',
-        whiteSpace: 'pre-wrap' // Allows line breaks in the message
+        whiteSpace: 'pre-wrap' 
       });
       return false;
     }

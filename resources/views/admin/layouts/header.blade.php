@@ -41,12 +41,14 @@
                 <!-- Notification -->
                 <div class="dropdown topbar-item">
                     <button type="button" class="topbar-button position-relative"
-                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true"
-                        aria-expanded="false">
+                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown" 
+                        aria-haspopup="true" aria-expanded="false">
                         <iconify-icon icon="solar:bell-bing-broken" class="fs-24 align-middle"></iconify-icon>
-                        <span
-                            class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">3<span
-                                class="visually-hidden">unread messages</span></span>
+                        <span id="notification-count"
+                            class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">
+                            <span class="count">0</span>
+                            <span class="visually-hidden">unread messages</span>
+                        </span>
                     </button>
 
                     <div class="dropdown-menu py-0 dropdown-lg dropdown-menu-end"
@@ -54,89 +56,120 @@
                         <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h6 class="m-0 fs-16 fw-semibold"> Thông báo</h6>
-                                </div>
-                                <div class="col-auto">
-                                    <a href="javascript: void(0);" class="text-dark text-decoration-underline">
-                                        <small>Clear All</small>
-                                    </a>
+                                    <h6 class="m-0 fs-16 fw-semibold">Thông báo</h6>
                                 </div>
                             </div>
                         </div>
-                        <div data-simplebar style="max-height: 280px;">
-                            <!-- Item -->
-                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom text-wrap">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <img src="{{ asset('admin/images/users/avatar-1.jpg') }}"
-                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-1" />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0"><span class="fw-medium">Josephine Thompson
-                                            </span>commented on admin panel <span>" Wow 😍! this admin looks
-                                                good and awesome design"</span></p>
-                                    </div>
-                                </div>
-                            </a>
-                            
+                        <div data-simplebar style="max-height: 280px;" id="notification-list">
+                            <!-- Notifications sẽ được thêm bằng JS -->
                         </div>
                         <div class="text-center py-3">
-                            <a href="javascript:void(0);" class="btn btn-primary btn-sm">View All Notification
-                                <i class="bx bx-right-arrow-alt ms-1"></i></a>
+                            <a href="javascript:void(0);" class="btn btn-primary btn-sm">
+                                Hiển thị toàn bộ
+                                <i class="bx bx-right-arrow-alt ms-1"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
-<!-- Nếu bạn load file app.js -->
+                @if(auth()->check() && auth()->user()->role_id == 3)
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const notificationList = document.getElementById('notification-list');
+                        const notificationCount = document.getElementById('notification-count');
+                        const countSpan = notificationCount.querySelector('.count');
+                        let lastChecked = new Date();
 
-@if(auth()->check() && auth()->user()->role_id == 3)
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let lastChecked = new Date();
+                        function fetchNotifications() {
+                            fetch("{{ route('notifications.check') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                },
+                                body: JSON.stringify({ last_checked: lastChecked.toISOString() })
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.notifications) {
+                                    countSpan.textContent = data.notifications.length;
+                                    notificationCount.style.display = data.notifications.length > 0 ? 'block' : 'none';
+                                    notificationList.innerHTML = '';
 
-            function checkNotifications() {
-                fetch("{{ route('notifications.check') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    },
-                    body: JSON.stringify({ last_checked: lastChecked.toISOString() }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.imports && data.imports.length > 0) {
-                        data.imports.forEach(importItem => {
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'Thông báo',
-                                html: `${importItem.message} (Ngày nhập: ${importItem.imported_at} bởi ${importItem.imported_by})<br>
-                                       <form action="{{ url('products/import/confirm') }}/${importItem.import_id}" method="POST" style="display: inline;">
-                                           @csrf
-                                           @method('PATCH')
-                                           <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
-                                       </form>
-                                       <form action="{{ url('products/import/reject') }}/${importItem.import_id}" method="POST" style="display: inline;">
-                                           @csrf
-                                           @method('PATCH')
-                                           <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
-                                       </form>`,
-                                showConfirmButton: false,
+                                    data.notifications.forEach(notification => {
+                                        const item = document.createElement('a');
+                                        item.href = 'javascript:void(0);';
+                                        item.className = 'dropdown-item py-3 border-bottom text-wrap';
+                                        item.innerHTML = `
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0">
+                                                    <img src="${notification.avatar}"
+                                                        class="img-fluid me-2 avatar-sm rounded-circle"/>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-0">
+                                                        <span class="fw-medium">${notification.user_name}</span>
+                                                        đang yêu cầu nhập hàng
+                                                        <small class="text-muted d-block">${notification.created_at}</small>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <form action="{{ url('products/import/confirm') }}/${notification.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
+                                                </form>
+                                                <form action="{{ url('products/import/reject') }}/${notification.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
+                                                </form>
+                                        `;
+                                        notificationList.appendChild(item);
+                                    });
+                                }
+
+                                if (data.imports && data.imports.length > 0) {
+                                    data.imports.forEach(importItem => {
+                                        Swal.fire({
+                                            icon: 'info',
+                                            title: 'Thông báo',
+                                            html: `${importItem.message} (Ngày nhập: ${importItem.imported_at} bởi ${importItem.imported_by})<br>
+                                                <form action="{{ url('products/import/confirm') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
+                                                </form>
+                                                <form action="{{ url('products/import/reject') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
+                                                </form>`,
+                                            showConfirmButton: false,
+                                        });
+                                    });
+                                    lastChecked = new Date(); 
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching notifications:', error);
+                            })
+                            .finally(() => {
+                                setTimeout(fetchNotifications, 3000); 
                             });
-                        });
-                        lastChecked = new Date();
-                    }
-                })
-                .catch(error => console.log('Error:', error))
-                .finally(() => {
-                    setTimeout(checkNotifications, 3000); // Kiểm tra lại sau 5 giây
-                });
-            }
+                        }
 
-            checkNotifications();
-        });
-    </script>
-@endif    <!-- Theme Setting -->
+                        fetchNotifications();
+                    });
+                    </script>
+                @endif 
+
+
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"
                         data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">
@@ -144,7 +177,7 @@
                     </button>
                 </div>
 
-                <!-- User -->
+               
                 <div class="dropdown topbar-item">
                     <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
@@ -157,14 +190,14 @@
                             alt="{{ $currentUser->avatar ? 'Ảnh đại diện' : 'Ảnh mặc định' }}" 
                             style="object-fit: cover;"
                             onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
-                            <!-- Chấm xanh hoạt động -->
+                            
                             <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
                                   style="width: 12px; height: 12px;"></span>
                         </span>
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                        <!-- item-->
+                       
                         <h6 class="dropdown-header">Xin chào <span class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
 
                         <a class="dropdown-item" href="apps-chat.html">
