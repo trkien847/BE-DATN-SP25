@@ -204,6 +204,46 @@ td, th {
     height: 150px;
     object-fit: contain;
 }
+
+.welcome-title {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.text-container {
+    display: inline-block;
+}
+
+.char {
+    display: inline-block;
+    font-size: 2rem;
+    color: #000;
+}
+
+.history-text {
+    opacity: 0;
+}
+
+.welcome-title.animate .text-container {
+    animation: fadeIn 10s forwards;
+}
+
+.car {
+    width: 50px;
+    height: auto;
+    transition: transform 10s linear;
+}
+
+.welcome-title.animate .car {
+    transform: translateX(100vw);
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    100% { opacity: 1; }
+}
 </style>
 @if(session('success'))
     <script>
@@ -250,6 +290,7 @@ td, th {
                                         @foreach($product->variants as $variant)
                                             <div class="variant-item">
                                                 <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                                    data-import-price="{{ $variant->import_price }}" 
                                                     data-price="{{ $variant->price }}" 
                                                     data-sale-price="{{ $variant->sale_price ?? '' }}" 
                                                     data-stock="{{ $variant->stock }}" 
@@ -284,6 +325,7 @@ td, th {
                                         @foreach($product->variants as $variant)
                                             <div class="variant-item">
                                                 <input type="checkbox" name="variants[{{ $variant->id }}]" value="{{ $variant->id }}" class="variant-checkbox" 
+                                                    data-import-price="{{ $variant->import_price }}" 
                                                     data-price="{{ $variant->price }}" 
                                                     data-sale-price="{{ $variant->sale_price ?? '' }}" 
                                                     data-stock="{{ $variant->stock }}" 
@@ -352,8 +394,72 @@ td, th {
   </div>
   
   
-    <h2>Lịch sử nhập hàng</h2>
-   
+  <h2 class="welcome-title">
+    <span class="text-container">
+        <span class="char">C</span><span class="char">h</span><span class="char">à</span><span class="char">o</span>
+        <span class="char"> </span>
+        <span class="char">m</span><span class="char">ừ</span><span class="char">n</span><span class="char">g</span>
+        <span class="char"> </span>
+        <span class="char">b</span><span class="char">ạ</span><span class="char">n</span>
+        <span class="char"> </span>
+        <span class="char">đ</span><span class="char">ế</span><span class="char">n</span>
+        <span class="char"> </span>
+        <span class="char">v</span><span class="char">ớ</span><span class="char">i</span><span class="char">:</span>
+    </span>
+    <span class="text-container history-text" style="opacity: 0;">
+        <span class="char"> </span>
+        <span class="char">L</span><span class="char">ị</span><span class="char">c</span><span class="char">h</span>
+        <span class="char"> </span>
+        <span class="char">s</span><span class="char">ử</span>
+        <span class="char"> </span>
+        <span class="char">n</span><span class="char">h</span><span class="char">ậ</span><span class="char">p</span>
+        <span class="char"> </span>
+        <span class="char">h</span><span class="char">à</span><span class="char">n</span><span class="char">g</span>
+    </span>
+    <img src="https://png.pngtree.com/element_our/20190528/ourlarge/pngtree-black-truck-icon-free-illustration-image_1145193.jpg" class="car" alt="Car" style="position: absolute; left: -100px;">
+</h2>
+   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const title = document.querySelector('.welcome-title');
+    const car = document.querySelector('.car');
+    const chars = document.querySelectorAll('.char');
+    const historyText = document.querySelector('.history-text');
+    const welcomeText = document.querySelector('.text-container:not(.history-text)');
+    const colors = [
+        'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet',
+        'pink', 'purple', 'cyan', 'lime', 'brown', 'magenta', 'gold'
+    ];
+
+    title.classList.add('animate');
+
+    function updateColorsAndText() {
+        const carRect = car.getBoundingClientRect();
+        const carLeft = carRect.left;
+        const welcomeRect = welcomeText.getBoundingClientRect();
+        const welcomeRight = welcomeRect.right;
+
+        if (carLeft > welcomeRight && historyText.style.opacity === '0') {
+            historyText.style.opacity = '1';
+            historyText.style.transition = 'opacity 0.5s ease';
+        }
+
+        chars.forEach((char, index) => {
+            const charRect = char.getBoundingClientRect();
+            const charLeft = charRect.left;
+
+            if (carLeft > charLeft) {
+                char.style.color = colors[index % colors.length];
+            }
+        });
+
+        if (carLeft < window.innerWidth) {
+            requestAnimationFrame(updateColorsAndText);
+        }
+    }
+
+    requestAnimationFrame(updateColorsAndText);
+});
+   </script>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <form id="searchForm" class="mb-3">
@@ -459,9 +565,11 @@ td, th {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     // nhìn vào note mà tập giải thích
+
     // Hàm hiển thị trạng thái dựa trên giá trị status 
     function getStatusText(status) {
         const statusValue = parseInt(status, 10) || 0;
+        console.log(statusValue);
         switch (statusValue) {
             case 0:
                 return '<span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>';
@@ -492,7 +600,7 @@ td, th {
     // Hàm render bảng nhập hàng
     function renderImportTable(imports) {
         const tableBody = document.getElementById("importTableBody");
-        tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+        tableBody.innerHTML = ""; 
 
         if (!imports || imports.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Không có dữ liệu</td></tr>';
@@ -643,14 +751,16 @@ $(document).ready(function() {
         selectedVariants.each(function() {
             const variantId = $(this).val();
             const variantLabel = $(this).next('label').text();
+            const variantImportPrice = $(this).data('import-price');
             const variantPrice = $(this).data('price');
             const variantSalePrice = $(this).data('sale-price') || ''; 
             const variantStock = $(this).data('stock');
             const variantSaleStart = $(this).data('sale-start') || ''; 
             const variantSaleEnd = $(this).data('sale-end') || '';     
             const productName = $(this).data('product-name') || 'Không xác định'; 
-            
             const defaultStock = variantStock > 0 ? 0 : variantStock;
+
+            console.log(variantImportPrice);
 
             const inputHtml = `
                 <div class="price-input">
@@ -694,7 +804,7 @@ $(document).ready(function() {
                                 </div>
                             </div>
                         </div>
-                        <!-- Bên phải: Giá nhập, Giá bán, Giá sale -->
+                       
                         <div class="right-section">
                             <div class="input-wrapper">
                                 <span class="input-unit">Giá nhập</span>
@@ -704,7 +814,7 @@ $(document).ready(function() {
                                        step="0.01" 
                                        min="0" 
                                        required 
-                                       data-price="${variantPrice}">
+                                       value="${variantImportPrice}">
                             </div>
                             <div class="input-wrapper">
                                 <span class="input-unit">Giá bán</span>

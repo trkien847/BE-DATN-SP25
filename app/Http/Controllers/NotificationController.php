@@ -33,7 +33,7 @@ class NotificationController extends Controller
                 return [
                     'import_id' => $import->id,
                     'user_name' => $user ? $user->fullname : 'Unknown User',
-                    'avatar' => $user && $user->avatar ? asset('storage/avatars/' . $user->avatar) : asset('storage/avatars/default.jpg'),
+                    'avatar' => $user && $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.jpg'),
                     'created_at' => $importedAt ? $importedAt->diffForHumans() : 'N/A',
                     'imported_at' => $importedAt ? $importedAt->toISOString() : null,
                     'imported_by' => $user ? $user->fullname : 'Unknown User',

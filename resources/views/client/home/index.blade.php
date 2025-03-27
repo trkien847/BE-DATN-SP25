@@ -7,7 +7,22 @@
     <!-- Utilize Mobile Menu Start -->
     @include('client.components.MobileMenuStart')
     <!-- Utilize Mobile Menu End -->
+<style>
+    .product-image {
+        width: 250px; 
+        height: 250px;
+        object-fit: cover; 
+        transition: transform 0.3s ease; 
+    }
 
+    .product-image:hover {
+        transform: scale(1.1); 
+    }
+    a {
+        display: inline-block; 
+        overflow: visible; 
+    }
+</style>
     <div class="ltn__utilize-overlay"></div>
 
     <!-- SLIDER AREA START (slider-3) -->
@@ -63,10 +78,11 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="img/slider/61.jpg">
+                            data-bs-bg="https://i.makeagif.com/media/1-10-2021/gwZO0J.gif">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
+
                                         <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
                                             <div class="slide-item-info">
                                                 <div class="slide-item-info-inner ltn__slide-animation">
@@ -89,6 +105,7 @@
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
                                                 <!-- <a href="shop.html"><img src="{{ asset('client/img/product/1.png') }}" alt="Image"></a> -->
@@ -100,7 +117,7 @@
                         </div>
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="img/slider/62.jpg">
+                            data-bs-bg="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGFuYnU1YjU5MmV4ZHFkdHo4NXU0NnpweG5oNzFvajhpcGxrZTN4ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l36kU80xPf0ojG0Erg/giphy.gif">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
@@ -197,8 +214,8 @@
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2--- text-center">
                         <!-- <h6 class="section-subtitle ltn__secondary-color">// Cars</h6> -->
-                        <h1 class="section-title">Our Products</h1>
-                        <p>A highly efficient slip-ring scanner for today's diagnostic requirements.</p>
+                        <h1 class="section-title">Sản phẩm của chúng tôi</h1>
+                        <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
                     </div>
                     <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                         <div class="nav">
@@ -222,10 +239,9 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                        <a href="{{ route('products.productct', $product->id) }}">
-                                                            <img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                                alt="{{ $product->name }}">
-                                                        </a>
+                                                    <a href="{{ route('products.productct', $product->id) }}">
+                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="product-image">
+                                                    </a>
                                                         <div class="product-badge">
                                                             <ul>
                                                                 @if (!empty($salePrice) && $salePrice > 0)

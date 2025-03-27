@@ -177,6 +177,24 @@
       opacity: 0;
     }
   }
+
+  .rainbow-text {
+      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      background-size: 200% 100%;
+      animation: rainbowMove 5s linear infinite;
+  }
+
+  @keyframes rainbowMove {
+      0% {
+          background-position: 200% 0;
+      }
+      100% {
+          background-position: 0 0;
+      }
+  }
 </style>
 
 @if(session('success'))
@@ -194,7 +212,7 @@
 
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
-    <h4 class="text-secondary">DANH SÁCH SẢN PHẨM</h4>
+    <h4 class="rainbow-text">DANH SÁCH SẢN PHẨM</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
       <a href="{{ route('products.add') }}" class="btn btn-success shake">
         <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>

@@ -135,7 +135,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
 
 
-  //nhập 
+  //nhập  search
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
   Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');

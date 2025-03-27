@@ -56,7 +56,7 @@
 }
 
 .nav-link.clicked::after {
-    width: 100px; /* Kích thước tối đa của ripple */
+    width: 100px; 
     height: 100px;
     opacity: 0;
 }
@@ -68,27 +68,68 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
 }
+
+.animated-word {
+    display: inline-block;
+    opacity: 0;
+    animation: appearAndDisappear 1s forwards;
+    margin-right: 5px;
+}
+
+@keyframes appearAndDisappear {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+#animatedText {
+    white-space: nowrap;
+}
 </style>
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
-        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG bruh bruh lmao</h4>
-        {{-- <button class="btn btn-success btn-l" data-bs-toggle="modal" data-bs-target="#addProductModal">
-          <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
-        </button> --}}
+        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG <strong id="animatedText">Bla Bla Bla Ble Ble Ble Blu Blu Blu hah BLU BLU BLU BLU BLU BLU BLU BLU</strong></h4>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const textElement = document.getElementById('animatedText');
+    const text = textElement.textContent.trim();
+    const words = text.split(' ');
+    const wordCount = words.length;
+    const durationPerWord = 1;
+    const totalDuration = wordCount * durationPerWord;
 
+    function animateWords() {
+        textElement.innerHTML = '';
+        words.forEach((word, index) => {
+            const span = document.createElement('span');
+            span.textContent = word;
+            span.classList.add('animated-word');
+            span.style.animationDelay = `${index * durationPerWord}s`;
+            textElement.appendChild(span);
+            if (index < wordCount - 1) {
+                textElement.appendChild(document.createTextNode(' '));
+            }
+        });
+    }
+
+    animateWords();
+    setInterval(animateWords, totalDuration * 1000);
+});
+</script>
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
             <a class="nav-link active" href="#" data-status="">Tất cả đơn giao hàng</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="1">Chờ xác nhận</a>
+            <a class="nav-link" href="#" data-status="1">Chờ xác nhận *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="2">Chờ giao hàng</a>
+            <a class="nav-link" href="#" data-status="2">Chờ giao hàng *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="3">Đang giao hàng</a>
+            <a class="nav-link" href="#" data-status="3">Đang giao hàng *</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" data-status="4">Đã giao hàng</a>
@@ -264,7 +305,69 @@ function attachDetailEvents() {
     document.querySelectorAll('.detail-btn').forEach(button => {
         button.addEventListener('click', function() {
             const orderId = this.dataset.orderId;
-            
+
+            Swal.fire({
+                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageWidth: 200, 
+                imageHeight: 100, 
+                imageAlt: 'Đang Say Gex...', 
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/orders/${orderId}/details`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close(); 
+
+                if (!data.order || !data.items) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Không thể tải chi tiết đơn hàng',
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                document.getElementById('orderCode').textContent = data.order.code;
+                document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
+                document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
+                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerAddress').textContent = data.order.address;
+                document.getElementById('customerPhone').textContent = data.order.phone_number;
+                document.getElementById('customerEmail').textContent = data.order.email;
+
+                const itemsBody = document.getElementById('orderItems');
+                itemsBody.innerHTML = ''; 
+                data.items.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.product ? item.product.name : 'Không có'}</td>
+                        <td>${item.name_variant || 'Không có'}</td>
+                        <td>${item.quantity}</td>
+                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    `;
+                    itemsBody.appendChild(row);
+                });
+                document.getElementById('orderDetail').style.display = 'flex';
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể tải chi tiết đơn hàng: ' + error.message,
+                    confirmButtonColor: '#d33'
+                });
+            });
         });
     });
 }
@@ -278,12 +381,15 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
     if (customerName) url.searchParams.append('customer_name', customerName);
 
     Swal.fire({
-        title: 'Mệt quá rồi Mệt quá rồi...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageWidth: 200, 
+                imageHeight: 100, 
+                imageAlt: 'Đang Say Gex...', 
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
     const startTime = Date.now();
 
@@ -308,7 +414,7 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
             checkboxColumns.forEach(col => col.style.display = 'none');
             bulkUpdateSection.style.display = 'none';
         } else {
-            if (status === '6' || status === '7' || status === '4') {
+            if (status === '6' || status === '7' || status === '4' || status === '') {
                 checkboxColumns.forEach(col => col.style.display = 'none');
                 bulkUpdateSection.style.display = 'none';
             } else {
@@ -316,7 +422,9 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
                 bulkUpdateSection.style.display = 'block';
             }
         }
+
         attachStatusEvents();
+        attachDetailEvents();
 
         const elapsedTime = Date.now() - startTime;
         const minDisplayTime = 1000; 
@@ -424,62 +532,73 @@ document.getElementById('closeDetail').addEventListener('click', function() {
 
 
 document.querySelectorAll('.detail-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const orderId = this.dataset.orderId;
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
 
-        fetch(`/admin/orders/${orderId}/details`, {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.order || !data.items) {
+            Swal.fire({
+                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageWidth: 200, 
+                imageHeight: 100, 
+                imageAlt: 'Đang Say Gex...', 
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/orders/${orderId}/details`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close(); 
+
+                if (!data.order || !data.items) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Không thể tải chi tiết đơn hàng',
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                document.getElementById('orderCode').textContent = data.order.code;
+                document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
+                document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
+                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerAddress').textContent = data.order.address;
+                document.getElementById('customerPhone').textContent = data.order.phone_number;
+                document.getElementById('customerEmail').textContent = data.order.email;
+
+                const itemsBody = document.getElementById('orderItems');
+                itemsBody.innerHTML = ''; 
+                data.items.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.product ? item.product.name : 'Không có'}</td>
+                        <td>${item.name_variant || 'Không có'}</td>
+                        <td>${item.quantity}</td>
+                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    `;
+                    itemsBody.appendChild(row);
+                });
+                document.getElementById('orderDetail').style.display = 'flex';
+            })
+            .catch(error => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
-                    text: 'Không thể tải chi tiết đơn hàng',
+                    text: 'Không thể tải chi tiết đơn hàng: ' + error.message,
                     confirmButtonColor: '#d33'
                 });
-                return;
-            }
-
-            
-            document.getElementById('orderCode').textContent = data.order.code;
-            document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
-            document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
-            document.getElementById('customerName').textContent = data.order.fullname;
-            document.getElementById('customerAddress').textContent = data.order.address;
-            document.getElementById('customerPhone').textContent = data.order.phone_number;
-            document.getElementById('customerEmail').textContent = data.order.email;
-
-            const itemsBody = document.getElementById('orderItems');
-            itemsBody.innerHTML = ''; 
-
-            data.items.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.product ? item.product.name : 'Không có'}</td>
-                    <td>${item.name_variant || 'Không có'}</td>
-                    <td>${item.quantity}</td>
-                    <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
-                `;
-                itemsBody.appendChild(row);
-            });
-            document.getElementById('orderDetail').style.display = 'flex';
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Không thể tải chi tiết đơn hàng: ' + error.message,
-                confirmButtonColor: '#d33'
             });
         });
     });
-});
 
 document.getElementById('closeDetail').addEventListener('click', function() {
     document.getElementById('orderDetail').style.display = 'none';

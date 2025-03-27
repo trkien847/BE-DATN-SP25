@@ -542,7 +542,9 @@ class ProductController extends Controller
     // nhập 
     public function import()
     {
-        $products = Product::with('variants')->get();
+        $products = Product::with('variants')
+            ->where('is_active', 1)
+            ->get();
 
         $importedProducts = ProductImport::with(['details.product', 'details'])
             ->orderBy('imported_at', 'desc')
@@ -580,7 +582,7 @@ class ProductController extends Controller
                 'imported_by' => $import->imported_by,
                 'total_loss' => number_format($import->details->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.'),
                 'total_quantity' => $import->details->sum('quantity'),
-                'status' => $import->is_active == 0 ? 'Đang chờ cấp trên bị lừa' : ($import->is_active == 1 ? 'Cấp trên đã bị lừa' : 'Cấp trên khôn quá'),
+                'status' => $import->is_active,
             ];
         });
 
@@ -661,7 +663,7 @@ class ProductController extends Controller
     }
 
 
-   
+
 
     public function markNotificationAsRead(Request $request, $id)
     {
@@ -723,6 +725,4 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
     }
-
-
 }
