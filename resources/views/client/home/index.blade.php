@@ -22,6 +22,59 @@
         display: inline-block; 
         overflow: visible; 
     }
+
+    .section-title {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+.char {
+    display: inline-block;
+    font-size: 2.5rem;
+    color: #000;
+    opacity: 1;
+    animation: fadeOut 2s ease forwards,
+              fadeInFromBottom 2s ease forwards 2s,
+              greenFill 2s ease forwards 4s;
+}
+
+.section-title .char:nth-child(1) { animation-delay: 0s, 2s, 4s; }
+.section-title .char:nth-child(2) { animation-delay: 0.1s, 2s, 4s; }
+.section-title .char:nth-child(3) { animation-delay: 0.2s, 2s, 4s; }
+.section-title .char:nth-child(4) { animation-delay: 0.3s, 2s, 4s; }
+.section-title .char:nth-child(5) { animation-delay: 0.4s, 2s, 4s; }
+.section-title .char:nth-child(6) { animation-delay: 0.5s, 2s, 4s; }
+.section-title .char:nth-child(7) { animation-delay: 0.6s, 2s, 4s; }
+.section-title .char:nth-child(8) { animation-delay: 0.7s, 2s, 4s; }
+.section-title .char:nth-child(9) { animation-delay: 0.8s, 2s, 4s; }
+.section-title .char:nth-child(10) { animation-delay: 0.9s, 2s, 4s; }
+.section-title .char:nth-child(11) { animation-delay: 1s, 2s, 4s; }
+.section-title .char:nth-child(12) { animation-delay: 1.1s, 2s, 4s; }
+.section-title .char:nth-child(13) { animation-delay: 1.2s, 2s, 4s; }
+.section-title .char:nth-child(14) { animation-delay: 1.3s, 2s, 4s; }
+.section-title .char:nth-child(15) { animation-delay: 1.4s, 2s, 4s; }
+.section-title .char:nth-child(16) { animation-delay: 1.5s, 2s, 4s; }
+.section-title .char:nth-child(17) { animation-delay: 1.6s, 2s, 4s; }
+.section-title .char:nth-child(18) { animation-delay: 1.7s, 2s, 4s; }
+.section-title .char:nth-child(19) { animation-delay: 1.8s, 2s, 4s; }
+.section-title .char:nth-child(20) { animation-delay: 1.9s, 2s, 4s; }
+.section-title .char:nth-child(21) { animation-delay: 2s, 2s, 4s; }
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes fadeInFromBottom {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes greenFill {
+    0% { color: green; }
+    100% { color: #000; }
+}
 </style>
     <div class="ltn__utilize-overlay"></div>
 
@@ -214,7 +267,17 @@
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2--- text-center">
                         <!-- <h6 class="section-subtitle ltn__secondary-color">// Cars</h6> -->
-                        <h1 class="section-title">Sản phẩm của chúng tôi</h1>
+                        <h1 class="section-title">
+    <span class="char">S</span><span class="char">ả</span><span class="char">n</span>
+    <span class="char"> </span>
+    <span class="char">p</span><span class="char">h</span><span class="char">ẩ</span><span class="char">m</span>
+    <span class="char"> </span>
+    <span class="char">c</span><span class="char">ủ</span><span class="char">a</span>
+    <span class="char"> </span>
+    <span class="char">c</span><span class="char">h</span><span class="char">ú</span><span class="char">n</span><span class="char">g</span>
+    <span class="char"> </span>
+    <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
+</h1>
                         <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
                     </div>
                     <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
