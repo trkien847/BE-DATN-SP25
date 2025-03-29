@@ -479,7 +479,7 @@ class ProductController extends Controller
                     }
                 }
             }
-        } else { // update
+        } else { // update...
             $product = Product::findOrFail($pendingUpdate->product_id);
             $product->brand_id = $data['brand_id'];
             $product->name = $data['name'];
