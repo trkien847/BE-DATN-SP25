@@ -301,6 +301,7 @@ class ProductController extends Controller
             ProductPendingUpdate::create([
                 'product_id' => $id,
                 'user_id' => $user->id,
+                'action_type' => 'update',
                 'data' => $pendingData,
             ]);
 
@@ -397,65 +398,75 @@ class ProductController extends Controller
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
     }
 
-    //Hàm duyệt thay đổi
+    public function pendingUpdates()
+    {
+        $user = auth()->user();
+        if ($user->role_id !== 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền truy cập trang này!');
+        }
+
+        $pendingUpdates = ProductPendingUpdate::with('user')->get();
+        return view('products.pending-updates', compact('pendingUpdates'));
+    }
+
+    public function viewPendingUpdate($pendingId)
+    {
+        $user = auth()->user();
+        if ($user->role_id !== 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền truy cập!');
+        }
+
+        $pendingUpdate = ProductPendingUpdate::with('user')->findOrFail($pendingId);
+        $originalProduct = $pendingUpdate->product_id ? Product::find($pendingUpdate->product_id) : null;
+
+        return view('products.pending-update-detail', compact('pendingUpdate', 'originalProduct'));
+    }
+
     public function approvePendingUpdate($pendingId)
     {
         $user = auth()->user();
-
         if ($user->role_id !== 3) {
-            return redirect()->back()->with('error', 'Bạn không có quyền duyệt thay đổi!');
+            return redirect()->back()->with('error', 'Bạn không có quyền duyệt!');
         }
 
         $pendingUpdate = ProductPendingUpdate::findOrFail($pendingId);
-        $product = Product::findOrFail($pendingUpdate->product_id);
         $data = $pendingUpdate->data;
 
-        $product->brand_id = $data['brand_id'];
-        $product->name = $data['name'];
-        $product->content = $data['content'];
-        $product->sku = $data['sku'];
-        $product->price = $data['price'];
-        $product->sell_price = $data['sell_price'];
-        $product->sale_price = $data['sale_price'];
-
-        if ($data['thumbnail']) {
-            if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
-                File::delete(public_path('upload/' . $product->thumbnail));
-            }
+        if ($pendingUpdate->action_type === 'create') {
+            $product = new Product();
+            $product->brand_id = $data['brand_id'];
+            $product->name = $data['name'];
+            $product->content = $data['content'];
+            $product->sku = $data['sku'];
+            $product->price = $data['price'] ?? 0;
+            $product->sell_price = $data['sell_price'] ?? 0;
+            $product->sale_price = $data['sale_price'] ?? 0;
             $product->thumbnail = $data['thumbnail'];
-        }
+            $product->is_active = 1;
+            $product->save();
 
-        $product->is_active = 1;
-        $product->save();
+            CategoryProduct::create([
+                'product_id' => $product->id,
+                'category_id' => $data['category_id'],
+            ]);
 
-        $categoryProduct = CategoryProduct::where('product_id', $product->id)->first();
-        $categoryProduct->category_id = $data['category_id'];
-        $categoryProduct->save();
+            CategoryTypeProduct::create([
+                'product_id' => $product->id,
+                'category_type_id' => $data['category_type_id'],
+            ]);
 
-        $categoryTypeProduct = CategoryTypeProduct::where('product_id', $product->id)->first();
-        $categoryTypeProduct->category_type_id = $data['category_type_id'];
-        $categoryTypeProduct->save();
-
-        if (!empty($data['images'])) {
-            ProductGalleries::where('product_id', $product->id)->delete();
-            foreach ($data['images'] as $imageName) {
-                ProductGalleries::create([
-                    'product_id' => $product->id,
-                    'image' => $imageName,
-                ]);
+            if (!empty($data['images'])) {
+                foreach ($data['images'] as $imageName) {
+                    ProductGalleries::create([
+                        'product_id' => $product->id,
+                        'image' => $imageName,
+                    ]);
+                }
             }
-        }
 
-        if (!empty($data['variants'])) {
-            $variantIds = [];
-            foreach ($data['variants'] as $attributeId => $valueIds) {
-                foreach ($valueIds as $valueId) {
-                    $variant = ProductVariant::where('product_id', $product->id)
-                        ->whereHas('attributeValues', function ($query) use ($valueId) {
-                            $query->where('attribute_value_id', $valueId);
-                        })->first();
-
-                    if (!$variant) {
+            if (!empty($data['variants'])) {
+                foreach ($data['variants'] as $attributeId => $valueIds) {
+                    foreach ($valueIds as $valueId) {
                         $variant = ProductVariant::create(['product_id' => $product->id]);
                         AttributeValueProductVariant::create([
                             'product_variant_id' => $variant->id,
@@ -466,20 +477,94 @@ class ProductController extends Controller
                             'attribute_value_id' => $valueId,
                         ]);
                     }
-                    $variantIds[] = $variant->id;
                 }
             }
-            ProductVariant::where('product_id', $product->id)
-                ->whereNotIn('id', $variantIds)
-                ->delete();
+        } else { // update
+            $product = Product::findOrFail($pendingUpdate->product_id);
+            $product->brand_id = $data['brand_id'];
+            $product->name = $data['name'];
+            $product->content = $data['content'];
+            $product->sku = $data['sku'];
+            $product->price = $data['price'];
+            $product->sell_price = $data['sell_price'];
+            $product->sale_price = $data['sale_price'];
+            if ($data['thumbnail']) {
+                if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
+                    File::delete(public_path('upload/' . $product->thumbnail));
+                }
+                $product->thumbnail = $data['thumbnail'];
+            }
+            $product->is_active = 1;
+            $product->save();
+
+            CategoryProduct::where('product_id', $product->id)->update(['category_id' => $data['category_id']]);
+            CategoryTypeProduct::where('product_id', $product->id)->update(['category_type_id' => $data['category_type_id']]);
+
+            if (!empty($data['images'])) {
+                ProductGalleries::where('product_id', $product->id)->delete();
+                foreach ($data['images'] as $imageName) {
+                    ProductGalleries::create([
+                        'product_id' => $product->id,
+                        'image' => $imageName,
+                    ]);
+                }
+            }
+
+            if (!empty($data['variants'])) {
+                $variantIds = [];
+                foreach ($data['variants'] as $attributeId => $valueIds) {
+                    foreach ($valueIds as $valueId) {
+                        $variant = ProductVariant::where('product_id', $product->id)
+                            ->whereHas('attributeValues', function ($query) use ($valueId) {
+                                $query->where('attribute_value_id', $valueId);
+                            })->first();
+
+                        if (!$variant) {
+                            $variant = ProductVariant::create(['product_id' => $product->id]);
+                            AttributeValueProductVariant::create([
+                                'product_variant_id' => $variant->id,
+                                'attribute_value_id' => $valueId,
+                            ]);
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $valueId,
+                            ]);
+                        }
+                        $variantIds[] = $variant->id;
+                    }
+                }
+                ProductVariant::where('product_id', $product->id)->whereNotIn('id', $variantIds)->delete();
+            }
         }
 
-        $pendingUpdate->is_approved = true;
-        $pendingUpdate->save();
         $pendingUpdate->delete();
-
-        return redirect()->route('products.list')->with('success', 'Thay đổi đã được duyệt và áp dụng!');
+        return redirect()->route('products.pending-updates')->with('success', 'Đã duyệt thành công!');
     }
+
+    public function rejectPendingUpdate($pendingId)
+    {
+        $user = auth()->user();
+        if ($user->role_id !== 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền từ chối!');
+        }
+
+        $pendingUpdate = ProductPendingUpdate::findOrFail($pendingId);
+
+        if ($pendingUpdate->data['thumbnail'] && File::exists(public_path('upload/' . $pendingUpdate->data['thumbnail']))) {
+            File::delete(public_path('upload/' . $pendingUpdate->data['thumbnail']));
+        }
+        if (!empty($pendingUpdate->data['images'])) {
+            foreach ($pendingUpdate->data['images'] as $image) {
+                if (File::exists(public_path('upload/' . $image))) {
+                    File::delete(public_path('upload/' . $image));
+                }
+            }
+        }
+
+        $pendingUpdate->delete();
+        return redirect()->route('products.pending-updates')->with('success', 'Đã từ chối yêu cầu!');
+    }
+
 
     public function destroy(string $id)
     {

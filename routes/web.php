@@ -159,7 +159,10 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
-
+  Route::get('/products/pending-updates', [ProductController::class, 'pendingUpdates'])->name('products.pending-updates');
+  Route::get('/products/pending-update/{pendingId}', [ProductController::class, 'viewPendingUpdate'])->name('products.pending-update-detail');
+  Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
+  Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
   // Quản lý đơn hàng
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
