@@ -111,22 +111,27 @@ class ProductController extends Controller
         $product->name = $request->name;
         $product->views = 0;
         $product->content = $request->content;
+
         if ($request->hasFile('thumbnail')) {
             $image = $request->file('thumbnail');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('upload'), $imageName);
             $product->thumbnail = $imageName;
         }
+
         $product->sku = $request->sku;
-        $product->is_active = 1;
+
+        $user = auth()->user();
+        $product->is_active = ($user && $user->role_id === 3) ? 1 : 3;
+
         $product->save();
 
-        $categoryProduct =  new CategoryProduct();
+        $categoryProduct = new CategoryProduct();
         $categoryProduct->category_id = $request->category_id;
         $categoryProduct->product_id = $product->id;
         $categoryProduct->save();
 
-        $categoryTypeProduct =  new CategoryTypeProduct();
+        $categoryTypeProduct = new CategoryTypeProduct();
         $categoryTypeProduct->product_id = $product->id;
         $categoryTypeProduct->category_type_id = $request->category_type_id;
         $categoryTypeProduct->save();
