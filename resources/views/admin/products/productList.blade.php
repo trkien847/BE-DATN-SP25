@@ -242,7 +242,6 @@
       <th scope="col">Ngày nhập</th>
       <th scope="col">Ảnh</th>
       <th scope="col">Danh mục</th>
-      <th scope="col">Biến thể</th>
       <th scope="col">Trạng Thái</th>
       <th scope="col">Hành Động</th>
     </tr>
@@ -280,50 +279,6 @@
           </div>
         @endforeach
       </td>
-      
-        <td>
-          <div class="variant-container" data-product-id="{{ $product->id }}">
-            @if($product->variants->isNotEmpty())
-              <div class="variant-item">
-                <strong>Tên biến thể:</strong>
-                @foreach($product->variants[0]->attributeValues as $value)
-                  {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
-                @endforeach <br>
-                <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($product->variants[0]->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
-                <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($product->variants[0]->price, 0, ',', '.') }} VND</span> <br>
-                <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($product->variants[0]->sale_price, 0, ',', '.') }} VND</span> <br>
-                <strong>Số lượng:</strong> {{ $product->variants[0]->stock }} <br>
-              </div>
-              
-              @if($product->variants->count() > 1)
-                <div class="variant-count">
-                  <span class="badge bg-primary rounded-circle" title="Xem thêm biến thể">+{{ $product->variants->count() - 1 }}</span>
-                </div>
-                
-                <div class="variant-list" id="variant-list-{{ $product->id }}" style="display: none;">
-                  @foreach($product->variants->slice(1) as $variant)
-                    <div class="variant-item">
-                      <strong>Tên biến thể:</strong>
-                      @foreach($variant->attributeValues as $value)
-                        {{ $value->attribute->name }}: {{ $value->attribute->slug }} {{ $value->value }}
-                      @endforeach <br>
-                      <strong>Giá nhập:</strong> <span style="color: #28a745;">{{ number_format($variant->import_price ?? 0, 0, ',', '.') }} VND</span> <br>
-                      <strong>Giá:</strong> <span style="color: #007bff;">{{ number_format($variant->price, 0, ',', '.') }} VND</span> <br>
-                      <strong>Giá KM:</strong> <span style="color: #dc3545;">{{ number_format($variant->sale_price, 0, ',', '.') }} VND</span> <br>
-                      <strong>Số lượng:</strong> {{ $variant->stock }} <br>
-                      <hr>
-                    </div>
-                  @endforeach
-                </div>
-              @endif
-            @else
-              <span>Không có biến thể</span>
-            @endif
-          </div>
-        </td>
-
-
-
       <td>
         <span class="badge {{ $product->variants_sum_stock > 0 ? 'bg-success' : 'bg-danger' }}">
           {{ $product->variants_sum_stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
