@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use App\Models\ProductGalleries;
 use App\Models\ProductImport;
+use App\Models\ProductPendingUpdate;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Notifications\ImportPendingNotification;
@@ -106,6 +107,50 @@ class ProductController extends Controller
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
 
+        $user = auth()->user();
+
+        if ($user->role_id !== 3) {
+            // Nếu không phải role_id = 3, lưu vào bảng tạm
+            $pendingData = [
+                'brand_id' => $request->brand_id,
+                'name' => $request->name,
+                'content' => $request->content,
+                'sku' => $request->sku,
+                'category_id' => $request->category_id,
+                'category_type_id' => $request->category_type_id,
+                'thumbnail' => null,
+                'images' => $request->hasFile('image') ? [] : null,
+                'variants' => $request->has('variants') ? $request->variants : null,
+            ];
+
+            // Xử lý thumbnail nếu có
+            if ($request->hasFile('thumbnail')) {
+                $image = $request->file('thumbnail');
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload'), $imageName);
+                $pendingData['thumbnail'] = $imageName;
+            }
+
+            // Xử lý ảnh gallery nếu có
+            if ($request->hasFile('image')) {
+                foreach ((array) $request->file('image') as $image) {
+                    $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('upload'), $imageName);
+                    $pendingData['images'][] = $imageName;
+                }
+            }
+
+            ProductPendingUpdate::create([
+                'product_id' => null, // Không có product_id vì là thêm mới
+                'user_id' => $user->id,
+                'action_type' => 'create',
+                'data' => $pendingData,
+            ]);
+
+            return redirect()->route('products.list')->with('success', 'Yêu cầu thêm sản phẩm đã được gửi, chờ phê duyệt!');
+        }
+
+        // Nếu là role_id = 3, lưu trực tiếp
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
@@ -120,10 +165,7 @@ class ProductController extends Controller
         }
 
         $product->sku = $request->sku;
-
-        $user = auth()->user();
-        $product->is_active = ($user && $user->role_id === 3) ? 1 : 3;
-
+        $product->is_active = 1;
         $product->save();
 
         $categoryProduct = new CategoryProduct();
@@ -195,6 +237,7 @@ class ProductController extends Controller
         return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'attributes', 'selectedVariantIds'));
     }
 
+    // cập nhất sản phẩm
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -218,13 +261,60 @@ class ProductController extends Controller
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
 
-        $product = Product::find($id);
+        $user = auth()->user();
+        $product = Product::findOrFail($id);
+
+        if ($user->role_id !== 3) {
+
+            $pendingData = [
+                'brand_id' => $request->brand_id,
+                'name' => $request->name,
+                'content' => $request->content,
+                'sku' => $request->sku,
+                'price' => $request->price,
+                'sell_price' => $request->sell_price,
+                'sale_price' => $request->sale_price,
+                'category_id' => $request->category_id,
+                'category_type_id' => $request->category_type_id,
+                'thumbnail' => null,
+                'images' => $request->hasFile('image') ? [] : null,
+                'variants' => $request->has('variants') ? $request->variants : null,
+            ];
+
+
+            if ($request->hasFile('thumbnail')) {
+                $image = $request->file('thumbnail');
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload'), $imageName);
+                $pendingData['thumbnail'] = $imageName;
+            }
+
+
+            if ($request->hasFile('image')) {
+                foreach ($request->file('image') as $image) {
+                    $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('upload'), $imageName);
+                    $pendingData['images'][] = $imageName;
+                }
+            }
+
+            ProductPendingUpdate::create([
+                'product_id' => $id,
+                'user_id' => $user->id,
+                'data' => $pendingData,
+            ]);
+
+            return redirect()->back()->with('success', 'Yêu cầu chỉnh sửa sản phẩm đã được gửi, chờ phê duyệt!');
+        }
+
+
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
         $product->views = 0;
         $product->content = $request->content;
+
         if ($request->hasFile('thumbnail')) {
-            if ($product->thumbnail && File::exists(public_path('uploads/' . $product->thumbnail))) {
+            if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
                 File::delete(public_path('upload/' . $product->thumbnail));
             }
             $image = $request->file('thumbnail');
@@ -232,6 +322,7 @@ class ProductController extends Controller
             $image->move(public_path('upload'), $imageName);
             $product->thumbnail = $imageName;
         }
+
         $product->sku = $request->sku;
         $product->price = $request->price;
         $product->sell_price = $request->sell_price;
@@ -251,7 +342,6 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             $productGalleries = ProductGalleries::where('product_id', $id)->get();
-
             foreach ($productGalleries as $gallery) {
                 if (File::exists(public_path('upload/' . $gallery->image))) {
                     File::delete(public_path('upload/' . $gallery->image));
@@ -262,58 +352,133 @@ class ProductController extends Controller
             foreach ($request->file('image') as $image) {
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('upload'), $imageName);
-
                 ProductGalleries::create([
                     'product_id' => $id,
                     'image' => $imageName,
                 ]);
             }
         }
-        $variantIds = [];
 
+        $variantIds = [];
         if ($request->has('variants')) {
             foreach ($request->variants as $attributeId => $valueIds) {
-
                 foreach ($valueIds as $valueId) {
-
                     $variant = ProductVariant::where('product_id', $product->id)
                         ->whereHas('attributeValues', function ($query) use ($valueId) {
                             $query->where('attribute_value_id', $valueId);
                         })->first();
 
                     if (!$variant) {
-
                         $variant = ProductVariant::create([
                             'product_id' => $product->id,
                             'sale_price_start_at' => $request->sale_price_start_at,
                             'sale_price_end_at' => $request->sale_price_end_at,
                         ]);
 
-
                         AttributeValueProductVariant::create([
                             'product_variant_id' => $variant->id,
                             'attribute_value_id' => $valueId,
                         ]);
-
 
                         AttributeValueProduct::create([
                             'product_id' => $product->id,
                             'attribute_value_id' => $valueId,
                         ]);
                     }
-
                     $variantIds[] = $variant->id;
                 }
             }
         }
 
-
         ProductVariant::where('product_id', $product->id)
             ->whereNotIn('id', $variantIds)
             ->delete();
 
-
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
+    }
+
+    //Hàm duyệt thay đổi
+    public function approvePendingUpdate($pendingId)
+    {
+        $user = auth()->user();
+
+        if ($user->role_id !== 3) {
+            return redirect()->back()->with('error', 'Bạn không có quyền duyệt thay đổi!');
+        }
+
+        $pendingUpdate = ProductPendingUpdate::findOrFail($pendingId);
+        $product = Product::findOrFail($pendingUpdate->product_id);
+        $data = $pendingUpdate->data;
+
+        $product->brand_id = $data['brand_id'];
+        $product->name = $data['name'];
+        $product->content = $data['content'];
+        $product->sku = $data['sku'];
+        $product->price = $data['price'];
+        $product->sell_price = $data['sell_price'];
+        $product->sale_price = $data['sale_price'];
+
+        if ($data['thumbnail']) {
+            if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
+                File::delete(public_path('upload/' . $product->thumbnail));
+            }
+            $product->thumbnail = $data['thumbnail'];
+        }
+
+        $product->is_active = 1;
+        $product->save();
+
+        $categoryProduct = CategoryProduct::where('product_id', $product->id)->first();
+        $categoryProduct->category_id = $data['category_id'];
+        $categoryProduct->save();
+
+        $categoryTypeProduct = CategoryTypeProduct::where('product_id', $product->id)->first();
+        $categoryTypeProduct->category_type_id = $data['category_type_id'];
+        $categoryTypeProduct->save();
+
+        if (!empty($data['images'])) {
+            ProductGalleries::where('product_id', $product->id)->delete();
+            foreach ($data['images'] as $imageName) {
+                ProductGalleries::create([
+                    'product_id' => $product->id,
+                    'image' => $imageName,
+                ]);
+            }
+        }
+
+        if (!empty($data['variants'])) {
+            $variantIds = [];
+            foreach ($data['variants'] as $attributeId => $valueIds) {
+                foreach ($valueIds as $valueId) {
+                    $variant = ProductVariant::where('product_id', $product->id)
+                        ->whereHas('attributeValues', function ($query) use ($valueId) {
+                            $query->where('attribute_value_id', $valueId);
+                        })->first();
+
+                    if (!$variant) {
+                        $variant = ProductVariant::create(['product_id' => $product->id]);
+                        AttributeValueProductVariant::create([
+                            'product_variant_id' => $variant->id,
+                            'attribute_value_id' => $valueId,
+                        ]);
+                        AttributeValueProduct::create([
+                            'product_id' => $product->id,
+                            'attribute_value_id' => $valueId,
+                        ]);
+                    }
+                    $variantIds[] = $variant->id;
+                }
+            }
+            ProductVariant::where('product_id', $product->id)
+                ->whereNotIn('id', $variantIds)
+                ->delete();
+        }
+
+        $pendingUpdate->is_approved = true;
+        $pendingUpdate->save();
+        $pendingUpdate->delete();
+
+        return redirect()->route('products.list')->with('success', 'Thay đổi đã được duyệt và áp dụng!');
     }
 
     public function destroy(string $id)

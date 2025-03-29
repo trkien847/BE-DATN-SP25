@@ -158,6 +158,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
+  Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
 
   // Quản lý đơn hàng
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');

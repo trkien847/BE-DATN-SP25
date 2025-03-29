@@ -61,7 +61,7 @@
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;" id="notification-list">
-                            <!-- Notifications sẽ được thêm bằng JS -->
+                            
                         </div>
                         <div class="text-center py-3">
                             <a href="javascript:void(0);" class="btn btn-primary btn-sm">
