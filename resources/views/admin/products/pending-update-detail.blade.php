@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h1>Chi tiết thay đổi</h1>
-        <p><strong>Người gửi:</strong> {{ $pendingUpdate->user->name }}</p>
+        <p><strong>Người gửi:</strong> {{ $pendingUpdate->user->fullname }}</p>
         <p><strong>Thời gian:</strong> {{ $pendingUpdate->created_at->format('d/m/Y H:i') }}</p>
         <p><strong>Hành động:</strong> {{ $pendingUpdate->action_type === 'create' ? 'Thêm mới' : 'Sửa' }}</p>
 

@@ -24,7 +24,7 @@
                 @foreach ($pendingUpdates as $update)
                     <tr>
                         <td>{{ $update->data['name'] }}</td>
-                        <td>{{ $update->user->name }}</td>
+                        <td>{{ $update->user->fullname }}</td>
                         <td>{{ $update->created_at->format('d/m/Y H:i') }}</td>
                         <td>{{ $update->action_type === 'create' ? 'Thêm mới' : 'Sửa' }}</td>
                         <td>

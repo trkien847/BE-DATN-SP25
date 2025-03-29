@@ -406,7 +406,7 @@ class ProductController extends Controller
         }
 
         $pendingUpdates = ProductPendingUpdate::with('user')->get();
-        return view('products.pending-updates', compact('pendingUpdates'));
+        return view('admin.products.pending-updates', compact('pendingUpdates'));
     }
 
     public function viewPendingUpdate($pendingId)
@@ -419,7 +419,7 @@ class ProductController extends Controller
         $pendingUpdate = ProductPendingUpdate::with('user')->findOrFail($pendingId);
         $originalProduct = $pendingUpdate->product_id ? Product::find($pendingUpdate->product_id) : null;
 
-        return view('products.pending-update-detail', compact('pendingUpdate', 'originalProduct'));
+        return view('admin.products.pending-update-detail', compact('pendingUpdate', 'originalProduct'));
     }
 
     public function approvePendingUpdate($pendingId)
