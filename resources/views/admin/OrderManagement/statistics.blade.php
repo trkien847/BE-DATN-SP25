@@ -51,16 +51,25 @@
 
         <!-- Biểu đồ sóng -->
         <h3>Biểu đồ doanh số theo giờ</h3>
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Biểu đồ hình tròn -->
+        <h3>Phân bố trạng thái đơn hàng</h3>
+        <div class="card">
+            <div class="card-body">
+                <canvas id="orderStatusChart" height="100"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(ctx, {
+        // Biểu đồ sóng
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctxRevenue, {
             type: 'line',
             data: {
                 labels: ['0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h', '8h', '9h', '10h', '11h', '12h', 
@@ -109,6 +118,41 @@
                     legend: {
                         display: true,
                         position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ hình tròn
+        const ctxStatus = document.getElementById('orderStatusChart').getContext('2d');
+        const orderStatusChart = new Chart(ctxStatus, {
+            type: 'pie',
+            data: {
+                labels: ['Đơn chờ xác nhận', 'Đơn hoàn thành', 'Đơn bị hủy'],
+                datasets: [{
+                    data: [@json($pendingOrdersCount), @json($completedOrdersCount), @json($canceledOrdersCount)],
+                    backgroundColor: [
+                        'rgba(255, 206, 86, 0.8)',  // Vàng cho chờ xác nhận
+                        'rgba(75, 192, 192, 0.8)',  // Xanh lá cho hoàn thành
+                        'rgba(255, 99, 132, 0.8)'   // Đỏ cho bị hủy
+                    ],
+                    borderColor: [
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Phân bố trạng thái đơn hàng'
                     }
                 }
             }

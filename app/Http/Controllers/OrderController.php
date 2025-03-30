@@ -168,7 +168,6 @@ class OrderController extends Controller
     // thông kê
     public function statistics(Request $request)
     {
-        // Lấy ngày từ request, mặc định là hôm nay nếu không có input
         $date = $request->input('date') ?: Carbon::today()->toDateString();
         $startOfDay = Carbon::parse($date)->startOfDay();
         $endOfDay = Carbon::parse($date)->endOfDay();
@@ -181,7 +180,7 @@ class OrderController extends Controller
 
         // Doanh số dự tính (order_status_id: 1, 2, 3, 4)
         $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereIn('order_status_id', [1, 2, 3, 4])
+            $query->whereIn('order_status_id', [12, 3, 4])
                   ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
             $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
@@ -194,7 +193,7 @@ class OrderController extends Controller
             }
         }
 
-        
+        // Doanh số thực tế (order_status_id: 6)
         $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 6)
                   ->whereBetween('created_at', [$startOfDay, $endOfDay]);
@@ -229,9 +228,26 @@ class OrderController extends Controller
         $actualRevenue = array_sum($actualRevenueData);
         $canceledRevenue = array_sum($canceledRevenueData);
 
+        // Đếm số đơn hàng theo trạng thái
+        $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->where('order_status_id', 1)
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->count();
+
+        $completedOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->where('order_status_id', 6)
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->count();
+
+        $canceledOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->where('order_status_id', 7)
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->count();
+
         return view('admin.OrderManagement.statistics', compact(
             'expectedRevenue', 'actualRevenue', 'canceledRevenue',
             'expectedRevenueData', 'actualRevenueData', 'canceledRevenueData',
+            'pendingOrdersCount', 'completedOrdersCount', 'canceledOrdersCount',
             'date'
         ));
     }
