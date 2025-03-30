@@ -31,8 +31,6 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
     public function collection(): Collection
     {
         $data = new Collection();
-
-        // Tổng doanh số
         $expectedRevenue = Order::whereHas('orderStatuses', function ($query) {
             $query->whereIn('order_status_id', [1, 2, 3, 4])
                   ->whereBetween('created_at', [$this->start, $this->end]);
@@ -64,7 +62,6 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
             'value' => $canceledRevenue,
         ]);
 
-        // Trạng thái đơn hàng
         $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) {
             $query->where('order_status_id', 1)
                   ->whereBetween('created_at', [$this->start, $this->end]);
@@ -95,8 +92,6 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
             'label' => 'Đơn bị hủy',
             'value' => $canceledOrdersCount,
         ]);
-
-        // Top 10 người dùng
         $topUsers = User::whereHas('orders.orderStatuses', function ($query) {
             $query->whereIn('order_status_id', [1, 2])
                   ->whereBetween('created_at', [$this->start, $this->end]);
@@ -126,8 +121,6 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
                 'value' => $user->total_spent,
             ]);
         }
-
-        // Top 10 sản phẩm
         $topProducts = Product::whereHas('items.order.orderStatuses', function ($query) {
             $query->whereIn('order_status_id', [1, 2])
                   ->whereBetween('created_at', [$this->start, $this->end]);
@@ -185,12 +178,8 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-
-                // Gộp ô và thêm tiêu đề
                 $sheet->mergeCells('A1:C1');
                 $sheet->setCellValue('A1', 'Thống kê đơn hàng - ' . $this->dateLabel);
-                
-                // Định dạng tiêu đề
                 $sheet->getStyle('A1')->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -200,15 +189,11 @@ class OrdersStatisticsExport implements FromCollection, WithHeadings, WithMappin
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
-
-                // Dịch chuyển dữ liệu xuống dưới tiêu đề
                 $sheet->getStyle('A2:C2')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ],
                 ]);
-                
-                // Điều chỉnh chiều cao dòng tiêu đề
                 $sheet->getRowDimension(1)->setRowHeight(30);
             },
         ];

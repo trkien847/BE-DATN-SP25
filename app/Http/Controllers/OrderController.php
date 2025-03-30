@@ -197,12 +197,12 @@ class OrderController extends Controller
             $dateLabel = Carbon::today()->format('d/m/Y');
         }
 
-        // Xuất Excel nếu có request export
+        // Xuất Excel 
         if ($request->has('export')) {
             return Excel::download(new OrdersStatisticsExport($start, $end, $filterType, $dateLabel), 'thong-ke-don-hang.xlsx');
         }
 
-        // Logic tính toán dữ liệu biểu đồ (giữ nguyên từ code trước)
+        // Logic biểu đồ
         $labels = [];
         $expectedRevenueData = [];
         $actualRevenueData = [];

@@ -1,7 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Thống kê đơn hàng</title>
+@extends('admin.layouts.layout')
+@section('content')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -12,8 +10,6 @@
             padding: 10px;
         }
     </style>
-</head>
-<body>
     <div class="container mt-5">
         <h1>Thống kê đơn hàng - {{ $dateLabel }}</h1>
 
@@ -199,5 +195,4 @@
             }
         });
     </script>
-</body>
-</html>
+    @endsection
