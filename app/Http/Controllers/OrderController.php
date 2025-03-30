@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\OrdersStatisticsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Http\Controllers\Controller;
@@ -170,137 +172,244 @@ class OrderController extends Controller
     // thông kê
     public function statistics(Request $request)
     {
-        $date = $request->input('date') ?: Carbon::today()->toDateString();
-        $startOfDay = Carbon::parse($date)->startOfDay();
-        $endOfDay = Carbon::parse($date)->endOfDay();
+        $filterType = $request->input('filter_type', 'day');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $month = $request->input('month');
+        $year = $request->input('year', Carbon::today()->year);
+        $currentYear = Carbon::today()->year;
 
-        // Tạo mảng dữ liệu theo giờ (24 giờ)
-        $hours = range(0, 23);
-        $expectedRevenueData = array_fill(0, 24, 0);
-        $actualRevenueData = array_fill(0, 24, 0);
-        $canceledRevenueData = array_fill(0, 24, 0);
+        if ($filterType === 'range' && $startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+            $dateLabel = "Từ " . $start->format('d/m/Y') . " đến " . $end->format('d/m/Y');
+        } elseif ($filterType === 'month' && $month) {
+            $start = Carbon::create($year, $month, 1)->startOfMonth();
+            $end = Carbon::create($year, $month, 1)->endOfMonth();
+            $dateLabel = "Tháng $month/$year";
+        } elseif ($filterType === 'year' && $year) {
+            $start = Carbon::create($year, 1, 1)->startOfYear();
+            $end = Carbon::create($year, 1, 1)->endOfYear();
+            $dateLabel = "Năm $year";
+        } else {
+            $start = Carbon::today()->startOfDay();
+            $end = Carbon::today()->endOfDay();
+            $dateLabel = Carbon::today()->format('d/m/Y');
+        }
 
-        // Doanh số dự tính (order_status_id: 1, 2, 3, 4)
-        $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        // Xuất Excel nếu có request export
+        if ($request->has('export')) {
+            return Excel::download(new OrdersStatisticsExport($start, $end, $filterType, $dateLabel), 'thong-ke-don-hang.xlsx');
+        }
+
+        // Logic tính toán dữ liệu biểu đồ (giữ nguyên từ code trước)
+        $labels = [];
+        $expectedRevenueData = [];
+        $actualRevenueData = [];
+        $canceledRevenueData = [];
+
+        if ($filterType === 'day') {
+            $labels = array_map(fn($h) => $h . 'h', range(0, 23));
+            $expectedRevenueData = array_fill(0, 24, 0);
+            $actualRevenueData = array_fill(0, 24, 0);
+            $canceledRevenueData = array_fill(0, 24, 0);
+
+            $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->whereIn('order_status_id', [1, 2, 3, 4])
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($expectedOrders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $hour = Carbon::parse($status->created_at)->hour;
+                    $expectedRevenueData[$hour] += $order->total_amount;
+                }
+            }
+
+            $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->where('order_status_id', 6)
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($actualOrders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $hour = Carbon::parse($status->created_at)->hour;
+                    $actualRevenueData[$hour] += $order->total_amount;
+                }
+            }
+
+            $canceledOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->where('order_status_id', 7)
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($canceledOrders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $hour = Carbon::parse($status->created_at)->hour;
+                    $canceledRevenueData[$hour] += $order->total_amount;
+                }
+            }
+        } elseif ($filterType === 'range') {
+            $days = $start->diffInDays($end) + 1;
+            $labels = array_map(fn($d) => $start->copy()->addDays($d)->format('d/m'), range(0, $days - 1));
+            $expectedRevenueData = array_fill(0, $days, 0);
+            $actualRevenueData = array_fill(0, $days, 0);
+            $canceledRevenueData = array_fill(0, $days, 0);
+
+            $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($orders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $dayIndex = $start->diffInDays(Carbon::parse($status->created_at));
+                    if (in_array($status->order_status_id, [1, 2, 3, 4])) {
+                        $expectedRevenueData[$dayIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 6) {
+                        $actualRevenueData[$dayIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 7) {
+                        $canceledRevenueData[$dayIndex] += $order->total_amount;
+                    }
+                }
+            }
+        } elseif ($filterType === 'month') {
+            $days = $start->daysInMonth;
+            $labels = array_map(fn($d) => ($d + 1) . '/' . $month, range(0, $days - 1));
+            $expectedRevenueData = array_fill(0, $days, 0);
+            $actualRevenueData = array_fill(0, $days, 0);
+            $canceledRevenueData = array_fill(0, $days, 0);
+
+            $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($orders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $dayIndex = Carbon::parse($status->created_at)->day - 1;
+                    if (in_array($status->order_status_id, [1, 2, 3, 4])) {
+                        $expectedRevenueData[$dayIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 6) {
+                        $actualRevenueData[$dayIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 7) {
+                        $canceledRevenueData[$dayIndex] += $order->total_amount;
+                    }
+                }
+            }
+        } elseif ($filterType === 'year') {
+            $labels = array_map(fn($m) => 'Tháng ' . ($m + 1), range(0, 11));
+            $expectedRevenueData = array_fill(0, 12, 0);
+            $actualRevenueData = array_fill(0, 12, 0);
+            $canceledRevenueData = array_fill(0, 12, 0);
+
+            $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
+                $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
+                      ->whereBetween('created_at', [$start, $end]);
+            })->with(['orderStatuses' => function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end]);
+            }])->get();
+
+            foreach ($orders as $order) {
+                foreach ($order->orderStatuses as $status) {
+                    $monthIndex = Carbon::parse($status->created_at)->month - 1;
+                    if (in_array($status->order_status_id, [1, 2, 3, 4])) {
+                        $expectedRevenueData[$monthIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 6) {
+                        $actualRevenueData[$monthIndex] += $order->total_amount;
+                    } elseif ($status->order_status_id == 7) {
+                        $canceledRevenueData[$monthIndex] += $order->total_amount;
+                    }
+                }
+            }
+        }
+
+        $expectedRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2, 3, 4])
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        }])->get();
+                  ->whereBetween('created_at', [$start, $end]);
+        })->sum('total_amount');
 
-        foreach ($expectedOrders as $order) {
-            foreach ($order->orderStatuses as $status) {
-                $hour = Carbon::parse($status->created_at)->hour;
-                $expectedRevenueData[$hour] += $order->total_amount;
-            }
-        }
-
-        // Doanh số thực tế (order_status_id: 6)
-        $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $actualRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 6)
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        }])->get();
+                  ->whereBetween('created_at', [$start, $end]);
+        })->sum('total_amount');
 
-        foreach ($actualOrders as $order) {
-            foreach ($order->orderStatuses as $status) {
-                $hour = Carbon::parse($status->created_at)->hour;
-                $actualRevenueData[$hour] += $order->total_amount;
-            }
-        }
-
-        // Doanh số bị hủy (order_status_id: 7)
-        $canceledOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $canceledRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 7)
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        }])->get();
+                  ->whereBetween('created_at', [$start, $end]);
+        })->sum('total_amount');
 
-        foreach ($canceledOrders as $order) {
-            foreach ($order->orderStatuses as $status) {
-                $hour = Carbon::parse($status->created_at)->hour;
-                $canceledRevenueData[$hour] += $order->total_amount;
-            }
-        }
-
-        // Tổng doanh số
-        $expectedRevenue = array_sum($expectedRevenueData);
-        $actualRevenue = array_sum($actualRevenueData);
-        $canceledRevenue = array_sum($canceledRevenueData);
-
-        // Đếm số đơn hàng theo trạng thái
-        $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 1)
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                  ->whereBetween('created_at', [$start, $end]);
         })->count();
 
-        $completedOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $completedOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 6)
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                  ->whereBetween('created_at', [$start, $end]);
         })->count();
 
-        $canceledOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $canceledOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 7)
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                  ->whereBetween('created_at', [$start, $end]);
         })->count();
 
-        // Top 10 người dùng đặt nhiều đơn nhất (order_status_id: 1, 2)
-        $topUsers = User::whereHas('orders.orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $topUsers = User::whereHas('orders.orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2])
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        })->with(['orders' => function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereHas('orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                  ->whereBetween('created_at', [$start, $end]);
+        })->with(['orders' => function ($query) use ($start, $end) {
+            $query->whereHas('orderStatuses', function ($q) use ($start, $end) {
                 $q->whereIn('order_status_id', [1, 2])
-                    ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                  ->whereBetween('created_at', [$start, $end]);
             });
         }])->select('users.*')
-            ->withCount(['orders as orders_count' => function ($query) use ($startOfDay, $endOfDay) {
-                $query->whereHas('orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
-                    $q->whereIn('order_status_id', [1, 2])
-                        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-                });
-            }])->orderBy('orders_count', 'desc')
-            ->take(10)
-            ->get()
-            ->map(function ($user) {
-                $user->total_spent = $user->orders->sum('total_amount');
-                return $user;
-            });
+          ->withCount(['orders as orders_count' => function ($query) use ($start, $end) {
+              $query->whereHas('orderStatuses', function ($q) use ($start, $end) {
+                  $q->whereIn('order_status_id', [1, 2])
+                    ->whereBetween('created_at', [$start, $end]);
+              });
+          }])->orderBy('orders_count', 'desc')
+          ->take(10)
+          ->get()
+          ->map(function ($user) {
+              $user->total_spent = $user->orders->sum('total_amount');
+              return $user;
+          });
 
-        // Top 10 sản phẩm được đặt nhiều nhất (order_status_id: 1, 2)
-        $topProducts = Product::whereHas('items.order.orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+        $topProducts = Product::whereHas('items.order.orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2])
-                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        })->with(['items' => function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereHas('order.orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                  ->whereBetween('created_at', [$start, $end]);
+        })->with(['items' => function ($query) use ($start, $end) {
+            $query->whereHas('order.orderStatuses', function ($q) use ($start, $end) {
                 $q->whereIn('order_status_id', [1, 2])
-                    ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                  ->whereBetween('created_at', [$start, $end]);
             });
         }])->select('products.*')
-            ->withCount(['items as items_sold' => function ($query) use ($startOfDay, $endOfDay) {
-                $query->whereHas('order.orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
-                    $q->whereIn('order_status_id', [1, 2])
-                        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-                });
-            }])->orderBy('items_sold', 'desc')
-            ->take(10)
-            ->get();
+          ->withCount(['items as items_sold' => function ($query) use ($start, $end) {
+              $query->whereHas('order.orderStatuses', function ($q) use ($start, $end) {
+                  $q->whereIn('order_status_id', [1, 2])
+                    ->whereBetween('created_at', [$start, $end]);
+              });
+          }])->orderBy('items_sold', 'desc')
+          ->take(10)
+          ->get();
 
         return view('admin.OrderManagement.statistics', compact(
-            'expectedRevenue',
-            'actualRevenue',
-            'canceledRevenue',
-            'expectedRevenueData',
-            'actualRevenueData',
-            'canceledRevenueData',
-            'pendingOrdersCount',
-            'completedOrdersCount',
-            'canceledOrdersCount',
-            'topUsers',
-            'topProducts',
-            'date'
+            'expectedRevenue', 'actualRevenue', 'canceledRevenue',
+            'expectedRevenueData', 'actualRevenueData', 'canceledRevenueData',
+            'pendingOrdersCount', 'completedOrdersCount', 'canceledOrdersCount',
+            'topUsers', 'topProducts',
+            'filterType', 'startDate', 'endDate', 'month', 'year', 'dateLabel', 'currentYear', 'labels'
         ));
     }
 }
