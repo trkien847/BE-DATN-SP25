@@ -15,7 +15,7 @@ class User extends Authenticatable
     const ROLE_ADMIN = 1;
     const ROLE_STAFF = 2;
     const ROLE_CUSTOMER = 3;
-    
+
 
 
     /**
@@ -24,18 +24,18 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'fullname', 
-        'email', 
-        'phone_number', 
-        'birthday', 
-        'password', 
-        'gender', 
-        'avatar', 
-        'role_id', 
-        'status', 
-        'email_verified_at', 
-        'verified_at', 
-        'google_id', 
+        'fullname',
+        'email',
+        'phone_number',
+        'birthday',
+        'password',
+        'gender',
+        'avatar',
+        'role_id',
+        'status',
+        'email_verified_at',
+        'verified_at',
+        'google_id',
         'loyalty_points'
     ];
 
@@ -63,6 +63,10 @@ class User extends Authenticatable
     public function review()
     {
         return $this->hasMany(Review::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
     }
     public function doctor()
     {

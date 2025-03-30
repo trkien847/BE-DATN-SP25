@@ -1,11 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Thống kê đơn hàng</title>
+@extends('admin.layouts.layout')
+@section('content')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
+    <style>
+        .scrollable-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+    </style>
     <div class="container mt-5">
         <h1>Thống kê đơn hàng ngày {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</h1>
 
@@ -57,11 +61,52 @@
             </div>
         </div>
 
-        <!-- Biểu đồ hình tròn -->
-        <h3>Phân bố trạng thái đơn hàng</h3>
-        <div class="card">
-            <div class="card-body">
-                <canvas id="orderStatusChart" height="100"></canvas>
+        <!-- Phân bố trạng thái và Top 10 -->
+        <div class="row">
+            <!-- Biểu đồ hình tròn -->
+            <div class="col-md-4">
+                <h3>Phân bố trạng thái đơn hàng</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <canvas id="orderStatusChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 10 người dùng -->
+            <div class="col-md-4">
+                <h3>Top 10 người dùng đặt nhiều nhất</h3>
+                <div class="scrollable-container">
+                    @forelse ($topUsers as $user)
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.jpg') }}" alt="Avatar" width="50" height="50" class="rounded-circle me-2">
+                            <div>
+                                <strong>{{ $user->fullname }}</strong><br>
+                                <small>Tổng tiền: {{ number_format($user->total_spent, 0, ',', '.') }} VNĐ</small>
+                            </div>
+                        </div>
+                    @empty
+                        <p>Không có dữ liệu</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Top 10 sản phẩm -->
+            <div class="col-md-4">
+                <h3>Top 10 sản phẩm được đặt nhiều nhất</h3>
+                <div class="scrollable-container">
+                    @forelse ($topProducts as $product)
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ $product->thumbnail ? asset('upload/' . $product->thumbnail) : asset('default-product.png') }}" alt="Product" width="50" height="50" class="me-2">
+                            <div>
+                                <strong>{{ $product->name }}</strong><br>
+                                <small>Số lượng: {{ $product->items_sold }}</small>
+                            </div>
+                        </div>
+                    @empty
+                        <p>Không có dữ liệu</p>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
@@ -100,26 +145,10 @@
             },
             options: {
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Doanh số (VNĐ)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Giờ trong ngày'
-                        }
-                    }
+                    y: { beginAtZero: true, title: { display: true, text: 'Doanh số (VNĐ)' } },
+                    x: { title: { display: true, text: 'Giờ trong ngày' } }
                 },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
+                plugins: { legend: { display: true, position: 'top' } }
             }
         });
 
@@ -131,32 +160,18 @@
                 labels: ['Đơn chờ xác nhận', 'Đơn hoàn thành', 'Đơn bị hủy'],
                 datasets: [{
                     data: [@json($pendingOrdersCount), @json($completedOrdersCount), @json($canceledOrdersCount)],
-                    backgroundColor: [
-                        'rgba(255, 206, 86, 0.8)',  // Vàng cho chờ xác nhận
-                        'rgba(75, 192, 192, 0.8)',  // Xanh lá cho hoàn thành
-                        'rgba(255, 99, 132, 0.8)'   // Đỏ cho bị hủy
-                    ],
-                    borderColor: [
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
+                    backgroundColor: ['rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)'],
+                    borderColor: ['rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Phân bố trạng thái đơn hàng'
-                    }
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Phân bố trạng thái đơn hàng' }
                 }
             }
         });
     </script>
-</body>
-</html>
+@endsection

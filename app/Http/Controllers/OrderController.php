@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -180,8 +182,8 @@ class OrderController extends Controller
 
         // Doanh số dự tính (order_status_id: 1, 2, 3, 4)
         $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
-            $query->whereIn('order_status_id', [12, 3, 4])
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+            $query->whereIn('order_status_id', [1, 2, 3, 4])
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
             $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
         }])->get();
@@ -196,7 +198,7 @@ class OrderController extends Controller
         // Doanh số thực tế (order_status_id: 6)
         $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 6)
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
             $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
         }])->get();
@@ -211,7 +213,7 @@ class OrderController extends Controller
         // Doanh số bị hủy (order_status_id: 7)
         $canceledOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 7)
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
             $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
         }])->get();
@@ -231,25 +233,74 @@ class OrderController extends Controller
         // Đếm số đơn hàng theo trạng thái
         $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 1)
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->count();
 
         $completedOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 6)
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->count();
 
         $canceledOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 7)
-                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         })->count();
 
+        // Top 10 người dùng đặt nhiều đơn nhất (order_status_id: 1, 2)
+        $topUsers = User::whereHas('orders.orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereIn('order_status_id', [1, 2])
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->with(['orders' => function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereHas('orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                $q->whereIn('order_status_id', [1, 2])
+                    ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+            });
+        }])->select('users.*')
+            ->withCount(['orders as orders_count' => function ($query) use ($startOfDay, $endOfDay) {
+                $query->whereHas('orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                    $q->whereIn('order_status_id', [1, 2])
+                        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                });
+            }])->orderBy('orders_count', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($user) {
+                $user->total_spent = $user->orders->sum('total_amount');
+                return $user;
+            });
+
+        // Top 10 sản phẩm được đặt nhiều nhất (order_status_id: 1, 2)
+        $topProducts = Product::whereHas('items.order.orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereIn('order_status_id', [1, 2])
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->with(['items' => function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereHas('order.orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                $q->whereIn('order_status_id', [1, 2])
+                    ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+            });
+        }])->select('products.*')
+            ->withCount(['items as items_sold' => function ($query) use ($startOfDay, $endOfDay) {
+                $query->whereHas('order.orderStatuses', function ($q) use ($startOfDay, $endOfDay) {
+                    $q->whereIn('order_status_id', [1, 2])
+                        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+                });
+            }])->orderBy('items_sold', 'desc')
+            ->take(10)
+            ->get();
+
         return view('admin.OrderManagement.statistics', compact(
-            'expectedRevenue', 'actualRevenue', 'canceledRevenue',
-            'expectedRevenueData', 'actualRevenueData', 'canceledRevenueData',
-            'pendingOrdersCount', 'completedOrdersCount', 'canceledOrdersCount',
+            'expectedRevenue',
+            'actualRevenue',
+            'canceledRevenue',
+            'expectedRevenueData',
+            'actualRevenueData',
+            'canceledRevenueData',
+            'pendingOrdersCount',
+            'completedOrdersCount',
+            'canceledOrdersCount',
+            'topUsers',
+            'topProducts',
             'date'
         ));
     }
-
 }
