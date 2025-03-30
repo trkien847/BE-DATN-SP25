@@ -194,7 +194,7 @@ class OrderController extends Controller
             }
         }
 
-        // Doanh số thực tế (order_status_id: 6)
+        
         $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
             $query->where('order_status_id', 6)
                   ->whereBetween('created_at', [$startOfDay, $endOfDay]);
