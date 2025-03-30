@@ -133,7 +133,8 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
-
+  // thông kê
+  Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
 
   //nhập  search
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
@@ -169,10 +170,10 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
 
-Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
-Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
-Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
+  Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+  Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+  Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+  Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
   // Quản lý người dùng
   Route::get('/admin/users', [UserManagementController::class, 'index'])->name('users.list');

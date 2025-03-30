@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +16,7 @@ class OrderController extends Controller
         $status = $request->query('status');
 
         $query = Order::with(['orderStatuses.orderStatus', 'orderStatuses.modifier'])->latest('created_at');
-        
+
         if ($status) {
             $query->whereHas('orderStatuses', function ($q) use ($status) {
                 $q->where('order_status_id', $status)
@@ -163,4 +164,76 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
+    // thông kê
+    public function statistics(Request $request)
+    {
+        // Lấy ngày từ request, mặc định là hôm nay nếu không có input
+        $date = $request->input('date') ?: Carbon::today()->toDateString();
+        $startOfDay = Carbon::parse($date)->startOfDay();
+        $endOfDay = Carbon::parse($date)->endOfDay();
+
+        // Tạo mảng dữ liệu theo giờ (24 giờ)
+        $hours = range(0, 23);
+        $expectedRevenueData = array_fill(0, 24, 0);
+        $actualRevenueData = array_fill(0, 24, 0);
+        $canceledRevenueData = array_fill(0, 24, 0);
+
+        // Doanh số dự tính (order_status_id: 1, 2, 3, 4)
+        $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereIn('order_status_id', [1, 2, 3, 4])
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        }])->get();
+
+        foreach ($expectedOrders as $order) {
+            foreach ($order->orderStatuses as $status) {
+                $hour = Carbon::parse($status->created_at)->hour;
+                $expectedRevenueData[$hour] += $order->total_amount;
+            }
+        }
+
+        // Doanh số thực tế (order_status_id: 6)
+        $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->where('order_status_id', 6)
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        }])->get();
+
+        foreach ($actualOrders as $order) {
+            foreach ($order->orderStatuses as $status) {
+                $hour = Carbon::parse($status->created_at)->hour;
+                $actualRevenueData[$hour] += $order->total_amount;
+            }
+        }
+
+        // Doanh số bị hủy (order_status_id: 7)
+        $canceledOrders = Order::whereHas('orderStatuses', function ($query) use ($startOfDay, $endOfDay) {
+            $query->where('order_status_id', 7)
+                  ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        })->with(['orderStatuses' => function ($query) use ($startOfDay, $endOfDay) {
+            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        }])->get();
+
+        foreach ($canceledOrders as $order) {
+            foreach ($order->orderStatuses as $status) {
+                $hour = Carbon::parse($status->created_at)->hour;
+                $canceledRevenueData[$hour] += $order->total_amount;
+            }
+        }
+
+        // Tổng doanh số
+        $expectedRevenue = array_sum($expectedRevenueData);
+        $actualRevenue = array_sum($actualRevenueData);
+        $canceledRevenue = array_sum($canceledRevenueData);
+
+        return view('admin.OrderManagement.statistics', compact(
+            'expectedRevenue', 'actualRevenue', 'canceledRevenue',
+            'expectedRevenueData', 'actualRevenueData', 'canceledRevenueData',
+            'date'
+        ));
+    }
+
 }
