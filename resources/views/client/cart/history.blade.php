@@ -180,8 +180,11 @@
                     <a href="{{ route('order.cancel', $order->id) }}" class="cancel-btn">Hủy đơn hàng</a>
                     @endif
                     @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành' && $order->completedStatusTimestamp() && \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
-                        <a href="{{ route('order.return', $order->id) }}" class="return-btn">Hoàn hàng</a>
-                        @endif
+                    <a href="{{ route('order.return', $order->id) }}" class="return-btn">Hoàn hàng</a>
+                    @endif
+                    @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
+                        <a href="{{ route('order.refund.form', $order->id) }}" class="cancel-btn">Nhập thông tin tài khoản</a>
+                    @endif
                 </td>
             </tr>
             @endforeach

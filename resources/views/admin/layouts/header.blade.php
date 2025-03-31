@@ -79,25 +79,27 @@
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;" id="notification-list">
-                            @foreach(Auth::user()->notifications()->latest()->limit(10)->get() as $notification)
+                        @foreach(Auth::user()->notifications()->where('is_read', 0)->latest()->limit(10)->get() as $notification)
                             <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
                                 <h6 class="mb-1">{{ $notification->title }}</h6>
                                 <p class="mb-2 fs-13">{{ $notification->content }}</p>
                                 @if($notification->type === 'order_cancel')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
+                                    <div class="d-flex gap-2">
+                                        <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                        </form>
+                                        <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                            <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                        </form>
+                                        <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                    </div>
                                 @endif
                             </div>
-                            @endforeach
+                        @endforeach
                             @if(Auth::user()->notifications()->count() === 0)
                             <div class="text-center p-3">Không có thông báo nào</div>
                             @endif

@@ -117,10 +117,12 @@
             <div class="d-flex gap-2 justify-content-end">
                 <form action="{{ route('order.acceptCancel', $order->id) }}" method="POST" style="display:inline;">
                     @csrf
+                    <input type="hidden" name="notification_id" value="{{ $notificationId }}">
                     <button type="submit" class="btn btn-success">Chấp nhận hủy</button>
                 </form>
                 <form action="{{ route('order.rejectCancel', $order->id) }}" method="POST" style="display:inline;">
                     @csrf
+                    <input type="hidden" name="notification_id" value="{{ $notificationId }}">
                     <button type="submit" class="btn btn-danger">Từ chối hủy</button>
                 </form>
             </div>

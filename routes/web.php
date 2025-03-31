@@ -153,6 +153,13 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/order/{orderId}/accept-cancel', [CartController::class, 'acceptCancel'])->name('order.acceptCancel');
   Route::get('/order/{orderId}/details', [CartController::class, 'orderDetails'])->name('order.details');
 
+  //hoàn tiềntiền
+  Route::get('/orders/{orderId}/refund-form', [CartController::class, 'showRefundForm'])->name('order.refund.form');
+  Route::post('/orders/{orderId}/refund-submit', [CartController::class, 'submitRefundInfo'])->name('order.refund.submit');
+  Route::get('/orders/{orderId}/refund-details', [CartController::class, 'refundDetails'])->name('order.refund.details');
+  Route::post('/orders/{orderId}/upload-proof', [CartController::class, 'uploadRefundProof'])->name('order.refund.upload');
+
+
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
   // thông kê
