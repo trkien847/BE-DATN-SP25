@@ -133,9 +133,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
+  //lịch sử mua hàng 
+  Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
+  Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
+  Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
   // thông kê
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
-
   //nhập  search
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');

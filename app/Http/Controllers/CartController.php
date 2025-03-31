@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderConfirmation;
 use App\Models\OrderOrderStatus;
+use App\Models\OrderStatus;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
@@ -436,6 +438,127 @@ class CartController extends Controller
 
 
 
+    public function orderHistory(Request $request)
+    {
+        $carts = Cart::where('user_id', auth()->id())
+            ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+            ->get();
+
+        $subtotal = $carts->sum(function ($cart) {
+            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
+            return $cart->quantity * $price;
+        });
+        $user = Auth::user();
+        $orders = Order::where('user_id', $user->id)
+            ->with(['latestOrderStatus', 'items']) // Tải trước trạng thái mới nhất và các mục đơn hàng
+            ->get();
+
+        return view('client.cart.history', compact('orders', 'carts', 'subtotal'));
+    }
+
+    public function cancelOrder(Request $request, $orderId)
+    {
+        $user = Auth::user();
+        $order = Order::where('user_id', $user->id)->findOrFail($orderId);
+        $currentStatus = $order->latestOrderStatus->name;
+
+        if ($request->isMethod('post')) {
+            // Xử lý khi submit form
+            $request->validate([
+                'cancel_reason' => 'required|string|max:255',
+            ]);
+
+            if (!in_array($currentStatus, ['Chờ xác nhận', 'Chờ giao hàng'])) {
+                return redirect()->back()->with('error', 'Không thể hủy đơn hàng này!');
+            }
+
+            $canceledStatus = OrderStatus::where('name', 'Đã hủy')->first();
+            if (!$canceledStatus) {
+                return redirect()->back()->with('error', 'Trạng thái Đã hủy không tồn tại!');
+            }
+
+            OrderOrderStatus::create([
+                'order_id' => $order->id,
+                'order_status_id' => $canceledStatus->id,
+                'modified_by' => $user->id,
+                'note' => $request->cancel_reason,
+            ]);
+
+            return redirect()->route('order.history')->with('success', 'Đơn hàng đã được hủy thành công!');
+        }
+        $carts = Cart::where('user_id', auth()->id())
+            ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+            ->get();
+
+        $subtotal = $carts->sum(function ($cart) {
+            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
+            return $cart->quantity * $price;
+        });
+        // Hiển thị form nếu là GET
+        return view('client.cart.cancel', compact('order', 'carts', 'subtotal'));
+    }
+
+    public function returnOrder(Request $request, $orderId)
+    {
+        $user = Auth::user();
+        $order = Order::where('user_id', $user->id)->findOrFail($orderId);
+        $currentStatus = $order->latestOrderStatus->name;
+        $completedTimestamp = $order->completedStatusTimestamp();
+        $daysSinceCompleted = $completedTimestamp ? Carbon::parse($completedTimestamp)->diffInDays(Carbon::now()) : null;
+
+        if ($request->isMethod('post')) {
+            // Xử lý khi submit form
+            $request->validate([
+                'return_reason' => 'required|string|max:255',
+                'return_images.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Giới hạn 2MB mỗi ảnh
+            ]);
+
+            if ($currentStatus !== 'Hoàn thành' || !$completedTimestamp || $daysSinceCompleted > 7) {
+                return redirect()->back()->with('error', 'Không thể hoàn đơn hàng này!');
+            }
+
+            $returnStatus = OrderStatus::where('name', 'Yêu cầu hoàn hàng')->first();
+            if (!$returnStatus) {
+                return redirect()->back()->with('error', 'Trạng thái Yêu cầu hoàn hàng không tồn tại!');
+            }
+
+            // Lưu ảnh nếu có
+            $imagePaths = [];
+            if ($request->hasFile('return_images')) {
+                foreach ($request->file('return_images') as $image) {
+                    $path = $image->store('return_images', 'public'); // Lưu vào storage/public/return_images
+                    $imagePaths[] = $path;
+                }
+            }
+
+            OrderOrderStatus::create([
+                'order_id' => $order->id,
+                'order_status_id' => $returnStatus->id,
+                'modified_by' => $user->id,
+                'note' => $request->return_reason,
+                'evidence' => json_encode($imagePaths), // Lưu danh sách đường dẫn ảnh dưới dạng JSON
+            ]);
+
+            return redirect()->route('order.history')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
+        }
+
+        $carts = Cart::where('user_id', auth()->id())
+        ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+        ->get();
+
+        $subtotal = $carts->sum(function ($cart) {
+            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
+            return $cart->quantity * $price;
+        });
+        // Hiển thị form nếu là GET
+        return view('client.cart.return', compact('order', 'carts', 'subtotal'));
+    }
 
 
 
