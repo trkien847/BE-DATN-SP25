@@ -123,7 +123,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
   Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
 
-  // Quản lý sản phẩm
+  // Quản lý sản phẩm l
   Route::get('/admin/products', [ProductController::class, 'productList'])->name('products.list');
   Route::get('/admin/products/add', [ProductController::class, 'productAdd'])->name('products.add');
   Route::post('/admin/products/create', [ProductController::class, 'productStore'])->name('products.store');
