@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCancelRequested;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -11,8 +12,10 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderConfirmation;
+use App\Models\Notification;
 use App\Models\OrderOrderStatus;
 use App\Models\OrderStatus;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -465,7 +468,6 @@ class CartController extends Controller
         $currentStatus = $order->latestOrderStatus->name;
 
         if ($request->isMethod('post')) {
-            // Xử lý khi submit form
             $request->validate([
                 'cancel_reason' => 'required|string|max:255',
             ]);
@@ -474,11 +476,12 @@ class CartController extends Controller
                 return redirect()->back()->with('error', 'Không thể hủy đơn hàng này!');
             }
 
-            $canceledStatus = OrderStatus::where('name', 'Đã hủy')->first();
+            $canceledStatus = OrderStatus::where('name', 'Chờ hủy')->first();
             if (!$canceledStatus) {
-                return redirect()->back()->with('error', 'Trạng thái Đã hủy không tồn tại!');
+                return redirect()->back()->with('error', 'Trạng thái Chờ hủy không tồn tại!');
             }
 
+            //trạng thái "Chờ hủy"
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => $canceledStatus->id,
@@ -486,8 +489,31 @@ class CartController extends Controller
                 'note' => $request->cancel_reason,
             ]);
 
-            return redirect()->route('order.history')->with('success', 'Đơn hàng đã được hủy thành công!');
+            // Gửi thông báo realtime đến người dùng có role_id = 3
+            $admins = User::where('role_id', 3)->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => "Khách hàng {$user->fullname} đã yêu cầu hủy đơn hàng {$order->code}",
+                    'content' => "Lý do: {$request->cancel_reason}. Tổng giá trị đơn hàng: " . number_format($order->total_amount) . " VNĐ",
+                    'type' => 'order_cancel',
+                    'data' => [
+                        'order_id' => $order->id,
+                        'actions' => [
+                            'cancel_request' => route('order.rejectCancel', $order->id),
+                            'accept_request' => route('order.acceptCancel', $order->id),
+                            'view_details' => route('order.details', $order->id),
+                        ],
+                    ],
+                ]);
+
+                // Phát event realtime
+                event(new OrderCancelRequested($user, $order, $request->cancel_reason));
+            }
+
+            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
         }
+
         $carts = Cart::where('user_id', auth()->id())
             ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
             ->get();
@@ -498,9 +524,71 @@ class CartController extends Controller
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
-        // Hiển thị form nếu là GET
         return view('client.cart.cancel', compact('order', 'carts', 'subtotal'));
     }
+
+    // Phương thức từ chối yêu cầu hủy (thêm mới)
+    public function rejectCancel(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $currentStatus = $order->latestOrderStatus->name;
+
+        if ($currentStatus !== 'Chờ hủy') {
+            return redirect()->back()->with('error', 'Không thể từ chối yêu cầu hủy!');
+        }
+
+        $pendingStatus = OrderStatus::where('name', 'Chờ giao hàng')->first(); // Quay lại trạng thái trước
+        OrderOrderStatus::create([
+            'order_id' => $order->id,
+            'order_status_id' => $pendingStatus->id,
+            'modified_by' => Auth::id(),
+            'note' => 'Yêu cầu hủy đã bị từ chối',
+        ]);
+
+        return redirect()->back()->with('success', 'Yêu cầu hủy đã bị từ chối!');
+    }
+
+    // Phương thức chấp nhận yêu cầu hủy (thêm mới)
+    public function acceptCancel(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $currentStatus = $order->latestOrderStatus->name;
+
+        if ($currentStatus !== 'Chờ hủy') {
+            return redirect()->back()->with('error', 'Không thể chấp nhận yêu cầu hủy!');
+        }
+
+        // Lấy trạng thái "Đã hủy"
+        $canceledStatus = OrderStatus::where('name', 'Đã hủy')->first();
+
+        // Cập nhật trạng thái đơn hàng
+        OrderOrderStatus::create([
+            'order_id' => $order->id,
+            'order_status_id' => $canceledStatus->id,
+            'note' => 'Yêu cầu hủy đã được chấp nhận',
+        ]);
+
+        // Hoàn lại số lượng sản phẩm vào kho
+        foreach ($order->items as $detail) {
+            $product = $detail->product; // Giả sử có quan hệ 'product'
+            if ($product) {
+                $product->stock += $detail->quantity; // Cộng lại số lượng vào kho
+                $product->save(); // Lưu thay đổi vào database
+            }
+        }
+
+        return redirect()->back()->with('success', 'Yêu cầu hủy đã được chấp nhận và số lượng sản phẩm đã được hoàn lại vào kho!');
+    }
+
+
+    // Phương thức xem chi tiết đơn hàng (giả định)
+    public function orderDetails($orderId)
+    {
+        $order = Order::with(['user', 'items.product', 'latestOrderStatus', 'orderStatuses'])
+            ->findOrFail($orderId);
+        return view('admin.OrderManagement.details', compact('order')); // Giả định có view chi tiết
+    }
+
 
     public function returnOrder(Request $request, $orderId)
     {
@@ -547,8 +635,8 @@ class CartController extends Controller
         }
 
         $carts = Cart::where('user_id', auth()->id())
-        ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
-        ->get();
+            ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+            ->get();
 
         $subtotal = $carts->sum(function ($cart) {
             $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0

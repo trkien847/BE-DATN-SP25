@@ -1,3 +1,21 @@
+<style>
+    .notification-item {
+        transition: background-color 0.3s;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .notification-item h6 {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .notification-item p {
+        color: #666;
+    }
+</style>
 <header class="topbar">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -41,12 +59,12 @@
                 <!-- Notification -->
                 <div class="dropdown topbar-item">
                     <button type="button" class="topbar-button position-relative"
-                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown" 
+                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <iconify-icon icon="solar:bell-bing-broken" class="fs-24 align-middle"></iconify-icon>
                         <span id="notification-count"
                             class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">
-                            <span class="count">0</span>
+                            <span class="count">{{ Auth::user()->notifications()->where('is_read', false)->count() }}</span>
                             <span class="visually-hidden">unread messages</span>
                         </span>
                     </button>
@@ -61,7 +79,28 @@
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;" id="notification-list">
-                            
+                            @foreach(Auth::user()->notifications()->latest()->limit(10)->get() as $notification)
+                            <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
+                                <h6 class="mb-1">{{ $notification->title }}</h6>
+                                <p class="mb-2 fs-13">{{ $notification->content }}</p>
+                                @if($notification->type === 'order_cancel')
+                                <div class="d-flex gap-2">
+                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                    </form>
+                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                    </form>
+                                    <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                </div>
+                                @endif
+                            </div>
+                            @endforeach
+                            @if(Auth::user()->notifications()->count() === 0)
+                            <div class="text-center p-3">Không có thông báo nào</div>
+                            @endif
                         </div>
                         <div class="text-center py-3">
                             <a href="javascript:void(0);" class="btn btn-primary btn-sm">
@@ -71,103 +110,8 @@
                         </div>
                     </div>
                 </div>
-                @if(auth()->check() && auth()->user()->role_id == 3)
-                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                    <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const notificationList = document.getElementById('notification-list');
-                        const notificationCount = document.getElementById('notification-count');
-                        const countSpan = notificationCount.querySelector('.count');
-                        let lastChecked = new Date();
+                
 
-                        function fetchNotifications() {
-                            fetch("{{ route('notifications.check') }}", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                },
-                                body: JSON.stringify({ last_checked: lastChecked.toISOString() })
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.notifications) {
-                                    countSpan.textContent = data.notifications.length;
-                                    notificationCount.style.display = data.notifications.length > 0 ? 'block' : 'none';
-                                    notificationList.innerHTML = '';
-
-                                    data.notifications.forEach(notification => {
-                                        const item = document.createElement('a');
-                                        item.href = 'javascript:void(0);';
-                                        item.className = 'dropdown-item py-3 border-bottom text-wrap';
-                                        item.innerHTML = `
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0">
-                                                    <img src="${notification.avatar}"
-                                                        class="img-fluid me-2 avatar-sm rounded-circle"/>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-0">
-                                                        <span class="fw-medium">${notification.user_name}</span>
-                                                        đang yêu cầu nhập hàng
-                                                        <small class="text-muted d-block">${notification.created_at}</small>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <form action="{{ url('products/import/confirm') }}/${notification.import_id}" method="POST" style="display: inline;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
-                                                </form>
-                                                <form action="{{ url('products/import/reject') }}/${notification.import_id}" method="POST" style="display: inline;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
-                                                </form>
-                                        `;
-                                        notificationList.appendChild(item);
-                                    });
-                                }
-
-                                if (data.imports && data.imports.length > 0) {
-                                    data.imports.forEach(importItem => {
-                                        Swal.fire({
-                                            icon: 'info',
-                                            title: 'Thông báo',
-                                            html: `${importItem.message} (Ngày nhập: ${importItem.imported_at} bởi ${importItem.imported_by})<br>
-                                                <form action="{{ url('products/import/confirm') }}/${importItem.import_id}" method="POST" style="display: inline;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
-                                                </form>
-                                                <form action="{{ url('products/import/reject') }}/${importItem.import_id}" method="POST" style="display: inline;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
-                                                </form>`,
-                                            showConfirmButton: false,
-                                        });
-                                    });
-                                    lastChecked = new Date(); 
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching notifications:', error);
-                            })
-                            .finally(() => {
-                                setTimeout(fetchNotifications, 3000); 
-                            });
-                        }
-
-                        fetchNotifications();
-                    });
-                    </script>
-                @endif 
 
 
                 <div class="topbar-item d-none d-md-flex">
@@ -177,27 +121,27 @@
                     </button>
                 </div>
 
-               
+
                 <div class="dropdown topbar-item">
                     <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center position-relative">
                             @php
-                                $currentUser = Auth::user(); // Lấy thông tin người dùng hiện tại
+                            $currentUser = Auth::user(); // Lấy thông tin người dùng hiện tại
                             @endphp
                             <img class="rounded-circle" width="42" height="42"
-                            src="{{ $currentUser->avatar ? asset('storage/' . $currentUser->avatar) : asset('storage/avatars/default.jpg') }}" 
-                            alt="{{ $currentUser->avatar ? 'Ảnh đại diện' : 'Ảnh mặc định' }}" 
-                            style="object-fit: cover;"
-                            onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
-                            
+                                src="{{ $currentUser->avatar ? asset('storage/' . $currentUser->avatar) : asset('storage/avatars/default.jpg') }}"
+                                alt="{{ $currentUser->avatar ? 'Ảnh đại diện' : 'Ảnh mặc định' }}"
+                                style="object-fit: cover;"
+                                onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
+
                             <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
-                                  style="width: 12px; height: 12px;"></span>
+                                style="width: 12px; height: 12px;"></span>
                         </span>
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                       
+
                         <h6 class="dropdown-header">Xin chào <span class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
 
                         <a class="dropdown-item" href="apps-chat.html">
