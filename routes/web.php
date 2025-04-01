@@ -144,7 +144,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   
 
 
-  //lịch sử mua hàng  acceptCancel
+  //lịch sử mua hàng  order.acceptCancel
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   // hủy đơn hàng
@@ -153,7 +153,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/order/{orderId}/accept-cancel', [CartController::class, 'acceptCancel'])->name('order.acceptCancel');
   Route::get('/order/{orderId}/details', [CartController::class, 'orderDetails'])->name('order.details');
 
-  //hoàn tiềntiền
+  //hoàn tiền
   Route::get('/orders/{orderId}/refund-form', [CartController::class, 'showRefundForm'])->name('order.refund.form');
   Route::post('/orders/{orderId}/refund-submit', [CartController::class, 'submitRefundInfo'])->name('order.refund.submit');
   Route::get('/orders/{orderId}/refund-details', [CartController::class, 'refundDetails'])->name('order.refund.details');
@@ -161,6 +161,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/orders/{orderId}/refund-confirm', [CartController::class, 'showConfirmForm'])->name('order.refund.confirm');
   Route::post('/orders/{orderId}/refund-confirm', [CartController::class, 'submitConfirm'])->name('order.refund.confirm.submit');
 
+  //hoàn hàng
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
   // thông kê
@@ -193,11 +194,16 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/products/pending-update/{pendingId}', [ProductController::class, 'viewPendingUpdate'])->name('products.pending-update-detail');
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
+
   // Quản lý đơn hàng
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
+  // phân quyền quản lý đơn hàng reject-cancel
+  Route::post('/notifications/accept/{order_id}', [OrderController::class, 'accept'])->name('notifications.accept');
+  Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
+  Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
 
   Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
   Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');

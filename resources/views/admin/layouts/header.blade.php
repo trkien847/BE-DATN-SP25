@@ -64,7 +64,7 @@
                         <iconify-icon icon="solar:bell-bing-broken" class="fs-24 align-middle"></iconify-icon>
                         <span id="notification-count"
                             class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">
-                            <span class="count">{{ Auth::user()->notifications()->where('is_read', false)->count() }}</span>
+                            <span class="count">{{ \App\Models\Notification::userOrSystem(Auth::id())->where('is_read', false)->count() }}</span>
                             <span class="visually-hidden">unread messages</span>
                         </span>
                     </button>
@@ -79,7 +79,7 @@
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;" id="notification-list">
-                            @foreach(Auth::user()->notifications()->where('is_read', 0)->latest()->limit(10)->get() as $notification)
+                        @foreach(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', 0)->latest()->limit(10)->get() as $notification)
                             <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
                                 <h6 class="mb-1">{{ $notification->title }}</h6>
                                 <p class="mb-2 fs-13">{{ $notification->content }}</p>
@@ -101,17 +101,44 @@
                                 <div class="d-flex gap-2">
                                     <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem trực tiếp</a>
                                 </div>
+                                @elseif($notification->type === 'order_status_request')
+                                <div class="d-flex gap-2">
+                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                    </form>
+                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                    </form>
+                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                </div>
+                                @elseif($notification->type === 'return_request')
+                                <div class="d-flex gap-2">
+                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                    </form>
+                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Không chấp nhận</button>
+                                    </form>
+                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                </div>
                                 @endif
                             </div>
                             @endforeach
-                            @if(Auth::user()->notifications()->where('is_read', 0)->count() === 0)
+                            @if(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', false)->count() === 0)
                             <div class="text-center p-3">Không có thông báo nào</div>
                             @endif
                         </div>
                         <div class="text-center py-3">
                             <a href="javascript:void(0);" class="btn btn-primary btn-sm">
-                                Hiển thị toàn bộ
-                                <i class="bx bx-right-arrow-alt ms-1"></i>
+                                Được thiết kế bởi TG XX
                             </a>
                         </div>
                     </div>

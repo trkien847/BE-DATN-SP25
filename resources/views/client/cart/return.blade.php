@@ -49,12 +49,53 @@
         </div>
         <div class="form-group">
             <label for="return_images">Ảnh minh chứng (tối đa 5 ảnh):</label>
-            <input type="file" name="return_images[]" id="return_images" multiple accept="image/*">
+            <input type="file" name="return_images[]" id="return_images" multiple accept="image/*" onchange="previewImages(event)">
             @error('return_images.*')
                 <span style="color: red;">{{ $message }}</span>
             @enderror
+            <!-- Khu vực hiển thị ảnh xem trước -->
+            <div id="image-preview" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
         </div>
         <button type="submit" class="submit-btn">Gửi yêu cầu hoàn hàng</button>
     </form>
 </div>
+
+
+<script>
+    function previewImages(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('image-preview');
+        previewContainer.innerHTML = ''; // Xóa các ảnh cũ
+
+        const files = input.files;
+        const maxFiles = 5;
+
+        if (files.length > maxFiles) {
+            alert(`Bạn chỉ có thể tải lên tối đa ${maxFiles} ảnh!`);
+            input.value = ''; // Xóa các file đã chọn
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chỉ chọn file ảnh!');
+                input.value = '';
+                previewContainer.innerHTML = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100px'; // Kích thước xem trước
+                img.style.maxHeight = '100px';
+                img.style.objectFit = 'cover'; // Giữ tỉ lệ ảnh
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
 @endsection

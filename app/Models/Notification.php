@@ -26,4 +26,10 @@ class Notification extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function scopeUserOrSystem($query, $userId)
+    {
+        return $query->where(function ($q) use ($userId) {
+            $q->where('user_id', $userId)->orWhereNull('user_id');
+        });
+    }
 }

@@ -691,7 +691,12 @@ class CartController extends Controller
             return redirect()->back()->with('error', 'Không thể từ chối yêu cầu hủy!');
         }
 
-        $pendingStatus = OrderStatus::where('name', 'Chờ giao hàng')->first(); // Quay lại trạng thái trước
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
+
+        $pendingStatus = OrderStatus::where('name', 'Chờ giao hàng')->first();
         OrderOrderStatus::create([
             'order_id' => $order->id,
             'order_status_id' => $pendingStatus->id,
@@ -710,44 +715,52 @@ class CartController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Đơn hàng không tồn tại!');
         }
-
+    
         $currentStatus = $order->latestOrderStatus->name;
-        $cancelableStatuses = ['Chờ hủy'];
+        $cancelableStatuses = ['Chờ hủy', 'Yêu cầu hoàn hàng']; // Thêm trạng thái "Yêu cầu hoàn hàng"
+    
         if (!in_array($currentStatus, $cancelableStatuses)) {
-            return redirect()->back()->with('error', 'Không thể chấp nhận yêu cầu hủy!');
+            return redirect()->back()->with('error', 'Không thể chấp nhận yêu cầu này!');
         }
-
+    
         $paymentStatusMap = [
-            1 => 'Đã hủy',
-            2 => 'Chờ hoàn tiền',
+            1 => 'Đã hủy',        // Thanh toán COD hoặc tương tự
+            2 => 'Chờ hoàn tiền',  // Thanh toán online cần hoàn tiền
         ];
-
+    
         if (!array_key_exists($order->payment_id, $paymentStatusMap)) {
             return redirect()->back()->with('error', 'Phương thức thanh toán không hợp lệ!');
         }
-
-        $canceledStatus = OrderStatus::where('name', $paymentStatusMap[$order->payment_id])->first();
+    
+        $newStatusName = $paymentStatusMap[$order->payment_id];
+        $canceledStatus = OrderStatus::where('name', $newStatusName)->first();
         if (!$canceledStatus) {
-            return redirect()->back()->with('error', 'Trạng thái hủy không tồn tại!');
+            return redirect()->back()->with('error', "Trạng thái '$newStatusName' không tồn tại!");
         }
+    
         // Lấy notification_id từ request
         $notificationId = $request->input('notification_id');
-
-        // Cập nhật trạng thái is_read
         $notification = Notification::find($notificationId);
         $notification->is_read = 1;
         $notification->save();
-
-        DB::transaction(function () use ($order, $canceledStatus) {
+    
+        DB::transaction(function () use ($order, $canceledStatus, $currentStatus) {
+            // Tạo ghi chú tùy theo trạng thái hiện tại
+            $note = $currentStatus === 'Chờ hủy' 
+                ? 'Yêu cầu hủy đã được chấp nhận' 
+                : 'Yêu cầu hoàn hàng đã được chấp nhận';
+    
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => $canceledStatus->id,
-                'note' => 'Yêu cầu hủy đã được chấp nhận',
+                'note' => $note,
+                'modified_by' => Auth::id(), // Thêm người thực hiện (admin)
             ]);
-
+    
+            // Hoàn lại số lượng sản phẩm vào kho
             $productVariantIds = $order->items->pluck('product_variant_id')->all();
             $products = ProductVariant::whereIn('id', $productVariantIds)->get()->keyBy('id');
-
+    
             foreach ($order->items as $detail) {
                 $product = $products[$detail->product_variant_id];
                 $product->stock += $detail->quantity;
@@ -755,11 +768,15 @@ class CartController extends Controller
                 Log::info("Hoàn kho cho sản phẩm {$product->id}, số lượng: {$detail->quantity}");
             }
         });
-
+    
+        $successMessage = $currentStatus === 'Chờ hủy'
+            ? 'Yêu cầu hủy đã được chấp nhận và số lượng sản phẩm đã được hoàn lại vào kho!'
+            : 'Yêu cầu hoàn hàng đã được chấp nhận và số lượng sản phẩm đã được hoàn lại vào kho!';
+    
         if ($request->expectsJson()) {
-            return response()->json(['message' => 'Yêu cầu hủy đã được chấp nhận'], 200);
+            return response()->json(['message' => $successMessage], 200);
         }
-        return redirect()->back()->with('success', 'Yêu cầu hủy đã được chấp nhận và số lượng sản phẩm đã được hoàn lại vào kho!');
+        return redirect()->back()->with('success', $successMessage);
     }
 
 
@@ -770,7 +787,8 @@ class CartController extends Controller
         $notificationId = $request->query('notification_id');
         $order = Order::with(['user', 'items.product', 'latestOrderStatus', 'orderStatuses'])
             ->findOrFail($orderId);
-        return view('admin.OrderManagement.details', compact('order', 'notificationId'));
+        $orderstar = OrderOrderStatus::where('id', $order->orderStatuses->last()->id)->first();
+        return view('admin.OrderManagement.details', compact('order', 'notificationId', 'orderstar'));
     }
 
 
@@ -786,7 +804,6 @@ class CartController extends Controller
             // Xử lý khi submit form
             $request->validate([
                 'return_reason' => 'required|string|max:255',
-                'return_images.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Giới hạn 2MB mỗi ảnh
             ]);
 
             if ($currentStatus !== 'Hoàn thành' || !$completedTimestamp || $daysSinceCompleted > 7) {
@@ -802,20 +819,51 @@ class CartController extends Controller
             $imagePaths = [];
             if ($request->hasFile('return_images')) {
                 foreach ($request->file('return_images') as $image) {
-                    $path = $image->store('return_images', 'public'); // Lưu vào storage/public/return_images
-                    $imagePaths[] = $path;
+                    $imageName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
+                    $image->move(public_path('upload'), $imageName);
+                    $imagePaths[] = $imageName;
                 }
             }
 
+            // Cập nhật trạng thái đơn hàng
             OrderOrderStatus::create([
                 'order_id' => $order->id,
                 'order_status_id' => $returnStatus->id,
                 'modified_by' => $user->id,
                 'note' => $request->return_reason,
-                'evidence' => json_encode($imagePaths), // Lưu danh sách đường dẫn ảnh dưới dạng JSON
+                'evidence' => json_encode($imagePaths),
             ]);
 
-            return redirect()->route('order.history')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
+            // Tạo thông báo cho các admin (role_id = 3)
+            $admins = User::where('role_id', 3)->get();
+            if ($admins->isEmpty()) {
+                
+            } else {
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Người dùng muốn hoàn hàng đơn hàng {$order->code}",
+                        'content' => "Tổng đơn hàng: " . number_format($order->total_amount, 0, ',', '.') . " VNĐ. Lý do: {$request->return_reason}",
+                        'type' => 'return_request',
+                        'data' => [
+                            'order_id' => $order->id,
+                            'user_id' => $user->id,
+                            'user_name' => $user->name,
+                            'total_amount' => $order->total_amount,
+                            'return_reason' => $request->return_reason,
+                            'images' => $imagePaths,
+                            'actions' => [
+                                'cancel_request' => route('order.rejectCancel', $order->id),
+                                'accept_request' => route('order.acceptCancel', $order->id),
+                                'view_details' => route('order.details', $order->id),
+                            ],
+                        ],
+                        'is_read' => 0,
+                    ]);
+                }
+            }
+
+            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
@@ -828,7 +876,7 @@ class CartController extends Controller
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
-        // Hiển thị form nếu là GET
+
         return view('client.cart.return', compact('order', 'carts', 'subtotal'));
     }
 

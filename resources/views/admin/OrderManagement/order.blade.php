@@ -209,6 +209,11 @@
                                 <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
                                 <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
                                 <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
+                                <option><hr></option>
+                                <option value="" {{ $currentStatus == 'Chờ hủy' ? 'selected' : '' }}>Chờ hủy</option>
+                                <option value="" {{ $currentStatus == 'Chờ hoàn tiền' ? 'selected' : '' }}>Chờ hoàn tiền</option>
+                                <option value="" {{ $currentStatus == 'Xác nhận thông tin' ? 'selected' : '' }}>Xác nhận thông tin</option>
+                                <option value="" {{ $currentStatus == 'Chuyển khoản thành công' ? 'selected' : '' }}>Chuyển khoản thành công</option>
                             </select>
                             <div class="evidence-upload" style="display: none;">
                                 <input type="file" class="evidence-file" accept="image/*">

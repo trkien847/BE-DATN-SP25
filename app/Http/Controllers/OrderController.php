@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
@@ -76,48 +77,200 @@ class OrderController extends Controller
 
             $orderId = $request->order_id;
             $newStatusId = $request->status_id;
+            $modifiedBy = $request->modified_by;
 
-            $latestStatus = OrderOrderStatus::where('order_id', $orderId)
-                ->orderBy('created_at', 'desc')
-                ->first();
+            // Get the user who is making the update
+            $updatingUser = User::find($modifiedBy);
 
-            if ($latestStatus) {
-                $currentStatusId = $latestStatus->order_status_id;
+            // Check if user exists
+            if (!$updatingUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Người dùng không tồn tại'
+                ], 404);
+            }
 
-                if ($newStatusId < $currentStatusId) {
+            // If user's role_id is 3, proceed normally
+            if ($updatingUser->role_id === 3) {
+                $latestStatus = OrderOrderStatus::where('order_id', $orderId)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($latestStatus) {
+                    $currentStatusId = $latestStatus->order_status_id;
+
+                    if ($newStatusId < $currentStatusId) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không thể cập nhật về trạng thái nhỏ hơn trạng thái hiện tại!'
+                        ], 403);
+                    }
+                }
+
+                $data = [
+                    'order_id' => $request->order_id,
+                    'order_status_id' => $request->status_id,
+                    'modified_by' => $request->modified_by,
+                    'note' => 'đã được xác nhận',
+                ];
+
+                if ($request->hasFile('evidence')) {
+                    $image = $request->file('evidence');
+                    $imageName = time() . '_' . $image->getClientOriginalName();
+                    $image->move(public_path('upload'), $imageName);
+                    $data['evidence'] = $imageName;
+                }
+
+                OrderOrderStatus::create($data);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cập nhật trạng thái thành công'
+                ]);
+            }
+            // If user is not role_id 3
+            else {
+                // Trong phần xử lý status_id = 6 hoặc 7
+                if ($newStatusId == 6 || $newStatusId == 7) {
+                    $order = Order::find($orderId);
+                    $statusText = $newStatusId == 6 ? 'hoàn thành' : 'hủy';
+
+                    $evidencePath = null;
+                    if ($request->hasFile('evidence')) {
+                        $image = $request->file('evidence');
+                        $imageName = time() . '_' . $image->getClientOriginalName();
+                        $image->move(public_path('upload'), $imageName);
+                        $evidencePath = $imageName;
+                    }
+
+                    // Tạo URL cho các hành động
+                    $acceptUrl = route('notifications.accept', ['order_id' => $orderId]); // Route để chấp nhận
+                    $cancelUrl = route('notifications.cancel', ['order_id' => $orderId]); // Route để hủy
+                    $detailsUrl = route('notifications.details', ['order_id' => $orderId]); // Route để xem chi tiết
+
+                    $adminUsers = User::where('role_id', 3)->get();
+                    foreach ($adminUsers as $admin) {
+                        Notification::create([
+                            'user_id' => $admin->id,
+                            'title' => "Yêu cầu cập nhật trạng thái đơn hàng",
+                            'content' => "Nhân viên {$updatingUser->fullname} đang yêu cầu cập nhật đơn hàng {$orderId} lên trạng thái {$statusText}",
+                            'type' => 'order_status_request',
+                            'data' => [
+                                'order_id' => $orderId,
+                                'request_status_id' => $newStatusId,
+                                'requester_id' => $modifiedBy,
+                                'requester_name' => $updatingUser->fullname,
+                                'evidence' => $evidencePath,
+                                'order_details' => [
+                                    'customer_name' => $order->fullname ?? 'N/A',
+                                    'amount' => $order->total_amount ?? 0,
+                                    'processor_id' => $modifiedBy
+                                ],
+                                'actions' => [
+                                    'accept_request' => $acceptUrl,
+                                    'cancel_request' => $cancelUrl,
+                                    'view_details' => $detailsUrl
+                                ]
+                            ]
+                        ]);
+                    }
+
                     return response()->json([
-                        'success' => false,
-                        'message' => 'Không thể cập nhật về trạng thái nhỏ hơn trạng thái hiện tại!'
-                    ], 403);
+                        'success' => true,
+                        'message' => 'Yêu cầu cập nhật trạng thái đã được gửi đến quản trị viên'
+                    ]);
+                }
+                // If status_id is not 6 or 7, proceed normally
+                else {
+                    $latestStatus = OrderOrderStatus::where('order_id', $orderId)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    if ($latestStatus) {
+                        $currentStatusId = $latestStatus->order_status_id;
+
+                        if ($newStatusId < $currentStatusId) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Không thể cập nhật về trạng thái nhỏ hơn trạng thái hiện tại!'
+                            ], 403);
+                        }
+                    }
+
+                    $data = [
+                        'order_id' => $request->order_id,
+                        'order_status_id' => $request->status_id,
+                        'modified_by' => $request->modified_by,
+                        'note' => 'đã được xác nhận',
+                    ];
+
+                    if ($request->hasFile('evidence')) {
+                        $image = $request->file('evidence');
+                        $imageName = time() . '_' . $image->getClientOriginalName();
+                        $image->move(public_path('upload'), $imageName);
+                        $data['evidence'] = $imageName;
+                    }
+
+                    OrderOrderStatus::create($data);
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Cập nhật trạng thái thành công'
+                    ]);
                 }
             }
-
-            $data = [
-                'order_id' => $request->order_id,
-                'order_status_id' => $request->status_id,
-                'modified_by' => $request->modified_by,
-                'note' => 'đã được xác nhận',
-            ];
-
-            if ($request->hasFile('evidence')) {
-                $image = $request->file('evidence');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->move(public_path('upload'), $imageName);
-                $data['evidence'] = $imageName;
-            }
-
-            OrderOrderStatus::create($data);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Cập nhật trạng thái thành công'
-            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function accept(Request $request, $order_id)
+    {
+        $notification = Notification::findOrFail($request->notification_id);
+        $data = $notification->data;
+
+        // Tạo bản ghi cập nhật trạng thái
+        OrderOrderStatus::create([
+            'order_id' => $data['order_id'],
+            'order_status_id' => $data['request_status_id'],
+            'modified_by' => $data['requester_id'],
+            'note' => 'Đã được quản trị viên chấp nhận',
+            'evidence' => $data['evidence']
+        ]);
+
+        // Đánh dấu thông báo là đã đọc
+        $notification->update(['is_read' => true]);
+
+        return redirect()->back()->with('success', 'Yêu cầu đã được chấp nhận');
+    }
+
+    public function cancel(Request $request, $order_id)
+    {
+        $notification = Notification::findOrFail($request->notification_id);
+        $notification->update(['is_read' => true]); // Đánh dấu đã đọc
+
+        return redirect()->back()->with('success', 'Yêu cầu đã bị hủy');
+    }
+
+    public function details($order_id)
+    {
+        $notification = Notification::where('data->order_id', $order_id)
+            ->orderBy('created_at', 'desc') // Lấy bản ghi mới nhất
+            ->firstOrFail();
+        $order = Order::where('id', $order_id)->first();
+        $data = $notification->data;
+
+        return view('admin.OrderManagement.notifications', [
+            'order_id' => $order['code'] ?? 'N/A',
+            'requester_name' => $data['requester_name'] ?? 'Không xác định',
+            'customer_name' => $data['order_details']['customer_name'] ?? 'N/A',
+            'amount' => $data['order_details']['amount'] ?? 0,
+            'evidence' => $data['evidence'] ?? null,
+            'status' => isset($data['request_status_id']) && $data['request_status_id'] == 6 ? 'Hoàn thành' : 'Hủy'
+        ]);
     }
 
     public function updateBulkStatus(Request $request)
@@ -216,7 +369,7 @@ class OrderController extends Controller
 
             $expectedOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->whereIn('order_status_id', [1, 2, 3, 4])
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -230,7 +383,7 @@ class OrderController extends Controller
 
             $actualOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->where('order_status_id', 6)
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -244,7 +397,7 @@ class OrderController extends Controller
 
             $canceledOrders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->where('order_status_id', 7)
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -264,7 +417,7 @@ class OrderController extends Controller
 
             $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -290,7 +443,7 @@ class OrderController extends Controller
 
             $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -315,7 +468,7 @@ class OrderController extends Controller
 
             $orders = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
                 $query->whereIn('order_status_id', [1, 2, 3, 4, 6, 7])
-                      ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             })->with(['orderStatuses' => function ($query) use ($start, $end) {
                 $query->whereBetween('created_at', [$start, $end]);
             }])->get();
@@ -336,80 +489,94 @@ class OrderController extends Controller
 
         $expectedRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2, 3, 4])
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->sum('total_amount');
 
         $actualRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 6)
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->sum('total_amount');
 
         $canceledRevenue = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 7)
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->sum('total_amount');
 
         $pendingOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 1)
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->count();
 
         $completedOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 6)
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->count();
 
         $canceledOrdersCount = Order::whereHas('orderStatuses', function ($query) use ($start, $end) {
             $query->where('order_status_id', 7)
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->count();
 
         $topUsers = User::whereHas('orders.orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2])
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->with(['orders' => function ($query) use ($start, $end) {
             $query->whereHas('orderStatuses', function ($q) use ($start, $end) {
                 $q->whereIn('order_status_id', [1, 2])
-                  ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             });
         }])->select('users.*')
-          ->withCount(['orders as orders_count' => function ($query) use ($start, $end) {
-              $query->whereHas('orderStatuses', function ($q) use ($start, $end) {
-                  $q->whereIn('order_status_id', [1, 2])
-                    ->whereBetween('created_at', [$start, $end]);
-              });
-          }])->orderBy('orders_count', 'desc')
-          ->take(10)
-          ->get()
-          ->map(function ($user) {
-              $user->total_spent = $user->orders->sum('total_amount');
-              return $user;
-          });
+            ->withCount(['orders as orders_count' => function ($query) use ($start, $end) {
+                $query->whereHas('orderStatuses', function ($q) use ($start, $end) {
+                    $q->whereIn('order_status_id', [1, 2])
+                        ->whereBetween('created_at', [$start, $end]);
+                });
+            }])->orderBy('orders_count', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($user) {
+                $user->total_spent = $user->orders->sum('total_amount');
+                return $user;
+            });
 
         $topProducts = Product::whereHas('items.order.orderStatuses', function ($query) use ($start, $end) {
             $query->whereIn('order_status_id', [1, 2])
-                  ->whereBetween('created_at', [$start, $end]);
+                ->whereBetween('created_at', [$start, $end]);
         })->with(['items' => function ($query) use ($start, $end) {
             $query->whereHas('order.orderStatuses', function ($q) use ($start, $end) {
                 $q->whereIn('order_status_id', [1, 2])
-                  ->whereBetween('created_at', [$start, $end]);
+                    ->whereBetween('created_at', [$start, $end]);
             });
         }])->select('products.*')
-          ->withCount(['items as items_sold' => function ($query) use ($start, $end) {
-              $query->whereHas('order.orderStatuses', function ($q) use ($start, $end) {
-                  $q->whereIn('order_status_id', [1, 2])
-                    ->whereBetween('created_at', [$start, $end]);
-              });
-          }])->orderBy('items_sold', 'desc')
-          ->take(10)
-          ->get();
+            ->withCount(['items as items_sold' => function ($query) use ($start, $end) {
+                $query->whereHas('order.orderStatuses', function ($q) use ($start, $end) {
+                    $q->whereIn('order_status_id', [1, 2])
+                        ->whereBetween('created_at', [$start, $end]);
+                });
+            }])->orderBy('items_sold', 'desc')
+            ->take(10)
+            ->get();
 
         return view('admin.OrderManagement.statistics', compact(
-            'expectedRevenue', 'actualRevenue', 'canceledRevenue',
-            'expectedRevenueData', 'actualRevenueData', 'canceledRevenueData',
-            'pendingOrdersCount', 'completedOrdersCount', 'canceledOrdersCount',
-            'topUsers', 'topProducts',
-            'filterType', 'startDate', 'endDate', 'month', 'year', 'dateLabel', 'currentYear', 'labels'
+            'expectedRevenue',
+            'actualRevenue',
+            'canceledRevenue',
+            'expectedRevenueData',
+            'actualRevenueData',
+            'canceledRevenueData',
+            'pendingOrdersCount',
+            'completedOrdersCount',
+            'canceledOrdersCount',
+            'topUsers',
+            'topProducts',
+            'filterType',
+            'startDate',
+            'endDate',
+            'month',
+            'year',
+            'dateLabel',
+            'currentYear',
+            'labels'
         ));
     }
 }

@@ -139,6 +139,16 @@
     .order-details ul li:last-child {
         border-bottom: none;
     }
+
+    .status-cancelled {
+        color: #ff0000;
+    }
+    .status-pending-cancel {
+        color: #ffc107; 
+    }
+    .status-default {
+        color: #28a745; 
+    }
 </style>
 
 <div class="container">
@@ -166,21 +176,28 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($orders as $order)
+        @foreach($orders as $order)
             <tr>
                 <td>{{ $order->code }}</td>
                 <td>{{ $order->items->sum('quantity') }}</td>
                 <td>{{ number_format($order->total_amount) }} VNĐ</td>
-                <td>{{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</td>
+                <td>
+                    @php
+                        $statusName = $order->latestOrderStatus->name ?? 'Chưa có trạng thái';
+                    @endphp
+                    <span class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
+                        {{ $statusName }}
+                    </span>
+                </td>
                 <td>
                     <button class="detail-btn" onclick="showModal('order{{ $order->id }}')">
                         Xem chi tiết
                     </button>
                     @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
-                    <a href="{{ route('order.cancel', $order->id) }}" class="cancel-btn">Hủy đơn hàng</a>
+                        <a href="{{ route('order.cancel', $order->id) }}" class="cancel-btn">Hủy đơn hàng</a>
                     @endif
                     @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành' && $order->completedStatusTimestamp() && \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
-                    <a href="{{ route('order.return', $order->id) }}" class="return-btn">Hoàn hàng</a>
+                        <a href="{{ route('order.return', $order->id) }}" class="return-btn">Hoàn hàng</a>
                     @endif
                     @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
                         <a href="{{ route('order.refund.form', $order->id) }}" class="cancel-btn">Nhập thông tin tài khoản</a>
@@ -190,7 +207,7 @@
                     @endif
                 </td>
             </tr>
-            @endforeach
+        @endforeach
         </tbody>
     </table>
 
