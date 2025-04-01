@@ -1,3 +1,5 @@
+@extends('admin.layouts.layout')
+@section('content')
 <div class="container py-4">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-info text-white text-center">
@@ -6,7 +8,7 @@
         <div class="card-body">
             <h5>Đơn hàng: {{ $order->code }}</h5>
             <p><strong>Người mua:</strong> {{ $order->user->name }}</p>
-            <p><strong>Tổng giá:</strong> {{ number_format($order->total, 0, ',', '.') }} VNĐ</p>
+            <p><strong>Tổng giá:</strong> {{ number_format($order->total_amount, 0, ',', '.') }} VNĐ</p>
             <p><strong>Số lượng sản phẩm:</strong> {{ $order->items->sum('quantity') }}</p>
 
             <table class="table table-bordered mt-3">
@@ -44,6 +46,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                    <input type="hidden" name="notification_id" value="{{$notificationId}}">
                     <button type="submit" class="btn btn-primary">Tải lên</button>
                 </form>
             @endif
@@ -51,3 +54,4 @@
         </div>
     </div>
 </div>
+@endsection

@@ -185,6 +185,9 @@
                     @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
                         <a href="{{ route('order.refund.form', $order->id) }}" class="cancel-btn">Nhập thông tin tài khoản</a>
                     @endif
+                    @if(in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
+                        <a href="{{ route('order.refund.confirm', $order->id) }}" class="cancel-btn">Xác nhận nhận tiền</a>
+                    @endif
                 </td>
             </tr>
             @endforeach
@@ -200,6 +203,7 @@
                 <p><strong>Ngày mua:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
                 <p><strong>Trạng thái:</strong> {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</p>
                 <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
+                <p><strong>Ảnh hoàn tiền:</strong> <img src="{{ asset('upload/'.$order->refund_proof_image) }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px"></p>
 
                 <h4>Thông tin sản phẩm:</h4>
                 <ul>

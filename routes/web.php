@@ -158,7 +158,8 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/orders/{orderId}/refund-submit', [CartController::class, 'submitRefundInfo'])->name('order.refund.submit');
   Route::get('/orders/{orderId}/refund-details', [CartController::class, 'refundDetails'])->name('order.refund.details');
   Route::post('/orders/{orderId}/upload-proof', [CartController::class, 'uploadRefundProof'])->name('order.refund.upload');
-
+  Route::get('/orders/{orderId}/refund-confirm', [CartController::class, 'showConfirmForm'])->name('order.refund.confirm');
+  Route::post('/orders/{orderId}/refund-confirm', [CartController::class, 'submitConfirm'])->name('order.refund.confirm.submit');
 
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 

@@ -520,28 +520,31 @@ class CartController extends Controller
 
 
         $user = Auth::user();
-        $totalAmount = $order->total;
-        Notification::create([
-            'user_id' => $user->id,
-            'title' => "Yêu cầu hoàn tiền từ {$user->fullname}",
-            'title' => "Khách hàng {$user->fullname} đã yêu cầu hoàn tiền từ {$order->code}",
-            'content' => "Số tiền hoàn: " . number_format($order->total_amount, 0, ',', '.') . " VNĐ - Ngân hàng: {$request->bank_name}",
-            'type' => 'refund_request',
-            'data' => [
-                'actions' => [
-                    'view_details' => route('order.refund.details', $order->id),
+        $admins = User::where('role_id', 3)->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'title' => "Yêu cầu hoàn tiền từ {$user->fullname}",
+                'title' => "Khách hàng {$user->fullname} đã yêu cầu hoàn tiền từ {$order->code}",
+                'content' => "Số tiền hoàn: " . number_format($order->total_amount, 0, ',', '.') . " VNĐ - Ngân hàng: {$request->bank_name}",
+                'type' => 'refund_request',
+                'data' => [
+                    'actions' => [
+                        'view_details' => route('order.refund.details', $order->id),
+                    ],
                 ],
-            ],
-            'is_read' => 0,
-        ]);
+                'is_read' => 0,
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Thông tin tài khoản đã được lưu thành công!');
     }
 
-    public function refundDetails($orderId)
+    public function refundDetails(Request $request, $orderId)
     {
+        $notificationId = $request->input('notification_id');
         $order = Order::with(['items.product', 'user'])->findOrFail($orderId);
-        return view('admin.OrderManagement.refund-details', compact('order'));
+        return view('admin.OrderManagement.refund-details', compact('order', 'notificationId'));
     }
 
     public function uploadRefundProof(Request $request, $orderId)
@@ -553,14 +556,16 @@ class CartController extends Controller
             'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Giới hạn 2MB
         ]);
 
-        // Lưu ảnh vào storage
         if ($request->hasFile('proof_image')) {
-            $path = $request->file('proof_image')->store('refund_proofs', 'public');
-            $order->update(['refund_proof_image' => $path]);
+            $image = $request->file('proof_image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('upload'), $imageName);
+            $order->refund_proof_image = $imageName;
         }
+        $order->save();
 
         // Cập nhật trạng thái nếu cần (ví dụ: "Đã gửi ảnh chuyển khoản")
-        $status = OrderStatus::where('name', 'Đã gửi ảnh chuyển khoản')->first();
+        $status = OrderStatus::where('name', 'Chuyển khoản thành công')->first();
         if ($status) {
             OrderOrderStatus::create([
                 'order_id' => $order->id,
@@ -569,7 +574,46 @@ class CartController extends Controller
             ]);
         }
 
+        // Lấy notification_id từ request
+        $notificationId = $request->input('notification_id');
+
+        // Cập nhật trạng thái is_read
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
+
         return redirect()->back()->with('success', 'Ảnh chuyển khoản đã được tải lên thành công!');
+    }
+
+    public function showConfirmForm($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        // Kiểm tra trạng thái đơn hàng
+        if (!in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công'])) {
+            return redirect()->back()->with('error', 'Đơn hàng không ở trạng thái "Chuyển khoản thành công"!');
+        }
+
+        return view('client.cart.refund-confirm', compact('order'));
+    }
+
+    public function submitConfirm(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        // Kiểm tra trạng thái đơn hàng
+        if (!in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công'])) {
+            return redirect()->back()->with('error', 'Đơn hàng không ở trạng thái "Chuyển khoản thành công"!');
+        }
+
+        // Tạo bản ghi mới trong OrderOrderStatus
+        OrderOrderStatus::create([
+            'order_id' => $order->id,
+            'order_status_id' => 7, // Giả định 7 là ID của trạng thái "Đã nhận được tiền hoàn"
+            'note' => 'Đã nhận được tiền hoàn',
+        ]);
+
+        return redirect()->back()->with('success', 'Xác nhận nhận tiền hoàn thành công!');
     }
 
     public function cancelOrder(Request $request, $orderId)
