@@ -153,7 +153,7 @@
 
         @if($notifications->isEmpty())
             <div class="alert alert-info text-center">
-                Không có thông báo nào.
+                Không có thông báo nào
             </div>
         @endif
     </div>
