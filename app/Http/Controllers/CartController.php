@@ -457,7 +457,7 @@ class CartController extends Controller
         });
         $user = Auth::user();
         $orders = Order::where('user_id', $user->id)
-            ->with(['latestOrderStatus', 'items']) // Tải trước trạng thái mới nhất và các mục đơn hàng
+            ->with(['latestOrderStatus', 'items']) 
             ->get();
 
         return view('client.cart.history', compact('orders', 'carts', 'subtotal'));
@@ -488,19 +488,16 @@ class CartController extends Controller
     {
         $order = Order::findOrFail($orderId);
 
-        // Kiểm tra trạng thái đơn hàng
         if (!in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền'])) {
             return redirect()->back()->with('error', 'Đơn hàng không ở trạng thái chờ hoàn tiền!');
         }
 
-        // Validate dữ liệu nhập vào
         $request->validate([
             'bank_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:50',
             'account_holder' => 'required|string|max:255',
         ]);
 
-        // Lưu thông tin tài khoản
         $order->update([
             'refund_bank_name' => $request->bank_name,
             'refund_account_number' => $request->account_number,
@@ -551,9 +548,8 @@ class CartController extends Controller
     {
         $order = Order::findOrFail($orderId);
 
-        // Validate file ảnh
         $request->validate([
-            'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Giới hạn 2MB
+            'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048', 
         ]);
 
         if ($request->hasFile('proof_image')) {
@@ -564,7 +560,6 @@ class CartController extends Controller
         }
         $order->save();
 
-        // Cập nhật trạng thái nếu cần (ví dụ: "Đã gửi ảnh chuyển khoản")
         $status = OrderStatus::where('name', 'Chuyển khoản thành công')->first();
         if ($status) {
             OrderOrderStatus::create([
@@ -574,10 +569,7 @@ class CartController extends Controller
             ]);
         }
 
-        // Lấy notification_id từ request
         $notificationId = $request->input('notification_id');
-
-        // Cập nhật trạng thái is_read
         $notification = Notification::find($notificationId);
         $notification->is_read = 1;
         $notification->save();
@@ -910,7 +902,6 @@ class CartController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Sản phẩm không tồn tại!']);
         }
 
-        // Kiểm tra xem người dùng đã chọn biến thể nào chưa
         $selectedVariantId = $request->product_variant_id ?? $product->variants->first()->id;
 
         $cartItem = Cart::where('user_id', $user->id)
@@ -931,12 +922,10 @@ class CartController extends Controller
         }
 
 
-        // Lấy toàn bộ giỏ hàng và load sản phẩm & biến thể
         $carts = Cart::where('user_id', $user->id)
             ->with(['product', 'productVariant'])
             ->get();
 
-        // Tính tổng tiền giỏ hàng
         $subtotal = $carts->sum(function ($cart) {
             $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
                 ? $cart->productVariant->sale_price
@@ -944,7 +933,6 @@ class CartController extends Controller
             return $cart->quantity * $price;
         });
 
-        // Chuẩn bị dữ liệu giỏ hàng để gửi về frontend
         $cartItems = $carts->map(function ($cart) {
             return [
                 'id' => $cart->id,
@@ -985,11 +973,9 @@ class CartController extends Controller
             ]);
         }
 
-        // Update quantity
         $cart->quantity = $request->quantity;
         $cart->save();
 
-        // Calculate new cart total
         $carts = Cart::where('user_id', auth()->id())->get();
         $subtotal = $carts->sum(function ($cart) {
             $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0

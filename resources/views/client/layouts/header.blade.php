@@ -189,15 +189,7 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li class="menu-icon"><a href="#">News</a>
-                                        <ul>
-                                            <li><a href="blog.html">News</a></li>
-                                            <li><a href="blog-grid.html">News Grid</a></li>
-                                            <li><a href="blog-left-sidebar.html">News Left sidebar</a></li>
-                                            <li><a href="blog-right-sidebar.html">News Right sidebar</a></li>
-                                            <li><a href="blog-details.html">News details</a></li>
-                                        </ul>
-                                    </li>
+                                    <li class="menu-icon"><a href="{{ route('orderHistory') }}">Lịch sử mua hàng</a></li>
                                     <li class="menu-icon"><a href="#">Pages</a>
                                         <ul class="mega-menu">
                                             <li><a href="#">Inner Pages</a>

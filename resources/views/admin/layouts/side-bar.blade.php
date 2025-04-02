@@ -186,6 +186,14 @@
                     <span class="nav-text"> Quản Lý Người Dùng </span>
                 </a>
             </li>
+            <li class="nav-item">
+    <a class="nav-link" href="{{ route('notifications.index') }}">
+        <span class="nav-icon">
+            <iconify-icon icon="mdi:bell-outline" width="24" height="24"></iconify-icon>
+        </span>
+        <span class="nav-text"> Các thông báo </span>
+    </a>
+</li>
         </ul>
     </div>
 </div>

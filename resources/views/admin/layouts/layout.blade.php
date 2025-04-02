@@ -193,50 +193,6 @@
 
     </div>
     <!-- END Wrapper -->
-    @vite('resources/js/app.js')
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const userId = {{ auth()->check() ? auth()->id() : 'null' }};
-        Echo.private(`notifications.${userId}.admin`)
-            .listen('App\\Events\\OrderCancelRequested', (e) => {
-                console.log('Event received:', e);
-                const countElement = document.querySelector('#notification-count .count');
-                if (countElement) {
-                    let currentCount = parseInt(countElement.textContent) || 0;
-                    countElement.textContent = currentCount + 1;
-                } else {
-                    console.error('Notification count element not found');
-                }
-
-                const notificationList = document.getElementById('notification-list');
-                if (notificationList) {
-                    const newNotification = `
-                        <div class="notification-item p-3 border-bottom">
-                            <h6 class="mb-1">${e.title}</h6>
-                            <p class="mb-2 fs-13">${e.content}</p>
-                            <div class="d-flex gap-2">
-                                <form action="${e.actions.cancel_request}" method="POST" style="display:inline;">
-                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                    <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                </form>
-                                <form action="${e.actions.accept_request}" method="POST" style="display:inline;">
-                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                    <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                </form>
-                                <a href="${e.actions.view_details}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                            </div>
-                        </div>
-                    `;
-                    notificationList.insertAdjacentHTML('afterbegin', newNotification);
-                } else {
-                    console.error('Notification list element not found');
-                }
-            })
-            .error((error) => {
-                console.error('Echo error:', error);
-            });
-    });
-</script>
     <!-- Vendor Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/vendor.js') }}"></script>
 

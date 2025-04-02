@@ -147,6 +147,8 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //lịch sử mua hàng  products/pending-update
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
+  Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
+
   // hủy đơn hàng
   Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
   Route::post('/order/{orderId}/reject-cancel', [CartController::class, 'rejectCancel'])->name('order.rejectCancel');
@@ -166,7 +168,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   // thông kê
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
-  //nhập  search
+  //nhập  search products/import/reject
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
   Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');
@@ -183,13 +185,15 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     return response()->json($details);
   });
 
-  // Quản lý thuộc tính sản phẩm broadcasting
+  Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+  // Quản lý thuộc tính sản phẩm products.approve-pending
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
   Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
   Route::get('/products/pending-updates', [ProductController::class, 'pendingUpdates'])->name('products.pending-updates');
+
   Route::get('/products/pending-update/{pendingId}', [ProductController::class, 'viewPendingUpdate'])->name('products.pending-update-detail');
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
@@ -199,7 +203,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
-  // phân quyền quản lý đơn hàng reject-cancel
+  // phân quyền quản lý đơn hàng products/import/confirm
   Route::post('/notifications/accept/{order_id}', [OrderController::class, 'accept'])->name('notifications.accept');
   Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
   Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');

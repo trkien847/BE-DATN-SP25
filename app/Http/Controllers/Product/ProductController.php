@@ -146,7 +146,7 @@ class ProductController extends Controller
                 'data' => $pendingData,
             ]);
 
-            // Gửi thông báo đến tất cả user có role_id = 3
+            
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
                 \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu thêm sản phẩm từ user {$user->id}");
@@ -180,7 +180,7 @@ class ProductController extends Controller
             return redirect()->route('products.list')->with('success', 'Yêu cầu thêm sản phẩm đã được gửi, chờ phê duyệt!');
         }
 
-        // Logic cho admin (role_id = 3)
+       
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
@@ -291,11 +291,10 @@ class ProductController extends Controller
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
         $product = Product::findOrFail($id);
 
         if ($user->role_id !== 3) {
-
             $pendingData = [
                 'brand_id' => $request->brand_id,
                 'name' => $request->name,
@@ -311,14 +310,12 @@ class ProductController extends Controller
                 'variants' => $request->has('variants') ? $request->variants : null,
             ];
 
-
             if ($request->hasFile('thumbnail')) {
                 $image = $request->file('thumbnail');
                 $imageName = time() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('upload'), $imageName);
                 $pendingData['thumbnail'] = $imageName;
             }
-
 
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
@@ -328,17 +325,49 @@ class ProductController extends Controller
                 }
             }
 
-            ProductPendingUpdate::create([
+            $pendingUpdate = ProductPendingUpdate::create([
                 'product_id' => $id,
                 'user_id' => $user->id,
                 'action_type' => 'update',
                 'data' => $pendingData,
             ]);
 
+            
+            $admins = User::where('role_id', 3)->get();
+            if ($admins->isEmpty()) {
+                \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu sửa sản phẩm từ user {$user->id}");
+            } else {
+                $detailUrl = route('products.pending-update-detail', $pendingUpdate->id);
+                $approveUrl = route('products.approve-pending', $pendingUpdate->id);
+                $rejectUrl = route('products.reject-pending', $pendingUpdate->id);
+
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Nhân viên {$user->name} đã yêu cầu sửa sản phẩm",
+                        'content' => "Tên sản phẩm: {$request->name}",
+                        'type' => 'product_pending_update',
+                        'data' => [
+                            'pending_id' => $pendingUpdate->id,
+                            'requester_id' => $user->id,
+                            'requester_name' => $user->name,
+                            'product_name' => $request->name,
+                            'product_id' => $id,
+                            'actions' => [
+                                'view_details' => $detailUrl,
+                                'approve_request' => $approveUrl,
+                                'reject_request' => $rejectUrl,
+                            ],
+                        ],
+                        'is_read' => 0,
+                    ]);
+                }
+            }
+
             return redirect()->back()->with('success', 'Yêu cầu chỉnh sửa sản phẩm đã được gửi, chờ phê duyệt!');
         }
 
-
+        
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
         $product->views = 0;
@@ -439,8 +468,9 @@ class ProductController extends Controller
         return view('admin.products.pending-updates', compact('pendingUpdates'));
     }
 
-    public function viewPendingUpdate($pendingId)
+    public function viewPendingUpdate(Request $request, $pendingId)
     {
+        $notificationId = $request->input('notification_id');
         $user = auth()->user();
         if ($user->role_id !== 3) {
             return redirect()->back()->with('error', 'Bạn không có quyền truy cập!');
@@ -449,10 +479,10 @@ class ProductController extends Controller
         $pendingUpdate = ProductPendingUpdate::with('user')->findOrFail($pendingId);
         $originalProduct = $pendingUpdate->product_id ? Product::find($pendingUpdate->product_id) : null;
 
-        return view('admin.products.pending-update-detail', compact('pendingUpdate', 'originalProduct'));
+        return view('admin.products.pending-update-detail', compact('pendingUpdate', 'originalProduct', 'notificationId'));
     }
 
-    public function approvePendingUpdate($pendingId)
+    public function approvePendingUpdate(Request $request, $pendingId)
     {
         $user = auth()->user();
         if ($user->role_id !== 3) {
@@ -509,7 +539,7 @@ class ProductController extends Controller
                     }
                 }
             }
-        } else { // update
+        } else { 
             $product = Product::findOrFail($pendingUpdate->product_id);
             $product->brand_id = $data['brand_id'];
             $product->name = $data['name'];
@@ -568,10 +598,14 @@ class ProductController extends Controller
         }
 
         $pendingUpdate->delete();
-        return redirect()->route('products.pending-updates')->with('success', 'Đã duyệt thành công!');
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
+        return redirect()->route('notifications.index')->with('success', 'Đã duyệt thành công!');
     }
 
-    public function rejectPendingUpdate($pendingId)
+    public function rejectPendingUpdate(Request $request, $pendingId)
     {
         $user = auth()->user();
         if ($user->role_id !== 3) {
@@ -592,7 +626,11 @@ class ProductController extends Controller
         }
 
         $pendingUpdate->delete();
-        return redirect()->route('products.pending-updates')->with('success', 'Đã từ chối yêu cầu!');
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
+        return redirect()->route('notifications.index')->with('success', 'Đã từ chối yêu cầu!');
     }
 
 
@@ -898,7 +936,6 @@ class ProductController extends Controller
         $sale_price_end_at = $request->input('sale_price_end_at');
         $isActive = auth()->user()->role_id == 3 ? 1 : 0;
 
-
         $import = ProductImport::create([
             'user_id' => auth()->id(),
             'imported_by' => auth()->user()->fullname ?? 'Unknown',
@@ -906,12 +943,13 @@ class ProductController extends Controller
             'is_active' => $isActive,
         ]);
 
-
         Product::whereIn('id', $products)->update([
             'import_at' => $importAt,
             'updated_at' => now(),
         ]);
 
+        $totalAmount = 0; 
+        $totalQuantity = 0; 
 
         foreach ($variants as $index => $variantId) {
             if (isset($importPrices[$variantId])) {
@@ -934,13 +972,39 @@ class ProductController extends Controller
                     'sale_price_end_at' => $sale_price_end_at[$variantId],
                     'updated_at' => now(),
                 ]);
+                $totalAmount += $importPrices[$variantId] * $quantity;
+                $totalQuantity += $quantity;
             }
         }
 
         if ($isActive == 0) {
             $admins = User::where('role_id', 3)->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new ImportPendingNotification($import));
+            if ($admins->isEmpty()) {
+                \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu nhập hàng từ user " . auth()->id());
+            } else {
+                $confirmUrl = route('products.import.confirm', $import->id);
+                $rejectUrl = route('products.import.reject', $import->id);
+
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Người dùng " . (auth()->user()->fullname ?? 'Unknown') . " đã nhập một đơn hàng",
+                        'content' => "Số tiền: " . number_format($totalAmount, 0, ',', '.') . " VNĐ - Số lượng hàng nhập: $totalQuantity",
+                        'type' => 'import_pending',
+                        'data' => [
+                            'import_id' => $import->id,
+                            'user_id' => auth()->id(),
+                            'user_name' => auth()->user()->fullname ?? 'Unknown',
+                            'total_amount' => $totalAmount,
+                            'total_quantity' => $totalQuantity,
+                            'actions' => [
+                                'confirm_request' => $confirmUrl,
+                                'reject_request' => $rejectUrl,
+                            ],
+                        ],
+                        'is_read' => 0,
+                    ]);
+                }
             }
         }
 
@@ -948,20 +1012,6 @@ class ProductController extends Controller
     }
 
 
-
-
-    public function markNotificationAsRead(Request $request, $id)
-    {
-
-        if (!auth()->check()) {
-            return redirect()->back()->with('error', 'Bạn cần đăng nhập để thực hiện hành động này.');
-        }
-
-        $notification = auth()->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
-
-        return redirect()->back()->with('success', 'Đã đánh dấu thông báo là đã đọc.');
-    }
 
     public function checkNotifications(Request $request)
     {
@@ -994,7 +1044,10 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Bạn không có quyền từ chối đơn nhập hàng.');
         }
         $import->update(['is_active' => 2]);
-
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
         return redirect()->back()->with('success', 'Đã từ chối đơn nhập hàng thành công!');
     }
 
@@ -1007,7 +1060,10 @@ class ProductController extends Controller
         }
 
         $import->update(['is_active' => 1]);
-
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
         return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
     }
 }

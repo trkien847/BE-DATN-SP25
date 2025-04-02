@@ -132,11 +132,13 @@
                 <form action="{{ route('products.approve-pending', $pendingUpdate->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="notification_id" value="{{ $notificationId }}">
                     <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Duyệt</button>
                 </form>
                 <form action="{{ route('products.reject-pending', $pendingUpdate->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
+                    <input type="hidden" name="notification_id" value="{{ $notificationId }}">
                     <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Từ chối</button>
                 </form>
                 <a href="{{ route('products.pending-updates') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>

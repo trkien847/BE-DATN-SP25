@@ -214,6 +214,7 @@
                                 <option value="" {{ $currentStatus == 'Chờ hoàn tiền' ? 'selected' : '' }}>Chờ hoàn tiền</option>
                                 <option value="" {{ $currentStatus == 'Xác nhận thông tin' ? 'selected' : '' }}>Xác nhận thông tin</option>
                                 <option value="" {{ $currentStatus == 'Chuyển khoản thành công' ? 'selected' : '' }}>Chuyển khoản thành công</option>
+                                <option value="" {{ $currentStatus == 'Yêu cầu hoàn hàng' ? 'selected' : '' }}>Yêu cầu hoàn hàng</option>
                             </select>
                             <div class="evidence-upload" style="display: none;">
                                 <input type="file" class="evidence-file" accept="image/*">
