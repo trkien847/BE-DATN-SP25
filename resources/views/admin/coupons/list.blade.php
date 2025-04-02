@@ -28,7 +28,7 @@
                 <div>
                     <div class="table-responsive table-centered">
                         <table class="table table-bordered">
-                            <thead class="table-dark">
+                            <thead class="">
                                 <tr>
                                     <th scope="col">STT</th>
                                     <th scope="col">Mã giảm giá</th>

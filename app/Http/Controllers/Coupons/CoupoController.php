@@ -13,6 +13,8 @@ use App\Models\CouponRestriction;
 use App\Models\CouponUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\CouponCreatedNotification;
+
 
 class CoupoController extends Controller
 {
@@ -30,8 +32,8 @@ class CoupoController extends Controller
                 ->orWhere('description', 'LIKE', "%$search%");
         }
 
-        $coupons = $query->orderBy('created_at', 'desc')->paginate(5);
-
+        $coupons = $query->where('status', 'approved')->orderBy('created_at', 'desc')->paginate(10);
+        // status	enum('pending', 'approved', 'rejected')	utf8mb4_unicode_ci	
         // Lấy tên sản phẩm và danh mục theo valid_products & valid_categories
         foreach ($coupons as $coupon) {
             if ($coupon->restriction) {
@@ -83,11 +85,10 @@ class CoupoController extends Controller
                 'usage_count' => 0,
                 'start_date' => $request->start_date ?? null,
                 'end_date' => $request->end_date ?? null,
+                'status' => 'pending', // Chờ duyệt
             ]);
 
-            // Tạo ràng buộc mã giảm giá (nếu có)
-
-
+       
             try {
                 CouponRestriction::create([
                     'coupon_id' => $coupon->id,
@@ -100,18 +101,10 @@ class CoupoController extends Controller
             } catch (\Exception $e) {
                 Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage());
             }
-            
-            // Gán mã giảm giá cho user nếu có
-            if ($request->has('user_id')) {
-                try {
-                    $coupon->users()->sync($request->user_id);
-                    Log::info("Thêm user vào bảng coupon_user thành công.");
-                } catch (\Exception $e) {
-                    Log::error("Lỗi khi thêm vào bảng coupon_user: " . $e->getMessage());
-                    throw new \Exception("Không thể thêm user vào mã giảm giá.");
-                }
+            $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 1 là Admin
+            foreach ($adminUsers as $admin) {
+                $admin->notify(new CouponCreatedNotification($coupon));
             }
-
             DB::commit();
             Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
 
@@ -152,7 +145,7 @@ class CoupoController extends Controller
 
         // Lấy giá trị min_order_value và max_discount_value
         $minOrderValue = optional($restriction)->min_order_value;
-    
+
         $maxDiscountValue = optional($restriction)->max_discount_value;
 
         return view('admin.coupons.coupon.edit', compact(
@@ -262,5 +255,30 @@ class CoupoController extends Controller
             return redirect()->route('coupons.list')->with('error', 'Có lỗi xảy ra, vui lòng thử lại!');
         }
     }
+
+    public function approve($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        // echo $coupon;
+        // die();
+        $coupon->status = 'approved';
+        $coupon->save();
+
+        return redirect()->back()->with('success', 'Mã giảm giá đã được duyệt!');
+    }
+
+    public function reject($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        // echo $coupon;
+        // die();
+        $coupon->status = 'rejected';
+        $coupon->save();
+
+        return redirect()->back()->with('error', 'Mã giảm giá đã bị từ chối.');
+    }
+
+ 
+
 
 }

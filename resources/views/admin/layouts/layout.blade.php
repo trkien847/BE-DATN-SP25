@@ -35,6 +35,7 @@
     @stack('styles')
 </head>
 
+
 <body>
 
     <!-- START Wrapper -->
@@ -211,6 +212,12 @@
     @stack('scripts')
 
 </body>
+@foreach(auth()->user()->unreadNotifications as $notification)
+    <div class="alert alert-info">
+        {{ $notification->data['message'] }}
+        <a href="{{ route('coupons.list') }}">Xem chi tiết</a>
+    </div>
+@endforeach
 
 
 <!-- Mirrored from techzaa.in/rasket/admin/apps-invoices.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 14 Jan 2025 16:51:56 GMT -->
