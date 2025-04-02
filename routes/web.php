@@ -88,7 +88,7 @@ Route::get('/thank-you', function () {
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
 
-// Ai thích hợp
+// Ai thích hợp pendingUpdates
 Route::get('/ai-tg', function () {
   return view('ai.aitg');
 })->name('ai-tg');
@@ -144,7 +144,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   
 
 
-  //lịch sử mua hàng  order.acceptCancel
+  //lịch sử mua hàng  products/pending-update
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   // hủy đơn hàng
@@ -189,7 +189,6 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
-  Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::get('/products/pending-updates', [ProductController::class, 'pendingUpdates'])->name('products.pending-updates');
   Route::get('/products/pending-update/{pendingId}', [ProductController::class, 'viewPendingUpdate'])->name('products.pending-update-detail');
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');

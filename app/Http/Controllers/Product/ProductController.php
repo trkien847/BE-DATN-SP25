@@ -17,12 +17,14 @@ use Illuminate\Support\Facades\File;
 use App\Models\CategoryProduct;
 use App\Models\CategoryType;
 use App\Models\CategoryTypeProduct;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use App\Models\ProductGalleries;
 use App\Models\ProductImport;
 use App\Models\ProductPendingUpdate;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Notifications\ImportPendingNotification;
 use Illuminate\Support\Facades\DB;
@@ -107,10 +109,9 @@ class ProductController extends Controller
                 ->with('error', 'Dữ liệu không hợp lệ, vui lòng kiểm tra lại.');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user->role_id !== 3) {
-            // Nếu không phải role_id = 3, lưu vào bảng tạm
             $pendingData = [
                 'brand_id' => $request->brand_id,
                 'name' => $request->name,
@@ -123,7 +124,6 @@ class ProductController extends Controller
                 'variants' => $request->has('variants') ? $request->variants : null,
             ];
 
-            // Xử lý thumbnail nếu có
             if ($request->hasFile('thumbnail')) {
                 $image = $request->file('thumbnail');
                 $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -131,7 +131,6 @@ class ProductController extends Controller
                 $pendingData['thumbnail'] = $imageName;
             }
 
-            // Xử lý ảnh gallery nếu có
             if ($request->hasFile('image')) {
                 foreach ((array) $request->file('image') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -140,17 +139,48 @@ class ProductController extends Controller
                 }
             }
 
-            ProductPendingUpdate::create([
-                'product_id' => null, // Không có product_id vì là thêm mới
+            $pendingUpdate = ProductPendingUpdate::create([
+                'product_id' => null,
                 'user_id' => $user->id,
                 'action_type' => 'create',
                 'data' => $pendingData,
             ]);
 
+            // Gửi thông báo đến tất cả user có role_id = 3
+            $admins = User::where('role_id', 3)->get();
+            if ($admins->isEmpty()) {
+                \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu thêm sản phẩm từ user {$user->id}");
+            } else {
+                $detailUrl = route('products.pending-update-detail', $pendingUpdate->id);
+                $approveUrl = route('products.approve-pending', $pendingUpdate->id);
+                $rejectUrl = route('products.reject-pending', $pendingUpdate->id);
+
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Nhân viên {$user->name} đã yêu cầu thêm sản phẩm",
+                        'content' => "Tên sản phẩm: {$request->name}",
+                        'type' => 'product_pending_create',
+                        'data' => [
+                            'pending_id' => $pendingUpdate->id,
+                            'requester_id' => $user->id,
+                            'requester_name' => $user->name,
+                            'product_name' => $request->name,
+                            'actions' => [
+                                'view_details' => $detailUrl,
+                                'approve_request' => $approveUrl,
+                                'reject_request' => $rejectUrl,
+                            ],
+                        ],
+                        'is_read' => 0,
+                    ]);
+                }
+            }
+
             return redirect()->route('products.list')->with('success', 'Yêu cầu thêm sản phẩm đã được gửi, chờ phê duyệt!');
         }
 
-        // Nếu là role_id = 3, lưu trực tiếp
+        // Logic cho admin (role_id = 3)
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;

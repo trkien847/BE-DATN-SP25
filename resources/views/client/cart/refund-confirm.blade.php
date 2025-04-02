@@ -1,3 +1,5 @@
+@extends('client.layouts.layout')
+@section('content')
 <div class="container py-4">
     <div class="card shadow-sm border-0" style="max-width: 600px; margin: 0 auto;">
         <div class="card-header bg-success text-white text-center">
@@ -35,3 +37,4 @@
         </div>
     </div>
 </div>
+@endsection

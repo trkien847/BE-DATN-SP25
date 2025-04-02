@@ -79,7 +79,7 @@
                             </div>
                         </div>
                         <div data-simplebar style="max-height: 280px;" id="notification-list">
-                        @foreach(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', 0)->latest()->limit(10)->get() as $notification)
+                            @foreach(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', 0)->latest()->limit(10)->get() as $notification)
                             <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
                                 <h6 class="mb-1">{{ $notification->title }}</h6>
                                 <p class="mb-2 fs-13">{{ $notification->content }}</p>
@@ -128,6 +128,22 @@
                                         <button type="submit" class="btn btn-sm btn-danger">Không chấp nhận</button>
                                     </form>
                                     <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                </div>
+                                @elseif($notification->type === 'product_pending_create')
+                                <div class="d-flex gap-2">
+                                    <form action="{{ $notification->data['actions']['approve_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                    </form>
+                                    <form action="{{ $notification->data['actions']['reject_request'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Không chấp nhận</button>
+                                    </form>
+                                    <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                 </div>
                                 @endif
                             </div>

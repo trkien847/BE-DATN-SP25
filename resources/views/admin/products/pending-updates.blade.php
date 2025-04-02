@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Danh sách thay đổi chờ duyệt</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+@extends('admin.layouts.layout')
+@section('content')
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <div class="container mt-5">
         <h1>Danh sách thay đổi chờ duyệt</h1>
         @if (session('success'))
@@ -35,5 +31,4 @@
             </tbody>
         </table>
     </div>
-</body>
-</html>
+    @endsection
