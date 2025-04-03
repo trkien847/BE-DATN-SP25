@@ -128,10 +128,23 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                             <!-- Chỉ áp dụng cho danh mục -->
+                             <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="valid_categories" class="form-label">Áp dụng cho danh mục</label>
+                                    <select class="form-control" id="choices-multiple-remove-button" data-choices
+                                        data-choices-removeItem name="valid_categories[]" multiple>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
 
                             <!-- Chỉ áp dụng cho sản phẩm -->
-                            <div class="row">
-                                <div class="col-md-4">
+                           
+                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="valid_products" class="form-label">Áp dụng cho sản phẩm</label>
                                         <select class="form-control" id="choices-multiple-remove-button" data-choices
@@ -143,20 +156,9 @@
                                     </div>
                                 </div>
 
-                                <!-- Chỉ áp dụng cho danh mục -->
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="valid_categories" class="form-label">Áp dụng cho danh mục</label>
-                                        <select class="form-control" id="choices-multiple-remove-button" data-choices
-                                            data-choices-removeItem name="valid_categories[]" multiple>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
+                               
 
-                                <!-- Áp dụng cho khách hàng -->
+                                {{-- <!-- Áp dụng cho khách hàng -->
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="user_id" class="form-label">Áp dụng cho khách hàng</label>
@@ -167,7 +169,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
+                                </div> --}}
                             </div>
 
                             <!-- Nút lưu -->
