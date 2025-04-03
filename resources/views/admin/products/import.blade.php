@@ -510,11 +510,11 @@ td, th {
                 <td>{{ $import->details->sum('quantity') }}</td>
                 <td>
                     @if ($import->is_active == 0)
-                        <span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>
+                        <span class="badge text-bg-warning">Đang chờ chấp nhận</span>
                     @elseif ($import->is_active == 1)
-                        <span class="badge text-bg-success">Cấp trên đã bị lừa</span>
+                        <span class="badge text-bg-success">Đã chấp nhận</span>
                     @elseif ($import->is_active == 2)
-                        <span class="badge text-bg-danger">Cấp trên khôn quá</span>
+                        <span class="badge text-bg-danger">Không chấp nhận</span>
                     @endif
                 </td>
                 <td>
@@ -578,11 +578,11 @@ td, th {
         console.log(statusValue);
         switch (statusValue) {
             case 0:
-                return '<span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>';
+                return '<span class="badge text-bg-warning">Đang chờ chấp nhận</span>';
             case 1:
-                return '<span class="badge text-bg-success">Cấp trên đã bị lừa</span>';
+                return '<span class="badge text-bg-success">Đã chấp nhận</span>';
             case 2:
-                return '<span class="badge text-bg-danger">Cấp trên khôn quá</span>';
+                return '<span class="badge text-bg-danger">Không chấp nhận</span>';
             default:
                 return '<span class="badge text-bg-secondary">Không xác định</span>';
         }

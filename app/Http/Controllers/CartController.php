@@ -534,7 +534,7 @@ class CartController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Thông tin tài khoản đã được lưu thành công!');
+        return redirect()->route('orderHistory')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
     }
 
     public function refundDetails(Request $request, $orderId)

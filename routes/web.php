@@ -88,7 +88,7 @@ Route::get('/thank-you', function () {
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
 
-// Ai thích hợp pendingUpdates
+// Ai thích hợp /products/import
 Route::get('/ai-tg', function () {
   return view('ai.aitg');
 })->name('ai-tg');
@@ -144,7 +144,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   
 
 
-  //lịch sử mua hàng  products/pending-update
+  //lịch sử mua hàng  order.refund.submit
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
@@ -168,7 +168,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   // thông kê
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
-  //nhập  search products/import/reject
+  //nhập  search /order/23/details
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
   Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');
@@ -186,7 +186,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   });
 
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-  // Quản lý thuộc tính sản phẩm products.approve-pending
+  // Quản lý thuộc tính sản phẩm /orders/35/refund-form
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
   Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');

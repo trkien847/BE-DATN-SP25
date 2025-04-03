@@ -20,6 +20,7 @@
 
     <div class="container mt-5">
         <h1 class="mb-4">Danh sách thông báo nhớ ngày 30/4 nhé ae</h1>
+        <p>Chọn checkbox đang bị khóa</p>
 
         @php
             $notificationTypes = [
@@ -110,7 +111,7 @@
                                                             <input type="hidden" name="notification_id" value="{{ $notification->id }}">
                                                             <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                                         </form>
-                                                        <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                                        <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                                     @elseif($notification->type === 'product_pending_update')
                                                         <form action="{{ $notification->data['actions']['approve_request'] }}" method="POST" style="display:inline;">
                                                             @csrf

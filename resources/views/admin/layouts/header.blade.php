@@ -168,7 +168,7 @@
                                         <input type="hidden" name="notification_id" value="{{ $notification->id }}">
                                         <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                     </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                 </div>
                                 @elseif($notification->type === 'product_pending_update')
                                 <div class="d-flex gap-2">
@@ -319,7 +319,7 @@
                                                 <input type="hidden" name="notification_id" value="${notification.id}">
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
-                                            <a href="${notification.data.actions.view_details}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                            <a href="${notification.data.actions.view_details}?notification_id=${notification.id}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                         `;
                                     case 'product_pending_update':
                                         return `

@@ -152,7 +152,7 @@
 </style>
 
 <div class="container">
-    <h1>Lịch Sử Mua Hàng</h1>
+    <h1>Lịch Sử Mua Hàng (tạm đóng tìm kiếm)</h1>
 
     @if(session('success'))
     <div style="padding: 10px; background-color: #dff0d8; color: #3c763d; margin-bottom: 15px;">

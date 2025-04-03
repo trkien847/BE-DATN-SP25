@@ -88,36 +88,6 @@
 }
 </style>
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
-        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG <strong id="animatedText">Bla Bla Bla Ble Ble Ble Blu Blu Blu hah BLU BLU BLU BLU BLU BLU BLU BLU</strong></h4>
-    </div>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const textElement = document.getElementById('animatedText');
-    const text = textElement.textContent.trim();
-    const words = text.split(' ');
-    const wordCount = words.length;
-    const durationPerWord = 1;
-    const totalDuration = wordCount * durationPerWord;
-
-    function animateWords() {
-        textElement.innerHTML = '';
-        words.forEach((word, index) => {
-            const span = document.createElement('span');
-            span.textContent = word;
-            span.classList.add('animated-word');
-            span.style.animationDelay = `${index * durationPerWord}s`;
-            textElement.appendChild(span);
-            if (index < wordCount - 1) {
-                textElement.appendChild(document.createTextNode(' '));
-            }
-        });
-    }
-
-    animateWords();
-    setInterval(animateWords, totalDuration * 1000);
-});
-</script>
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
             <a class="nav-link active" href="#" data-status="">Tất cả đơn giao hàng</a>
@@ -158,8 +128,8 @@
                 <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Nhập tên khách hàng">
             </div>
             <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary">SAYGEX</button>
-                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">KO SAYGEX</button>
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">Hủy</button>
             </div>
         </form>
     </div>
@@ -313,7 +283,7 @@ function attachDetailEvents() {
             const orderId = this.dataset.orderId;
 
             Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 
@@ -387,7 +357,7 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
     if (customerName) url.searchParams.append('customer_name', customerName);
 
     Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 
@@ -542,7 +512,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
             const orderId = this.dataset.orderId;
 
             Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 

@@ -158,13 +158,13 @@ class ProductController extends Controller
                 foreach ($admins as $admin) {
                     Notification::create([
                         'user_id' => $admin->id,
-                        'title' => "Nhân viên {$user->name} đã yêu cầu thêm sản phẩm",
+                        'title' => "Nhân viên {$user->fullname} đã yêu cầu thêm sản phẩm",
                         'content' => "Tên sản phẩm: {$request->name}",
                         'type' => 'product_pending_create',
                         'data' => [
                             'pending_id' => $pendingUpdate->id,
                             'requester_id' => $user->id,
-                            'requester_name' => $user->name,
+                            'requester_name' => $user->fullname,
                             'product_name' => $request->name,
                             'actions' => [
                                 'view_details' => $detailUrl,
@@ -489,8 +489,15 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Bạn không có quyền duyệt!');
         }
 
+        $notificationId = $request->input('notification_id');
+        $notification = Notification::find($notificationId);
+        $notification->is_read = 1;
+        $notification->save();
+
         $pendingUpdate = ProductPendingUpdate::findOrFail($pendingId);
         $data = $pendingUpdate->data;
+
+       
 
         if ($pendingUpdate->action_type === 'create') {
             $product = new Product();
@@ -598,10 +605,7 @@ class ProductController extends Controller
         }
 
         $pendingUpdate->delete();
-        $notificationId = $request->input('notification_id');
-        $notification = Notification::find($notificationId);
-        $notification->is_read = 1;
-        $notification->save();
+      
         return redirect()->route('notifications.index')->with('success', 'Đã duyệt thành công!');
     }
 
