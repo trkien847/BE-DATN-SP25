@@ -11,7 +11,7 @@ class Coupon extends Model {
     protected $table = 'coupons';
     protected $fillable = [
         'code', 'title', 'description', 'discount_type', 'discount_value',
-        'usage_limit', 'usage_count','is_expired', 'start_date', 'end_date'
+        'usage_limit', 'usage_count','is_expired', 'start_date', 'end_date','status'
     ];
 
     protected $casts = [

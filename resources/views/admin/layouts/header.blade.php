@@ -83,8 +83,10 @@
                 <!-- Notification -->
                 <div class="dropdown topbar-item">
                     <button type="button" class="topbar-button position-relative"
-                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
+
+                        id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+
                         <iconify-icon icon="solar:bell-bing-broken" class="fs-24 align-middle"></iconify-icon>
                         <span id="notification-count"
                             class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">
@@ -216,45 +218,138 @@
                         </div>
                     </div>
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
+
+                <div class="dropdown topbar-item">
+                    <button type="button" class="topbar-button position-relative" id="coupon-notifications-dropdown"
+                        data-bs-toggle="dropdown">
+                        <iconify-icon icon="solar:bell-bing-broken" class="fs-24 align-middle"></iconify-icon>
+                        <span id="coupon-notification-count"
+                            class="position-absolute topbar-badge badge bg-danger rounded-pill">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end p-3 shadow" id="coupon-notification-list"
+                        style="width: 350px;">
+                        <span class="fw-bold d-block mb-2">Thông báo</span>
+                        @foreach (auth()->user()->unreadNotifications as $notification)
+                            <div class="border-bottom pb-2 mb-2">
+                                <p class="mb-1">{{ $notification->data['message'] }}</p>
+
+                                <div class="d-flex justify-content-between">
+                                    <form action="{{ route('coupons.rejected', ['id' => $notification->data['coupon_id']]) }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy yêu cầu này?');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button class="btn btn-danger btn-sm status-btn"
+                                        >Hủy yêu cầu</button>
+                                    </form>
+
+                                    <form action="{{ route('coupons.approve', ['id' => $notification->data['coupon_id']]) }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận yêu cầu này?');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button class="btn btn-success btn-sm status-btn"
+                                           >Chấp nhận</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                        <button class="btn btn-primary w-100 mt-2">Hiển thị toàn bộ</button>
+                    </div>
+
+                </div>
+                @if (auth()->check() && auth()->user()->role_id == 3)
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
                             const notificationList = document.getElementById('notification-list');
                             const notificationCount = document.getElementById('notification-count');
                             const countSpan = notificationCount.querySelector('.count');
+                            let lastChecked = new Date();
 
                             function fetchNotifications() {
-                                fetch('/api/notifications', {
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                        'Accept': 'application/json',
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    countSpan.textContent = data.count;
-                                    notificationCount.style.display = data.count > 0 ? 'block' : 'none';
-                                    notificationList.innerHTML = '';
+                                fetch("{{ route('notifications.check') }}", {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        },
+                                        body: JSON.stringify({
+                                            last_checked: lastChecked.toISOString()
+                                        })
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`HTTP error! status: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        if (data.notifications) {
+                                            countSpan.textContent = data.notifications.length;
+                                            notificationCount.style.display = data.notifications.length > 0 ? 'block' : 'none';
+                                            notificationList.innerHTML = '';
 
-                                    if (data.count === 0) {
-                                        notificationList.innerHTML = `
-                                            <div class="text-center p-3">Không có thông báo nào</div>
-                                        `;
-                                    } else {
-                                        data.notifications.forEach(notification => {
-                                            const itemHtml = `
-                                                <div class="notification-item p-3 border-bottom ${notification.is_read ? 'bg-light' : ''}">
-                                                    <h6 class="mb-1">${notification.title}</h6>
-                                                    <p class="mb-2 fs-13">${notification.content}</p>
-                                                    <div class="d-flex gap-2">
-                                                        ${getActionButtons(notification)}
-                                                    </div>
+                                            data.notifications.forEach(notification => {
+                                                const item = document.createElement('a');
+                                                item.href = 'javascript:void(0);';
+                                                item.className = 'dropdown-item py-3 border-bottom text-wrap';
+                                                item.innerHTML = `
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0">
+                                                    <img src="${notification.avatar}"
+                                                        class="img-fluid me-2 avatar-sm rounded-circle"/>
                                                 </div>
-                                            `;
-                                            notificationList.innerHTML += itemHtml;
-                                        });
-                                    }
-                                })
-                                .catch(error => console.error('Error fetching notifications:', error));
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-0">
+                                                        <span class="fw-medium">${notification.user_name}</span>
+                                                        đang yêu cầu nhập hàng
+                                                        <small class="text-muted d-block">${notification.created_at}</small>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <form action="{{ url('products/import/confirm') }}/${notification.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
+                                                </form>
+                                                <form action="{{ url('products/import/reject') }}/${notification.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
+                                                </form>
+                                        `;
+                                                notificationList.appendChild(item);
+                                            });
+                                        }
+
+                                        if (data.imports && data.imports.length > 0) {
+                                            data.imports.forEach(importItem => {
+                                                Swal.fire({
+                                                    icon: 'info',
+                                                    title: 'Thông báo',
+                                                    html: `${importItem.message} (Ngày nhập: ${importItem.imported_at} bởi ${importItem.imported_by})<br>
+                                                <form action="{{ url('products/import/confirm') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-success mt-2">Xác nhận</button>
+                                                </form>
+                                                <form action="{{ url('products/import/reject') }}/${importItem.import_id}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-danger mt-2">Không xác nhận</button>
+                                                </form>`,
+                                                    showConfirmButton: false,
+                                                });
+                                            });
+                                            lastChecked = new Date();
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error fetching notifications:', error);
+                                    })
+                                    .finally(() => {
+                                        setTimeout(fetchNotifications, 3000);
+                                    });
                             }
 
                             function getActionButtons(notification) {
@@ -357,9 +452,9 @@
                                 }
                             }
                             fetchNotifications();
-                            setInterval(fetchNotifications, 3000);
                         });
-                </script>
+                    </script>
+                @endif
 
 
 
@@ -384,14 +479,20 @@
                                 style="object-fit: cover;"
                                 onerror="this.onerror=null; this.src='{{ asset('storage/avatars/default.jpg') }}';">
 
-                            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
+
+                            <span
+                                class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
+
                                 style="width: 12px; height: 12px;"></span>
                         </span>
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end">
 
-                        <h6 class="dropdown-header">Xin chào <span class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
+
+                        <h6 class="dropdown-header">Xin chào <span
+                                class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
+
 
                         <a class="dropdown-item" href="apps-chat.html">
                             <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span
@@ -414,8 +515,8 @@
                         <div class="dropdown-divider my-1"></div>
 
                         <a class="dropdown-item text-danger" href="auth-signin.html">
-                            <i class="bx bx-log-out fs-18 align-middle me-1"></i><span
-                                class="align-middle">Đăng xuất</span>
+                            <i class="bx bx-log-out fs-18 align-middle me-1"></i><span class="align-middle">Đăng
+                                xuất</span>
                         </a>
                     </div>
                 </div>
@@ -423,3 +524,44 @@
         </div>
     </div>
 </header>
+{{-- <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Cập nhật trạng thái (Xác nhận/Hủy)
+        document.querySelectorAll(".status-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                let couponId = this.getAttribute("data-id");
+                let status = this.getAttribute("data-status");
+                let actionText = status === "approved" ? "Xác nhận" : "Hủy";
+
+                if (confirm(`Bạn có chắc chắn muốn ${actionText} mã giảm giá này?`)) {
+                    fetch(`/coupons/${couponId}/update-status`, {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                            },
+                            body: JSON.stringify({
+                                status: status
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error("Lỗi:", error));
+                }
+            });
+        });
+
+        // Xem chi tiết mã giảm giá
+        // document.querySelectorAll(".view-btn").forEach(button => {
+        //     button.addEventListener("click", function() {
+        //         let couponId = this.getAttribute("data-id");
+        //         window.location.href = `/coupons/${couponId}`;
+        //     });
+        // });
+    });
+</script> --}}

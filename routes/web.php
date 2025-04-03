@@ -24,26 +24,19 @@ use App\Models\ProductImportDetail;
 use App\Models\User;
 
 
-Route::post('/broadcasting/auth', function () {
-  $channelName = request()->input('channel_name');
-  if ($channelName === 'private-notifications.' . auth()->id() . '.admin' && auth()->user()->role_id === 3) {
-      return response()->json(['auth' => 'valid']);
-  }
-  return response()->json(['error' => 'Unauthorized'], 403);
-})->middleware('auth');
 
+Route::post('/login', [UserController::class, 'login'])->name('login.submit');
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
+Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
+Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
+Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+Route::get('/forgot-password', [UserController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [UserController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
 
-Route::post('/login',                           [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout',                           [UserController::class, 'logout'])->name('logout');
-Route::get('/loginForm',                        [UserController::class, 'showLogin'])->name('login');
-Route::get('/registerForm',                     [UserController::class, 'showRegister'])->name('register');
-Route::post('/register',                        [UserController::class, 'register'])->name('register.submit');
-Route::get('/profile',                          [UserController::class, 'showProfile'])->name('profile');
-Route::put('/profile',                          [UserController::class, 'updateProfile'])->name('profile.update');
-Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])->name('password.email');
-Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password',                  [UserController::class, 'resetPassword'])->name('password.update');
 Route::middleware(['check.auth'])->group(function () {
   Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
@@ -126,6 +119,14 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
   Route::get('coupons/{id}/edit', [CoupoController::class, 'edit'])->name('coupons.edit');
   Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
+  Route::put('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
+  Route::put('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
+
+  Route::get('/mark-as-read/{id}', function ($id) {
+    auth()->user()->notifications()->find($id)->markAsRead();
+    return back();
+  })->name('notifications.read');
 
   // Quản lý đánh giá
   Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
@@ -203,10 +204,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
+
   // phân quyền quản lý đơn hàng products/import/confirm
   Route::post('/notifications/accept/{order_id}', [OrderController::class, 'accept'])->name('notifications.accept');
   Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
   Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
+
 
   Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
   Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
@@ -230,4 +233,6 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     Route::put('/admin/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
     Route::delete('/admin/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
   });
+
 });
+
