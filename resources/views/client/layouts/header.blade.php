@@ -136,24 +136,7 @@
                         <nav>
                             <div class="ltn__main-menu">
                                 <ul>
-                                    <li class="menu-icon"><a href="#">Home</a>
-                                        <ul class="sub-menu menu-pages-img-show ltn__sub-menu-col-2---">
-                                            <li>
-                                                <a href="index.html">Home Style 01</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-1.jpg"
-                                                    alt="#">
-                                            </li>
-                                            <li>
-                                                <a href="index-2.html">Home Style 02</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-2.jpg"
-                                                    alt="#">
-                                            </li>
-                                            <li>
-                                                <a href="index-3.html">Home Style 03</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-3.jpg"
-                                                    alt="#">
-                                            </li>
-                                        </ul>
+                                    <li><a href="{{ route('index') }}">Trang chủ</a>
                                     </li>
                                     <li class="menu-icon"><a href="#">About</a>
                                         <ul>

@@ -887,7 +887,10 @@
                             ).join('<br>');
 
                             return `
-                        <button class="btn btn-outline-primary variant-btn"
+                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
+                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
+                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
                             data-product-id="${response.id}"
                             data-variant-id="${variant.id}"
                             data-price="${variant.price}"
@@ -895,11 +898,6 @@
                             data-stock="${variant.stock}"
                             data-variant-index="${index}">
                             ${attributesHtml ? attributesHtml + '<br>' : ''}
-                            Giá: <span>${new Intl.NumberFormat().format(variant.sale_price || variant.price)}đ</span>
-                            ${variant.sale_price && variant.price ? 
-                                `<del>${new Intl.NumberFormat().format(variant.price)}đ</del>` : ''
-                            }
-                            <br>Số lượng: ${variant.stock || 0}
                         </button>
                     `;
                         }).join('');
@@ -958,7 +956,7 @@
             let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
                 'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
             let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') :
-            null; // Lấy variant_id từ nút
+                null; // Lấy variant_id từ nút
             let quantity = $('.cart-plus-minus-box').val();
             $.ajax({
                 url: "{{ route('cart.add') }}",
@@ -1037,39 +1035,6 @@
         .modal-product-variants {
             margin: 15px 0;
         }
-
-        .variant-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            /* Khoảng cách giữa các button */
-            justify-content: flex-start;
-            /* Căn trái hoặc có thể dùng space-between/space-around */
-        }
-
-        .variant-btn {
-            flex: 1 1 auto;
-            /* Cho phép button co giãn linh hoạt */
-            min-width: 120px;
-            /* Chiều rộng tối thiểu */
-            max-width: 200px;
-            /* Chiều rộng tối đa để không quá dài */
-            white-space: normal;
-            /* Cho phép xuống dòng */
-            text-align: left;
-            /* Căn trái text */
-            height: auto;
-            /* Chiều cao tự động theo nội dung */
-            padding: 8px 12px;
-            /* Padding đều hơn */
-        }
-
-        /* Style cho button active (tùy chọn) */
-        .variant-btn.active {
-            background-color: #007bff;
-            /* Màu nền khi được chọn */
-            color: white;
-            border-color: #007bff;
-        }
+        
     </style>
 @endpush

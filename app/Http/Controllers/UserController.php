@@ -43,7 +43,7 @@ class UserController extends Controller
             'fullname' => $fullName,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 3,
+            'role_id' => 1,
         ]);
         auth()->login($user);
         return redirect()->route('index');

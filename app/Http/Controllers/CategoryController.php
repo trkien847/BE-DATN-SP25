@@ -20,6 +20,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = $this->categoryService->getAllCategories();
+
         return view('admin.categories.list', compact('categories'));
     }
 
@@ -70,5 +71,42 @@ class CategoryController extends Controller
             'success' => $subcategory !== false,
             'is_active' => $subcategory ? $subcategory->is_active : 0
         ]);
+    }
+    public function getPendingCategories()
+    {
+        $categories = $this->categoryService->getPendingCategories();
+
+        return view('admin.categories.pendingCategories', compact('categories'));
+    }
+    public function acceptCategory($id)
+    {
+        try {
+            $this->categoryService->acceptCategory($id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Danh mục đã được duyệt thành công'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function rejectCategory($id)
+    {
+        try {
+            $this->categoryService->rejectCategory($id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã từ chối danh mục'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

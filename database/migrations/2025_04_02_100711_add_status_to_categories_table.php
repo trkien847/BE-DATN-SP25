@@ -9,21 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        if (!Schema::hasTable('conversations')) {
-            Schema::create('conversations', function (Blueprint $table) {
-                $table->id();
-                $table->timestamps();
-            });
-        }
+        Schema::table('categories', function (Blueprint $table) {
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+        });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('conversations');
+        Schema::table('categories', function (Blueprint $table) {
+            //
+        });
     }
 };

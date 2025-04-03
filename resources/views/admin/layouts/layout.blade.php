@@ -33,6 +33,13 @@
     <!-- Theme Config js (Require in all Page) -->
     <script src="{{ asset('admin/js/config.min.js') }}"></script>
     @stack('styles')
+    <style>
+        #notification-container {
+            max-height: 280px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    </style>
 </head>
 
 <body>
@@ -202,11 +209,180 @@
 
     <!-- App Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/app.js') }}"></script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
- 
+    <script src="https://unpkg.com/simplebar@latest/dist/simplebar.min.js"></script>
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.pusherInitialized) return;
+            window.pusherInitialized = true;
+
+            if (window.pusherInstance) {
+                window.pusherInstance.disconnect();
+                window.pusherInstance = null;
+            }
+
+            Pusher.logToConsole = true;
+
+            var pusher = new Pusher("c59e8a8c8980e404fb73", {
+                cluster: "ap1",
+                forceTLS: true,
+                authEndpoint: "/broadcasting/auth",
+                auth: {
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    }
+                }
+            });
+            window.pusherInstance = pusher;
+
+            var channel = pusher.subscribe("private-notifications");
+
+            channel.bind('pusher:subscription_succeeded', function() {
+                console.log('Đã subscribe thành công vào private-notifications');
+            });
+
+            channel.bind('pusher:subscription_error', function(error) {
+                console.error('Lỗi subscribe:', error);
+            });
+
+            function handleNotification(event) {
+                console.log("Nhận được thông báo real-time:", event);
+
+                // Fetch lại dữ liệu thông báo mới sau khi nhận được tín hiệu từ Pusher
+                fetchNotifications();
+            }
+
+            // Bind sự kiện từ Pusher
+            channel.bind("Illuminate\\Notifications\\Events\\BroadcastNotificationCreated", handleNotification);
+
+            // Hàm AJAX để fetch dữ liệu thông báo
+            function fetchNotifications() {
+                fetch('/notifications/fetch')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Dữ liệu thông báo mới:', data);
+
+                        var notificationContainer = document.getElementById("notification-container");
+                        if (notificationContainer) {
+                            notificationContainer.innerHTML = ''; // Xóa thông báo cũ
+
+                            if (data.notifications && data.notifications.length > 0) {
+                                data.notifications.forEach(notification => {
+                                    var notificationElement = document.createElement("a");
+                                    // Sử dụng URL từ notification nếu có
+                                    notificationElement.href = notification.url ||
+                                    'javascript:void(0);';
+                                    notificationElement.classList.add("dropdown-item", "py-3",
+                                        "border-bottom", "text-wrap");
+
+                                    // Thêm sự kiện click để xử lý chuyển hướng
+                                    notificationElement.addEventListener('click', function(e) {
+                                        if (notification.url) {
+                                            e.preventDefault();
+                                            // Đánh dấu thông báo là đã đọc trước khi chuyển hướng
+                                            fetch(`/notifications/${notification.id}/mark-as-read`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'X-CSRF-TOKEN': document
+                                                            .querySelector(
+                                                                'meta[name="csrf-token"]')
+                                                            .content,
+                                                        'Content-Type': 'application/json',
+                                                    }
+                                                })
+                                                .then(() => {
+                                                    // Sau khi đánh dấu đã đọc, chuyển hướng đến URL
+                                                    window.location.href = notification.url;
+                                                });
+                                        }
+                                    });
+
+                                    notificationElement.innerHTML = `
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <img src="${notification.avatar || '{{ asset('admin/images/users/dummy-avatar.jpg') }}'}" 
+                                         class="img-fluid me-2 avatar-sm rounded-circle" alt="user-avatar" />
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0">
+                                        <span class="fw-medium">${notification.created_by}</span>: 
+                                        ${notification.message}
+                                    </p>
+                                    <small class="text-muted">
+                                        ${notification.created_at}
+                                        ${!notification.read_at ? '<span class="badge bg-danger ms-1">Mới</span>' : ''}
+                                    </small>
+                                </div>
+                            </div>
+                        `;
+                                    notificationContainer.prepend(notificationElement);
+                                });
+                            } else {
+                                notificationContainer.innerHTML =
+                                    '<p class="text-center py-3">Không có thông báo mới</p>';
+                            }
+
+                            // Cuộn lên đầu
+                            notificationContainer.scrollTop = 0;
+
+                            updateBadgeCount();
+                        }
+                    })
+                    .catch(error => console.error('Lỗi khi fetch dữ liệu:', error));
+            }
+
+            function updateBadgeCount() {
+                fetch('/notifications/count')
+                    .then(response => response.json())
+                    .then(data => {
+                        const count = data.count;
+
+                        // Update header badge
+                        const headerBadge = document.getElementById("notification-badge");
+                        if (headerBadge) {
+                            headerBadge.textContent = count;
+                            headerBadge.style.display = count > 0 ? "inline-block" : "none";
+                        }
+
+                        // Update sidebar badge
+                        const sidebarBadge = document.querySelector('.nav-text .badge');
+                        if (sidebarBadge) {
+                            sidebarBadge.textContent = count;
+                            sidebarBadge.style.display = count > 0 ? "inline-block" : "none";
+                        }
+                    })
+                    .catch(error => console.error('Lỗi khi cập nhật số lượng thông báo:', error));
+            }
+
+
+            // Cập nhật số lượng thông báo ban đầu
+            updateBadgeCount();
+        });
+        document.getElementById('clear-all-notifications').addEventListener('click', function() {
+            fetch('{{ route('notifications.markAllAsRead') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Hide notification badge
+                        document.getElementById('notification-badge').style.display = 'none';
+                        // Clear notifications container
+                        document.getElementById('notification-container').innerHTML =
+                            '<p class="text-center py-3">No new notifications</p>';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
     @stack('scripts')
 
 </body>
