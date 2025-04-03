@@ -10,6 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'user_id',
         'payment_id',
         'phone_number',
@@ -25,7 +26,7 @@ class Order extends Model
         'coupon_discount_value',
     ];
 
-    public function orderStatuses() 
+    public function orderStatuses()
     {
         return $this->hasMany(OrderOrderStatus::class, 'order_id', 'id');
     }
@@ -33,17 +34,20 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class, 'order_id', 'id');
     }
-
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     public function latestOrderStatus()
     {
         return $this->hasOneThrough(
             OrderStatus::class,
             OrderOrderStatus::class,
-            'order_id',         
-            'id',             
-            'id',             
-            'order_status_id' 
-        )->latest('created_at'); 
+            'order_id',
+            'id',
+            'id',
+            'order_status_id'
+        )->orderBy('order_order_status.created_at', 'desc');
     }
 
     public function orderStatusDetails()
@@ -51,11 +55,21 @@ class Order extends Model
         return $this->hasOneThrough(
             OrderStatus::class,
             OrderOrderStatus::class,
-            'order_id',         
-            'id',               
-            'id',               
-            'order_status_id'   
+            'order_id',
+            'id',
+            'id',
+            'order_status_id'
         );
     }
 
+    public function completedStatusTimestamp()
+    {
+        return $this->orderStatuses()
+            ->whereHas('orderStatus', function ($query) {
+                $query->where('name', 'Hoàn thành');
+            })
+            ->latest('created_at')
+            ->first()
+            ?->created_at;
+    }
 }

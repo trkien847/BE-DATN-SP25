@@ -15,12 +15,14 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 //admin
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Models\Cart;
 use App\Models\ProductImportDetail;
 use App\Models\User;
+
 
 
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
@@ -34,12 +36,12 @@ Route::get('/forgot-password', [UserController::class, 'showForgotForm'])->name(
 Route::post('/forgot-password', [UserController::class, 'sendResetLink'])->name('password.email');
 Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
+
 Route::middleware(['check.auth'])->group(function () {
   Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
-
 
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
@@ -79,7 +81,7 @@ Route::get('/thank-you', function () {
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
 
-// Ai thích hợp
+// Ai thích hợp pendingUpdates
 Route::get('/ai-tg', function () {
   return view('ai.aitg');
 })->name('ai-tg');
@@ -140,10 +142,34 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
+  
 
 
+  //lịch sử mua hàng  products/pending-update
+  Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
-  //nhập  search
+  Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
+
+  // hủy đơn hàng
+  Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
+  Route::post('/order/{orderId}/reject-cancel', [CartController::class, 'rejectCancel'])->name('order.rejectCancel');
+  Route::post('/order/{orderId}/accept-cancel', [CartController::class, 'acceptCancel'])->name('order.acceptCancel');
+  Route::get('/order/{orderId}/details', [CartController::class, 'orderDetails'])->name('order.details');
+
+  //hoàn tiền
+  Route::get('/orders/{orderId}/refund-form', [CartController::class, 'showRefundForm'])->name('order.refund.form');
+  Route::post('/orders/{orderId}/refund-submit', [CartController::class, 'submitRefundInfo'])->name('order.refund.submit');
+  Route::get('/orders/{orderId}/refund-details', [CartController::class, 'refundDetails'])->name('order.refund.details');
+  Route::post('/orders/{orderId}/upload-proof', [CartController::class, 'uploadRefundProof'])->name('order.refund.upload');
+  Route::get('/orders/{orderId}/refund-confirm', [CartController::class, 'showConfirmForm'])->name('order.refund.confirm');
+  Route::post('/orders/{orderId}/refund-confirm', [CartController::class, 'submitConfirm'])->name('order.refund.confirm.submit');
+
+  //hoàn hàng
+  Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
+
+  // thông kê
+  Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
+  //nhập  search products/import/reject
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
   Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');
@@ -160,18 +186,30 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     return response()->json($details);
   });
 
-  // Quản lý thuộc tính sản phẩm
+  Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+  // Quản lý thuộc tính sản phẩm products.approve-pending
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
   Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
+  Route::get('/products/pending-updates', [ProductController::class, 'pendingUpdates'])->name('products.pending-updates');
+
+  Route::get('/products/pending-update/{pendingId}', [ProductController::class, 'viewPendingUpdate'])->name('products.pending-update-detail');
+  Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
+  Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
 
   // Quản lý đơn hàng
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
+
+  // phân quyền quản lý đơn hàng products/import/confirm
+  Route::post('/notifications/accept/{order_id}', [OrderController::class, 'accept'])->name('notifications.accept');
+  Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
+  Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
+
 
   Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
   Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
@@ -195,4 +233,6 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     Route::put('/admin/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
     Route::delete('/admin/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
   });
+
 });
+

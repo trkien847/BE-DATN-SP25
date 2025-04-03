@@ -394,7 +394,7 @@ td, th {
   </div>
   
   
-  <h2 class="welcome-title">
+  <h2 class="welcome-title" id="end">
     <span class="text-container">
         <span class="char">C</span><span class="char">h</span><span class="char">à</span><span class="char">o</span>
         <span class="char"> </span>
@@ -484,19 +484,9 @@ td, th {
 
     <button id="showImportForm" class="btn btn-success">Nhập hàng</button>
 </div>
-<script>
-          document.getElementById("showImportForm").addEventListener("click", function () {
-              document.getElementById("importFormzz").style.display = "block";
-              this.style.display = "none"; 
-          });
 
-          document.getElementById("hideImportForm").addEventListener("click", function () {
-              document.getElementById("importFormzz").style.display = "none";
-              document.getElementById("showImportForm").style.display = "block";
-          });
-  </script>
 
-<table class="table">
+<table class="table" id="tablesss">
     <thead>
         <tr>
             <th>Ngày nhập</th>
@@ -540,7 +530,23 @@ td, th {
         @endforeach
     </tbody>
 </table>
+<script>
+          document.getElementById("showImportForm").addEventListener("click", function () {
+              document.getElementById("importFormzz").style.display = "block";
+              this.style.display = "none"; 
+              document.getElementById("tablesss").style.display = "none";
+              document.getElementById("searchForm").style.display = "none";
+              document.getElementById("end").style.display = "none";
+          });
 
+          document.getElementById("hideImportForm").addEventListener("click", function () {
+              document.getElementById("importFormzz").style.display = "none";
+              document.getElementById("showImportForm").style.display = "block";
+              document.getElementById("tablesss").style.display = "";
+              document.getElementById("searchForm").style.display = "";
+              document.getElementById("end").style.display = "";
+          });
+  </script>
 <div class="modal fade" id="importDetailsModal" tabindex="-1" aria-labelledby="importDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
