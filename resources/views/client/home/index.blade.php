@@ -39,6 +39,7 @@
               greenFill 2s ease forwards 4s;
 }
 
+
 .section-title .char:nth-child(1) { animation-delay: 0s, 2s, 4s; }
 .section-title .char:nth-child(2) { animation-delay: 0.1s, 2s, 4s; }
 .section-title .char:nth-child(3) { animation-delay: 0.2s, 2s, 4s; }
@@ -86,7 +87,7 @@
                     <!-- CATEGORY-MENU-LIST START -->
                     <div class="ltn__category-menu-wrap">
                         <div class="ltn__category-menu-title">
-                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">categories</h2>
+                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">DANH MỤC</h2>
                         </div>
                         <div class="ltn__category-menu-toggle ltn__one-line-active">
                             <ul>
@@ -115,10 +116,10 @@
                                 <!-- Submenu Column - 4 -->
                                 <li class="ltn__category-menu-more-item-parent">
                                     <a class="rx-default">
-                                        More categories <span class="cat-thumb  icon-plus"></span>
+                                        Danh mục khác <span class="cat-thumb  icon-plus"></span>
                                     </a>
                                     <a class="rx-show">
-                                        close menu <span class="cat-thumb  icon-remove"></span>
+                                        Đóng danh mục <span class="cat-thumb  icon-remove"></span>
                                     </a>
                                 </li>
                                 <!-- Single menu end -->
@@ -139,25 +140,29 @@
                                         <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
                                             <div class="slide-item-info">
                                                 <div class="slide-item-info-inner ltn__slide-animation">
-                                                    <h5
-                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                        Up To 50% Off Today Only!</h5>
-                                                    <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                    <h5 class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                        Giảm giá đến 50% chỉ hôm nay!
+                                                    </h5>
+                                                    <h1 class="slide-title animated">
+                                                        Tiêu Chuẩn Vàng <br>Trước Khi Tập Luyện
                                                     </h1>
-                                                    <h5 class="color-orange  animated">Starting at &16.99</h5>
+                                                    <h5 class="color-orange animated">
+                                                        Giá chỉ từ 59.000
+                                                    </h5>
                                                     <div class="slide-brief animated d-none">
-                                                        <p>Predictive analytics is drastically changing the real
-                                                            estate industry. In the past, providing data for quick
+                                                        <p>
+                                                            Phân tích dự đoán đang thay đổi đáng kể ngành bất động sản. Trước đây, việc cung cấp dữ liệu nhanh...
                                                         </p>
                                                     </div>
-                                                    <div class="btn-wrapper  animated">
-                                                        <a href="shop.html"
-                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                            now</a>
+                                                    <div class="btn-wrapper animated">
+                                                        <a href="shop.html" class="theme-btn-1 btn btn-effect-1 text-uppercase">
+                                                            Mua ngay
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
 
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
@@ -222,26 +227,26 @@
                                 <img src="{{ asset('client/img/icons/svg/8-t') }}rolley.svg" alt="#">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>Free shipping</h4>
-                                <p>On all orders over $49.00</p>
-                            </div>
+                                <h4>Miễn phí vận chuyển</h4>
+                                <p>Cho tất cả các đơn hàng trên 49,000</p>
+                            </div>                            
                         </div>
-                        <div class="ltn__feature-item ltn__feature-item-8">
+                        {{-- <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
                                 <img src="{{ asset('client/img/icons/svg/9-m') }}oney.svg" alt="#">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>15 days returns</h4>
-                                <p>Moneyback guarantee</p>
+                                <h4>Hoàn trả trong 15 ngày</h4>
+                                <p>Bảo đảm hoàn tiền</p>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
                                 <img src="{{ asset('client/img/icons/svg/10-') }}credit-card.svg" alt="#">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>Secure checkout</h4>
-                                <p>Protected by Paypal</p>
+                                <h4>Thanh toán nhanh</h4>
+                                <p>Liên kết toàn bộ ngân hàng trên cả nước</p>
                             </div>
                         </div>
                         <div class="ltn__feature-item ltn__feature-item-8">
@@ -249,11 +254,12 @@
                                 <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="#">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>Offer & gift here</h4>
-                                <p>On all orders over</p>
+                                <h4>Ưu đãi & quà tặng</h4>
+                                <p>Cho tất cả các đơn hàng trên 99,000</p>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -278,7 +284,7 @@
     <span class="char"> </span>
     <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
 </h1>
-                        <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
+                        <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin</p>
                     </div>
                     <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                         <div class="nav">
@@ -303,7 +309,7 @@
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
                                                     <a href="{{ route('products.productct', $product->id) }}">
-                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="product-image">
+                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="product-image" width="250px" height="200px">
                                                     </a>
                                                         <div class="product-badge">
                                                             <ul>
@@ -315,7 +321,7 @@
                                                                                 100,
                                                                         );
                                                                     @endphp
-                                                                    <li class="sale-badge">-{{ $discount }}%</li>
+                                                                    <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
                                                                 @endif
                                                             </ul>
                                                         </div>
@@ -353,8 +359,8 @@
                                                             @endphp
 
                                                             @if (!empty($salePrice) && $salePrice > 0)
-                                                                <span>{{ number_format($salePrice) }}đ</span>
-                                                                <del>{{ number_format($regularPrice) }}đ</del>
+                                                                <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
+                                                                <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
                                                             @else
                                                                 <span>{{ number_format($regularPrice) }}đ</span>
                                                             @endif
@@ -459,7 +465,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Best Selling Item</h1>
+                        <h1 class="section-title">SẢN PHẨM BÁN CHẠY</h1>
                     </div>
                 </div>
             </div>
@@ -468,9 +474,9 @@
                 @foreach ($productBestSale as $product)
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
-                            <div class="product-img">
+                            <div class="product-img" >
                                 <a href="{{ route('products.productct', $product->id) }}">
-                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}">
+                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }} " width="250px" height="200px">
                                 </a>
                                 <div class="product-badge">
                                     <ul>
@@ -482,7 +488,7 @@
                                                         100,
                                                 );
                                             @endphp
-                                            <li class="sale-badge">-{{ $discount }}%</li>
+                                            <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
                                         @endif
                                     </ul>
                                 </div>
@@ -515,8 +521,8 @@
                                     @endphp
 
                                     @if (!empty($salePrice) && $salePrice > 0)
-                                        <span>{{ number_format($salePrice) }}đ</span>
-                                        <del>{{ number_format($regularPrice) }}đ</del>
+                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
+                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
                                     @else
                                         <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
@@ -532,12 +538,12 @@
     <!-- PRODUCT AREA END -->
 
     <!-- SMALL PRODUCT LIST AREA START -->
-    <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-90 mb-120">
+    <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-70 mb-100">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Featured Products</h1>
+                        <h1 class="section-title" >SẢN PHẨM NỔI BẬT</h1>
                     </div>
                 </div>
             </div>
@@ -547,11 +553,11 @@
                     <div class="col-lg-4 col-md-6 col-12">
                         <div class="ltn__small-product-item">
                             <div class="small-product-item-img">
-                                <a href="product-details.html"><img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                        alt="Image"></a>
+                                <a href="{{ route('products.productct', $product->id) }}"><img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                        alt="Image" width="250px" height="100px"></a>
                             </div>
                             <div class="small-product-item-info">
-                                {{-- <div class="product-ratting">
+                                <div class="product-ratting">
                                 <ul>
                                     <li><a href="#"><i class="fas fa-star"></i></a></li>
                                     <li><a href="#"><i class="fas fa-star"></i></a></li>
@@ -559,12 +565,12 @@
                                     <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
                                     <li><a href="#"><i class="far fa-star"></i></a></li>
                                 </ul>
-                            </div> --}}
+                            </div>
                                 <h2 class="product-title"><a href="product-details.html">{{ $product->name }}</a></h2>
                                 <div class="product-price">
                                     @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                        <span>{{ number_format($product->sale_price) }}đ</span>
-                                        <del>{{ number_format($product->sell_price) }}đ</del>
+                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($product->sale_price) }}đ</span>
+                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($product->sell_price) }}đ</del>
                                     @else
                                         <span>{{ number_format($product->sell_price) }}đ</span>
                                     @endif
@@ -873,12 +879,14 @@
                     <div
                         class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
+                        
                     </div>
                 </div>
             </div>

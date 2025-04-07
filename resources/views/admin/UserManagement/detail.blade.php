@@ -54,15 +54,16 @@
                                 @endif
                             </li>
                             <li class="list-group-item">
-                                <strong>Vai trò:</strong> 
+                                <strong>Vai trò:</strong>
                                 @if($user->role_id == 1)
-                                    Admin
-                                @elseif($user->role == 2)
-                                    Staff
+                                    Khách
+                                @elseif($user->role_id == 2)
+                                    Nhân viên
                                 @else
-                                    Người dùng
+                                    Quản trị viên
                                 @endif
                             </li>
+                            
                         </ul>
                     </div>
                 </div>
@@ -73,7 +74,7 @@
                         <i class="fas fa-edit"></i> Chỉnh sửa
                     </a>
                     <a href="{{ route('admin.users.list') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
                 </div>
             </div>

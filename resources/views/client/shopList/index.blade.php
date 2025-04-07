@@ -16,12 +16,26 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ltn__breadcrumb-inner">
-                        <h1 class="page-title">Shop Left Sidebar</h1>
+                        <h1 class="page-title"> 
+                            @foreach ($category->categoryTypes->where('is_active', true) as $type)
+                            
+                                <a href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
+                                    {{ $type->name }}
+                                </a>
+                            
+                        @endforeach</h1>
                         <div class="ltn__breadcrumb-list">
                             <ul>
-                                <li><a href="index.html"><span class="ltn__secondary-color"><i
-                                                class="fas fa-home"></i></span> Home</a></li>
-                                <li>Shop Left Sidebar</li>
+                                <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i
+                                                class="fas fa-home"></i></span> Trang chủ</a></li>
+                                               
+                                 @foreach ($category->categoryTypes->where('is_active', true) as $type)
+                                    <li>
+                                        <a href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
+                                            {{ $type->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
@@ -49,18 +63,19 @@
                             </li>
                             <li>
                                 <div class="showing-product-number text-right">
-                                    <span>Showing 1–12 of {{ count($products) }} results</span>
+                                    <span>Hiển thị 1–12 của {{ count($products) }} kết quả</span>
                                 </div>
                             </li>
                             <li>
                                 <div class="short-by text-center">
                                     <form id="sortForm">
                                         <select name="sort" id="sortSelect">
-                                            <option value="">Default Sorting</option>
-                                            <option value="popularity">Sort by popularity</option>
-                                            <option value="new">Sort by new arrivals</option>
-                                            <option value="price_asc">Sort by price: low to high</option>
-                                            <option value="price_desc">Sort by price: high to low</option>
+                                            <option value="">Sắp xếp mặc định</option>
+                                            <option value="popularity">Phổ biến nhất</option>
+                                            <option value="new">Hàng mới về</option>
+                                            <option value="price_asc">Giá: thấp đến cao</option>
+                                            <option value="price_desc">Giá: cao đến thấp</option>
+
                                         </select>
                                     </form>
                                 </div>
@@ -73,11 +88,15 @@
                                 <div id="product-list" class="row">
                                     @foreach ($products as $product)
                                         <div class="col-xl-4 col-sm-6 col-6">
-                                            <div class="ltn__product-item ltn__product-item-3 text-center">
+                                            <div class="ltn__product-item ltn__product-item-3 text-center"
+                                            style="height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;"> {{-- fix tràn ô  --}}
                                                 <div class="product-img">
-                                                    <a href="#"><img
-                                                            src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                            alt="#"></a>
+                                                    <a href="#">
+                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                                             alt="{{ $product->name }}"
+                                                             style="width: 250px; height: 200px; object-fit: cover;">
+                                                    </a>
+                                                
                                                     <div class="product-badge">
                                                         <ul>
                                                             @if (!empty($product->sale_price) && $product->sale_price > 0)
@@ -116,10 +135,10 @@
                                                             href="{{route('get-product', $product->id)}}">{{ $product->name }}</a></h2>
                                                     <div class="product-price">
                                                         @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                                            <span>{{ number_format($product->sale_price) }}đ</span>
-                                                            <del>{{ number_format($product->sell_price) }}đ</del>
+                                                            <span class="text-success fs-6 d-block mb-2">{{ number_format($product->sale_price) }}đ</span>
+                                                            <del class="text-danger fs-6 d-block mb-2">{{ number_format($product->sell_price) }}đ</del>
                                                         @else
-                                                            <span>{{ number_format($product->sell_price) }}đ</span>
+                                                            <span>{{ number_format($product->sell_price) }} VND</span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -149,7 +168,7 @@
                     <aside class="sidebar ltn__shop-sidebar ltn__right-sidebar">
                         <!-- Category Widget -->
                         <div class="widget ltn__menu-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Product categories</h4>
+                            <h4 class="ltn__widget-title ltn__widget-title-border">Danh mục sản phẩm</h4>
                             <ul>
                                 @foreach ($categories as $category)
                                     <li><a href="{{ route('category.show', parameters: ['categoryId' => $category->id]) }}">{{ $category->name }}
@@ -160,13 +179,13 @@
 
                         <!-- Search Widget -->
                         <div class="widget ltn__search-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Search Objects</h4>
-                            <input type="text" id="search-input" placeholder="Search your keyword...">
+                            <h4 class="ltn__widget-title ltn__widget-title-border">sản phẩm</h4>
+                            <input type="text" id="search-input" placeholder="Nhập sản phẩm cần tìm kiếm...">
                         </div>
 
                         <!-- Brands Widget -->
                         <div class="widget ltn__tagcloud-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Brands</h4>
+                            <h4 class="ltn__widget-title ltn__widget-title-border">Thương hiệu</h4>
                             <ul>
                                 @foreach ($brands as $brand)
                                     <li>
@@ -182,7 +201,7 @@
 
                         <!-- Product Price Widget -->
                         <div class="widget ltn__tagcloud-widget ltn__size-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Product Price</h4>
+                            <h4 class="ltn__widget-title ltn__widget-title-border">Giá</h4>
                             <ul>
                                 @foreach ([
                                         'under_100' => 'Dưới 100.000đ',
@@ -202,13 +221,13 @@
                         </div>
                         <!-- Top Rated Product Widget -->
                         <div class="widget ltn__top-rated-product-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Top Rated Product</h4>
+                            <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
                             <ul>
                                 @foreach ($productTop as $product)
                                     <li>
                                         <div class="top-rated-product-item clearfix">
                                             <div class="top-rated-product-img">
-                                                <a href="product-details.html"><img
+                                                <a href="{{ route('products.productct', $product->id) }}"><img
                                                         src="{{ asset('upload/' . $product->thumbnail) }}"
                                                         alt="#"></a>
                                             </div>
@@ -222,13 +241,13 @@
                                                         <li><a href="#"><i class="fas fa-star"></i></a></li>
                                                     </ul> --}}
                                                 </div>
-                                                <h6><a href="product-details.html">{{ $product->name }}</a></h6>
+                                                <h6><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h6>
                                                 <div class="product-price">
                                                     @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                                        <span>{{ number_format($product->sale_price) }}đ</span>
-                                                        <del>{{ number_format($product->sell_price) }}đ</del>
+                                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($product->sale_price) }} VND</span>
+                                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($product->sell_price) }} VND</del>
                                                     @else
-                                                        <span>{{ number_format($product->sell_price) }}đ</span>
+                                                        <span>{{ number_format($product->sell_price) }} VND</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -258,12 +277,14 @@
                     <div
                         class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -352,8 +373,8 @@
                                 <h2 class="product-title"><a href="product-details.html">${product.name}</a></h2>
                                 <div class="product-price">
                                     ${product.sale_price > 0 ? 
-                                        `<span>${new Intl.NumberFormat().format(product.sale_price)}đ</span> <del>${new Intl.NumberFormat().format(product.sell_price)}đ</del>` :
-                                        `<span>${new Intl.NumberFormat().format(product.sell_price)}đ</span>`
+                                        `<span>${new Intl.NumberFormat().format(product.sale_price)} VND</span> <del>${new Intl.NumberFormat().format(product.sell_price)} VND</del>` :
+                                        `<span>${new Intl.NumberFormat().format(product.sell_price)} VND</span>`
                                     }
                                 </div>
                             </div>
