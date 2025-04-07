@@ -1,5 +1,4 @@
 @extends('admin.layouts.layout')
-
 @section('content')
 <div class="container">
     <h2>Danh sách Thuộc tính</h2>
@@ -7,11 +6,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Loại biến thể</th>
-                <th>Thông số</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
@@ -20,22 +15,7 @@
             @endphp
             @foreach ($groupedAttributes as $name => $group)
                 <tr class="group-header" data-name="{{ $name }}">
-                    <td>{{ $group->first()->id }}</td>
                     <td>{{ $name }}</td>
-                    <td>{{ $group->first()->slug }} 
-                        @foreach ($group->first()->values as $value)
-                            <span class="badge bg-primary">{{ $value->value }}</span>
-                        @endforeach
-                    </td>
-                    <td>{{ $group->first()->is_active ? 'Hiển thị' : 'Ẩn' }}</td>
-                    <td>
-                        <a href="javascript:void(0)" class="btn btn-primary edit-attribute-btn" 
-                           data-id="{{ $group->first()->id }}" 
-                           data-name="{{ $group->first()->name }}" 
-                           data-slug="{{ $group->first()->slug }}"
-                           data-value="{{ optional($group->first()->values->first())->value }}"
-                           data-is-active="{{ $group->first()->is_active }}">Sửa Thuộc tính</a>
-                    </td>
                 </tr>
                 <tr class="group-details" style="display: none;">
                     <td colspan="5">

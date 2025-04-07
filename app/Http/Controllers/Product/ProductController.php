@@ -17,13 +17,18 @@ use Illuminate\Support\Facades\File;
 use App\Models\CategoryProduct;
 use App\Models\CategoryType;
 use App\Models\CategoryTypeProduct;
+use App\Models\Import;
+use App\Models\ImportProduct;
+use App\Models\ImportProductVariant;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
+use Illuminate\Support\Str;
 use App\Models\ProductGalleries;
 use App\Models\ProductImport;
 use App\Models\ProductPendingUpdate;
 use App\Models\ProductVariant;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Notifications\ImportPendingNotification;
@@ -146,7 +151,7 @@ class ProductController extends Controller
                 'data' => $pendingData,
             ]);
 
-            
+
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
                 \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu thêm sản phẩm từ user {$user->id}");
@@ -180,7 +185,7 @@ class ProductController extends Controller
             return redirect()->route('products.list')->with('success', 'Yêu cầu thêm sản phẩm đã được gửi, chờ phê duyệt!');
         }
 
-       
+
         $product = new Product();
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
@@ -332,7 +337,7 @@ class ProductController extends Controller
                 'data' => $pendingData,
             ]);
 
-            
+
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
                 \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu sửa sản phẩm từ user {$user->id}");
@@ -367,7 +372,7 @@ class ProductController extends Controller
             return redirect()->back()->with('success', 'Yêu cầu chỉnh sửa sản phẩm đã được gửi, chờ phê duyệt!');
         }
 
-        
+
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
         $product->views = 0;
@@ -497,7 +502,7 @@ class ProductController extends Controller
         $pendingUpdate = ProductPendingUpdate::findOrFail($pendingId);
         $data = $pendingUpdate->data;
 
-       
+
 
         if ($pendingUpdate->action_type === 'create') {
             $product = new Product();
@@ -546,7 +551,7 @@ class ProductController extends Controller
                     }
                 }
             }
-        } else { 
+        } else {
             $product = Product::findOrFail($pendingUpdate->product_id);
             $product->brand_id = $data['brand_id'];
             $product->name = $data['name'];
@@ -605,7 +610,7 @@ class ProductController extends Controller
         }
 
         $pendingUpdate->delete();
-      
+
         return redirect()->route('notifications.index')->with('success', 'Đã duyệt thành công!');
     }
 
@@ -952,8 +957,8 @@ class ProductController extends Controller
             'updated_at' => now(),
         ]);
 
-        $totalAmount = 0; 
-        $totalQuantity = 0; 
+        $totalAmount = 0;
+        $totalQuantity = 0;
 
         foreach ($variants as $index => $variantId) {
             if (isset($importPrices[$variantId])) {
@@ -1069,5 +1074,191 @@ class ProductController extends Controller
         $notification->is_read = 1;
         $notification->save();
         return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
+    }
+
+
+
+    // nhập v2 
+    public function createImport()
+    {
+        $products = Product::where('is_active', 1)
+            ->with(['variants.attributeValues.attribute', 'attributeValues.attribute'])
+            ->get();
+        $suppliers = Supplier::all();
+        return view('admin.imports.create', compact('products', 'suppliers'));
+    }
+
+    public function showSupplier($id)
+    {
+        $supplier = Supplier::findOrFail($id);
+        return response()->json($supplier);
+    }
+
+    public function storeSupplier(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string'
+        ]);
+
+        $supplier = Supplier::create($validated);
+
+        return response()->json($supplier);
+    }
+
+    // thêm mới nhập 
+    public function storeImport(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+    
+            // Validate the request
+            $validated = $request->validate([
+                'import_date' => 'required|date',
+                'supplier_id' => 'required|exists:suppliers,id',
+                'products' => 'required|json',
+                'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+            ]);
+    
+            // Decode products JSON
+            $products = json_decode($request->products, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('Dữ liệu sản phẩm không hợp lệ');
+            }
+    
+            // Handle image upload
+            $imageName = null;
+            if ($request->hasFile('proof_image')) {
+                $image = $request->file('proof_image');
+                $imageName = 'import_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload/imports'), $imageName);
+            }
+    
+            // Create import record
+            $import = Import::create([
+                'import_code' => 'IMP-' . Str::random(8),
+                'import_date' => $request->import_date,
+                'user_id' => auth()->id(),
+                'supplier_id' => $request->supplier_id,
+                'is_confirmed' => false,
+                'total_quantity' => 0,
+                'total_price' => 0,
+                'proof_image' => $imageName
+            ]);
+    
+            $totalImportQuantity = 0;
+            $totalImportPrice = 0;
+    
+            foreach ($products as $productId => $productData) {
+                if (!isset($productData['variants']) || !is_array($productData['variants'])) {
+                    throw new \Exception('Dữ liệu biến thể không hợp lệ');
+                }
+    
+                $product = Product::findOrFail($productId);
+                
+                $importProduct = ImportProduct::create([
+                    'import_id' => $import->id,
+                    'product_id' => $productId,
+                    'product_name' => $product->name,
+                    'quantity' => 0,
+                    'import_price' => 0,
+                    'total_price' => 0
+                ]);
+    
+                $productTotalQuantity = 0;
+                $productTotalPrice = 0;
+    
+                foreach ($productData['variants'] as $variantId => $variantData) {
+                    $variant = ProductVariant::findOrFail($variantId);
+                    
+                    $quantity = (int)$variantData['quantity'];
+                    $price = (float)$variantData['price'];
+                    $totalPrice = $quantity * $price;
+    
+                    ImportProductVariant::create([
+                        'import_product_id' => $importProduct->id,
+                        'product_variant_id' => $variantId,
+                        'variant_name' => $this->getVariantName($variant),
+                        'quantity' => $quantity,
+                        'import_price' => $price,
+                        'total_price' => $totalPrice
+                    ]);
+    
+                    $productTotalQuantity += $quantity;
+                    $productTotalPrice += $totalPrice;
+                }
+    
+                $importProduct->update([
+                    'quantity' => $productTotalQuantity,
+                    'total_price' => $productTotalPrice
+                ]);
+    
+                $totalImportQuantity += $productTotalQuantity;
+                $totalImportPrice += $productTotalPrice;
+            }
+    
+            $import->update([
+                'total_quantity' => $totalImportQuantity,
+                'total_price' => $totalImportPrice
+            ]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Import created successfully',
+                'data' => $import
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            // Delete uploaded image if exists
+            if (isset($imageName) && file_exists(public_path('upload/imports/' . $imageName))) {
+                unlink(public_path('upload/imports/' . $imageName));
+            }
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating import: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getVariantName($variant)
+    {
+        return $variant->attributeValues()
+            ->with('attribute')
+            ->get()
+            ->map(function ($value) {
+                return $value->attribute->name . ': ' . $value->attribute->slug . $value->value;
+            })
+            ->join(', ');
+    }
+
+    public function indexImport()
+    {
+        $imports = Import::with(['user', 'supplier'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.imports.index', compact('imports'));
+    }
+
+    public function getDetail(Import $import)
+    {
+        $import->load([
+            'user',
+            'supplier',
+            'importProducts.variants'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'import' => $import
+        ]);
     }
 }

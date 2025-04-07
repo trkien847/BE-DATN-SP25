@@ -144,7 +144,13 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
   
 
-
+  // nhập
+  Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
+  Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
+  Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
+  Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
+  Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
+  Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
   //lịch sử mua hàng  order.refund.submit
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
@@ -177,14 +183,6 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //Route::post('notifications/check', [ProductController::class, 'checkNotifications'])->name('notifications.check');
   Route::patch('products/import/reject/{id}', [ProductController::class, 'rejectImport'])->name('products.import.reject');
   Route::post('/products/search', [ProductController::class, 'search'])->name('products.import.search');
-  Route::get('/admin/imports/{id}/details', function ($id) {
-    $details = ProductImportDetail::where('import_id', $id)
-      ->join('products', 'product_import_details.product_id', '=', 'products.id')
-      ->select('products.name as product_name', 'product_import_details.*')
-      ->get();
-
-    return response()->json($details);
-  });
 
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
   // Quản lý thuộc tính sản phẩm /orders/35/refund-form

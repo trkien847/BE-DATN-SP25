@@ -21,3 +21,13 @@ import axios from 'axios';
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+
+
+
+@foreach(auth()->user()->unreadNotifications as $notification)
+    <div class="alert alert-info">
+        {{ $notification->data['message'] }}
+        <a href="{{ route('coupons.list') }}">Xem chi tiết</a>
+    </div>
+@endforeach

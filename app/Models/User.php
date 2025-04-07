@@ -51,7 +51,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * The attributes that should be cast. Role
      *
      * @var array<string, string>
      */
@@ -71,6 +71,10 @@ class User extends Authenticatable
     public function doctor()
     {
         return $this->hasMany(Doctor::class);
+    }
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
     public function notifications()
     {

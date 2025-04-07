@@ -145,7 +145,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('products.import') }}">
+                        <a class="dropdown-item" href="{{ route('admin.imports.index') }}">
                             <span class="nav-icon">
                                 <iconify-icon icon="mdi:application-edit-outline" width="24" height="24"></iconify-icon>
                             </span>
