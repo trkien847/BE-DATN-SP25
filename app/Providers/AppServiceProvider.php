@@ -20,9 +20,5 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('admin.layouts.header', function ($view) {
-            $notifications = auth()->user()->unreadNotifications()->paginate(5);
-            $view->with('notifications', $notifications);
-        });
     }
 }
