@@ -7,7 +7,7 @@
     <div class="panel">
         <h2><i class="fas fa-box"></i> Danh Sách Sản Phẩm</h2>
         <a href="javascript:void(0)" id="add-product-btn" class="btn-add-product">
-            <i class="fas fa-plus"></i> Thêm Sản Phẩm
+            <i class="fas fa-plus"></i> Thêm Sản Phẩm ( Designed by TG )
         </a>
         
         <!-- Product selection modal -->
@@ -89,7 +89,7 @@
     </div>
 
     <div class="panel">
-        <h2><i class="fas fa-file-import"></i> Thông Tin Nhập Hàng</h2>
+        <h2><i class="fas fa-file-import"></i> Thông Tin Lô Hàng</h2>
         <div class="user-info">
             <div class="header-row">
                 <div class="info-label">Người Nhập</div>
@@ -104,32 +104,58 @@
                 <p><i class="fas fa-user-shield"></i> {{ auth()->user()->role->name ?? 'N/A' }}</p>
             </div>
         </div>
+        
+        <div class="order-batch-info">
+            <div class="supplier-header">
+                <div class="info-label">Thông Tin Lô Hàng</div>
+                <a href="javascript:void(0)" id="add-order-batch-btn" class="btn-add-batch">
+                    <i class="fas fa-plus"></i> Thêm Lô Hàng
+                </a>
+            </div>
+            <select id="order-batch-select" name="order_import_id">
+                <option value="">Chọn lô hàng</option>
+                @foreach($orderImport as $orderIm)
+                    @php
+                        $createdDate = \Carbon\Carbon::parse($orderIm->created_at)->startOfDay();
+                        $today = \Carbon\Carbon::now()->startOfDay();
+                        $isToday = $createdDate->equalTo($today);
+                    @endphp
+                    <option value="{{ $orderIm->id }}" 
+                            {{ !$isToday ? 'disabled' : '' }}
+                            class="{{ !$isToday ? 'expired-batch' : '' }}">
+                        {{ $orderIm->order_code }} ({{$orderIm->order_name}})
+                        @if(!$isToday)
+                            - Hết hạn
+                        @endif
+                    </option>
+                @endforeach
+            </select>
+            <div id="order-batch-details" class="order-batch-details hidden"></div>
+        </div>
 
         <div class="import-info">
             <div class="info-label">Ngày Nhập</div>
             <input type="date" id="import-date" name="import_date" value="{{ date('Y-m-d') }}">
             
             <div class="image-upload-container">
-                <div class="info-label">Ảnh chứng từ</div>
-                <div class="image-preview-area">
-                    <label for="proof-image" class="upload-label">
+                <div class="info-label">Tải lên chứng từ</div>
+                <div class="file-preview-area">
+                    <label for="proof-files" class="upload-label">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Chọn ảnh hoặc kéo thả vào đây</span>
+                        <span>Chọn file hoặc kéo thả vào đây</span>
+                        <small>Chấp nhận file ảnh và PDF (tối đa 5MB/file)</small>
                     </label>
                     <input type="file" 
-                        id="proof-image" 
-                        name="proof_image" 
-                        accept="image/*"
-                        class="proof-image-input" 
+                        id="proof-files" 
+                        name="proof_files[]" 
+                        accept="image/*,.pdf"
+                        class="proof-file-input" 
+                        multiple
                         hidden>
-                    <div id="image-preview" class="image-preview hidden">
-                        <img src="#" alt="Preview" id="preview-img">
-                        <button type="button" class="remove-image" id="remove-image">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                    <div id="files-preview" class="files-preview"></div>
                 </div>
             </div>
+
         </div>
 
         <div class="supplier-info">
@@ -190,6 +216,31 @@
             </form>
         </div>
     </div>
+
+
+    <div class="modal" id="orderImportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Thêm Thông Tin Lô Hàng</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="orderImportForm">
+                @csrf
+                <div class="form-group">
+                    <label for="order_name">Tên lô hàng <span class="text-danger">*</span></label>
+                    <input type="text" id="order_name" name="order_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Ghi chú</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-submit">Lưu</button>
+                    <button type="button" class="btn-cancel">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -210,7 +261,7 @@
         max-width: 1400px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 2fr 1fr;
         gap: 30px;
         padding: 20px;
     }
@@ -221,6 +272,125 @@
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
         transition: var(--transition);
+    }
+
+    .selected-product-count {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .count-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+    }
+
+    .expired-batch {
+    text-decoration: line-through;
+    color: #999;
+    position: relative;
+}
+
+/* Style cho disabled option */
+select option:disabled {
+    background-color: #f8f9fa;
+    color: #999;
+}
+
+/* Thêm dấu hiệu hết hạn */
+.expired-batch::after {
+    content: " (Hết hạn)";
+    color: #dc3545;
+    font-style: italic;
+}
+
+    .count-badge i {
+        color: var(--primary-color);
+    }
+
+    .count-badge strong {
+        color: var(--primary-color);
+        font-size: 1.1em;
+    }
+
+    .file-preview-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .file-preview-item {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 5px;
+        background: #f8f9fa;
+    }
+
+    .file-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .file-preview-item .file-name {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 4px;
+        font-size: 12px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-preview-item .remove-file {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .file-preview-item .remove-file:hover {
+        background: #dc3545;
+        transform: scale(1.1);
+    }
+
+    .files-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .pdf-preview i {
+        font-size: 40px;
+        color: #dc3545;
     }
 
     .image-upload-container {
@@ -242,8 +412,141 @@
         transition: all 0.3s ease;
     }
 
+    .order-batch-info {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-add-batch {
+        padding: 8px 15px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-add-batch:hover {
+        background: var(--primary-hover);
+        transform: scale(1.05);
+        color: white;
+    }
+
+    .order-batch-details {
+        margin-top: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 3px solid var(--secondary-color);
+    }
+
+    .order-batch-details.hidden {
+        display: none;
+    }
+
+    #order-batch-select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fff;
+    }
+
     .image-preview-area.drag-over {
         border-color: var(--primary-color);
+        background: #f0f7ff;
+    }
+
+    .images-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .image-preview-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+    }
+
+    .image-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .image-preview-item:hover img {
+        transform: scale(1.05);
+    }
+
+    .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .remove-image:hover {
+        background: #dc3545;
+        transform: scale(1.1);
+    }
+
+    .upload-label {
+        cursor: pointer;
+        padding: 20px;
+        text-align: center;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .upload-label:hover {
+        border-color: var(--primary-color);
+        background: #f0f7ff;
+    }
+
+    .upload-label i {
+        font-size: 2em;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+
+    .upload-label span {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .upload-label small {
+        color: #666;
+        display: block;
+    }
+
+    .image-preview-area.drag-over {
         background: #f0f7ff;
     }
 
@@ -963,11 +1266,18 @@
         const selectedProductsContainer = document.getElementById('selected-products');
         const productCheckboxes = document.querySelectorAll('.product-checkbox');
         // Image Upload Preview
-        const imageInput = document.getElementById('proof-image');
-        const imagePreview = document.getElementById('image-preview');
-        const previewImg = document.getElementById('preview-img');
-        const removeImageBtn = document.getElementById('remove-image');
-        const uploadArea = document.querySelector('.image-preview-area');
+        const fileInput = document.getElementById('proof-files');
+        const filesPreview = document.getElementById('files-preview');
+        const uploadArea = document.querySelector('.file-preview-area');
+        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedFileTypes = [...allowedImageTypes, 'application/pdf'];
+        let files = [];
+
+        const orderImportModal = document.getElementById('orderImportModal');
+        const addOrderBatchBtn = document.getElementById('add-order-batch-btn');
+        const orderImportForm = document.getElementById('orderImportForm');
+        const orderBatchSelect = document.getElementById('order-batch-select');
+        const orderBatchDetails = document.getElementById('order-batch-details');
         // Toggle user details with animation
         viewMoreBtn.addEventListener('click', () => {
             userDetails.classList.toggle('hidden');
@@ -1063,6 +1373,230 @@
             }
         });
 
+        // Handle file input change removeProduct
+        fileInput.addEventListener('change', handleFilesSelect);
+
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFilesSelect({ target: { files: e.dataTransfer.files } });
+            }
+        });
+
+        function handleFilesSelect(e) {
+            const newFiles = Array.from(e.target.files);
+            
+            newFiles.forEach(file => {
+                try {
+                    // Validate file
+                    validateFile(file);
+                    
+                    // Kiểm tra xem file đã tồn tại chưa
+                    if (!files.some(f => f.name === file.name)) {
+                        files.push(file);
+                        createPreviewElement(file);
+                    }
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            updateFileInput();
+        }
+
+        function validateFile(file) {
+            // Check file type
+            if (!file.type.match('image.*') && file.type !== 'application/pdf') {
+                throw new Error('Chỉ chấp nhận file ảnh hoặc PDF!');
+            }
+
+            // Check file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('Kích thước file không được vượt quá 5MB!');
+            }
+
+            return true;
+        }
+
+        function updateFilePreview(files) {
+            filesPreview.innerHTML = ''; // Clear existing previews
+            files.forEach(file => createPreviewElement(file));
+        }
+
+        // Cập nhật hàm createPreviewElement
+        function createPreviewElement(file) {
+            const div = document.createElement('div');
+            div.className = 'file-preview-item';
+            
+            if (file.type.startsWith('image/')) {
+                // For images
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    div.innerHTML = `
+                        <div class="file-preview-content">
+                            <img src="${e.target.result}" alt="${file.name}">
+                            <span class="file-name">${file.name}</span>
+                            <button type="button" class="remove-file" title="Xóa file">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add remove event listener
+                    div.querySelector('.remove-file').addEventListener('click', () => {
+                        const index = files.indexOf(file);
+                        if (index > -1) {
+                            files.splice(index, 1);
+                            div.remove();
+                            updateFileInput();
+                        }
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // For PDFs
+                div.classList.add('pdf-preview');
+                div.innerHTML = `
+                    <div class="file-preview-content">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="file-name">${file.name}</span>
+                        <button type="button" class="remove-file" title="Xóa file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Add remove event listener
+                div.querySelector('.remove-file').addEventListener('click', () => {
+                    const index = files.indexOf(file);
+                    if (index > -1) {
+                        files.splice(index, 1);
+                        div.remove();
+                        updateFileInput();
+                    }
+                });
+            }
+
+            filesPreview.appendChild(div);
+        }
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        }
+
+        // Show modal
+        addOrderBatchBtn.addEventListener('click', () => {
+            orderImportModal.style.display = 'block';
+        });
+
+        // Close modal
+        orderImportModal.querySelector('.close').addEventListener('click', () => {
+            orderImportModal.style.display = 'none';
+        });
+
+        orderImportModal.querySelector('.btn-cancel').addEventListener('click', () => {
+            orderImportModal.style.display = 'none';
+        });
+
+        // Handle form submission
+        orderImportForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(orderImportForm);
+            try {
+                const response = await fetch('/admin/order-imports', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Add new option to select
+                    const option = new Option(result.data.order_name, result.data.id);
+                    orderBatchSelect.add(option);
+                    orderBatchSelect.value = result.data.id;
+
+                    // Update details
+                    orderBatchDetails.innerHTML = `
+                        <p><strong>Mã lô:</strong> ${result.data.order_code}</p>
+                        <p><strong>Tên lô:</strong> ${result.data.order_name}</p>
+                        <p><strong>Ghi chú:</strong> ${result.data.notes || 'Không có'}</p>
+                    `;
+                    orderBatchDetails.classList.remove('hidden');
+
+                    // Close modal and reset form
+                    orderImportModal.style.display = 'none';
+                    orderImportForm.reset();
+
+                    alert('Thêm lô hàng thành công!');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra: ' + error.message);
+            }
+        });
+
+
+        // Handle select change
+        orderBatchSelect.addEventListener('change', async (e) => {
+            const selectedId = e.target.value;
+            if (!selectedId) {
+                orderBatchDetails.classList.add('hidden');
+                return;
+            }
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.classList.contains('expired-batch')) {
+                alert('Không thể chọn lô hàng đã hết hạn!');
+                this.value = ''; // Reset về giá trị mặc định
+            }
+
+            try {
+                const response = await fetch(`/admin/order-imports/${selectedId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    orderBatchDetails.innerHTML = `
+                        <p><strong>Mã lô:</strong> ${result.data.order_code}</p>
+                        <p><strong>Tên lô:</strong> ${result.data.order_name}</p>
+                        <p><strong>Ghi chú:</strong> ${result.data.notes || 'Không có'}</p>
+                    `;
+                    orderBatchDetails.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Không thể tải thông tin lô hàng');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target == orderImportModal) {
+                orderImportModal.style.display = 'none';
+            }
+        });
+
         // Show/hide product modal
         addProductBtn.addEventListener('click', () => {
             productModal.style.display = 'block';
@@ -1132,6 +1666,8 @@
             });
         });
 
+        let selectedProductCount = 0;
+
         function addSelectedProduct(productId, productName) {
             const productElement = document.querySelector(`#product-${productId}`);
             if (!productElement) {
@@ -1147,6 +1683,8 @@
                 return;
             }
 
+            let newProductsAdded = 0;
+
             selectedVariants.forEach(variantCheckbox => {
                 const variantId = variantCheckbox.dataset.variantId;
                 
@@ -1155,6 +1693,8 @@
                     console.log('Biến thể đã được thêm:', variantId);
                     return;
                 }
+
+                newProductsAdded++;
 
                 const productHtml = `
                     <div class="selected-product-item" data-product-id="${productId}" data-variant-id="${variantId}">
@@ -1202,24 +1742,52 @@
                 }
             });
 
+            // Cập nhật tổng số sản phẩm đã chọn
+            selectedProductCount += newProductsAdded;
+            updateProductCount();
             // Đóng modal sau khi thêm thành công
             productModal.style.display = 'none';
         }
 
+        // Thêm function cập nhật hiển thị số lượng
+        function updateProductCount() {
+            // Kiểm tra xem element hiển thị số lượng đã tồn tại chưa
+            let countElement = document.getElementById('selected-product-count');
+            if (!countElement) {
+                // Nếu chưa có, tạo mới element
+                countElement = document.createElement('div');
+                countElement.id = 'selected-product-count';
+                countElement.className = 'selected-product-count';
+                // Thêm vào trước selectedProductsContainer
+                selectedProductsContainer.parentNode.insertBefore(countElement, selectedProductsContainer);
+            }
+            
+            // Cập nhật nội dung
+            countElement.innerHTML = `
+                <div class="count-badge">
+                    <i class="fas fa-box"></i>
+                    Số sản phẩm đã chọn: <strong>${selectedProductCount}</strong>
+                </div>
+            `;
+        }
+
+
         function removeProduct(button) {
             const productItem = button.closest('.selected-product-item');
-            const variantId = button.dataset.variantId;
+            const productId = productItem.dataset.productId;
             
-            // Bỏ check checkbox của variant trong modal
-            const variantCheckbox = document.querySelector(`.variant-checkbox[data-variant-id="${variantId}"]`);
-            if (variantCheckbox) {
-                variantCheckbox.checked = false;
+            // Uncheck checkbox trong modal
+            const checkbox = document.querySelector(`#product-${productId}`);
+            if (checkbox) {
+                checkbox.checked = false;
             }
             
             productItem.remove();
+            selectedProductCount--; // Giảm số lượng
+            updateProductCount(); // Cập nhật hiển thị
         }
 
-       // Cập nhật lại event listener cho product checkbox
+       // Cập nhật lại event listener cho imageInput
         document.querySelectorAll('.product-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const productItem = this.closest('.product-item');
@@ -1240,7 +1808,7 @@
             });
         });
 
-        // Handle drag and drop
+        // Handle drag and drop handleFilesSelect
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('drag-over');
@@ -1257,21 +1825,6 @@
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             handleImageUpload(e.dataTransfer.files[0]);
         }
-    });
-
-    // Handle file input change
-    imageInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            handleImageUpload(this.files[0]);
-        }
-    });
-
-    // Remove image
-    removeImageBtn.addEventListener('click', () => {
-        imageInput.value = '';
-        imagePreview.classList.add('hidden');
-        previewImg.src = '#';
-        uploadArea.querySelector('.upload-label').style.display = 'flex';
     });
 
     function handleImageUpload(file) {
@@ -1322,17 +1875,12 @@
             });
         });
 
-        function removeProduct(button) {
-            const productItem = button.closest('.selected-product-item');
-            const productId = productItem.dataset.productId;
-            
-            // Uncheck the checkbox in the modal
-            const checkbox = document.querySelector(`#product-${productId}`);
-            if (checkbox) {
-                checkbox.checked = false;
-            }
-            
-            productItem.remove();
+        function cleanup() {
+            // Remove event listeners when component is unmounted
+            window.removeEventListener('click', handleWindowClick);
+            uploadArea.removeEventListener('dragover', handleDragOver);
+            uploadArea.removeEventListener('dragleave', handleDragLeave);
+            uploadArea.removeEventListener('drop', handleDrop);
         }
 
         // Search functionality
@@ -1354,102 +1902,100 @@
         const importForm = document.getElementById('importForm');
     
         importForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
-        const importDate = document.getElementById('import-date').value;
-        const supplierId = document.getElementById('supplier-select').value;
-        const imageFile = document.getElementById('proof-image').files[0];
-        const selectedProducts = document.querySelectorAll('.selected-product-item');
+        try {
+            const importDate = document.getElementById('import-date').value;
+            const supplierId = document.getElementById('supplier-select').value;
+            const orderImportId = document.getElementById('order-batch-select').value;
+            const proofFiles = document.getElementById('proof-files').files; // FileList object
+            const selectedProducts = document.querySelectorAll('.selected-product-item');
 
-        // Validations
-        if (!importDate) {
-            alert('Vui lòng chọn ngày nhập hàng!');
-            return;
-        }
+            // Validate required fields
+            if (!importDate) {
+                alert('Vui lòng chọn ngày nhập hàng!');
+                return;
+            }
 
-        if (!supplierId) {
-            alert('Vui lòng chọn nhà cung cấp!');
-            return;
-        }
+            if (!supplierId) {
+                alert('Vui lòng chọn nhà cung cấp!');
+                return;
+            }
 
-        if (!imageFile) {
-            alert('Vui lòng chọn ảnh chứng từ!');
-            return;
-        }
+            if (!orderImportId) {
+                alert('Vui lòng chọn lô hàng!');
+                return;
+            }
 
-        if (selectedProducts.length === 0) {
-            alert('Vui lòng chọn ít nhất một sản phẩm!');
-            return;
-        }
+            // Sửa lại phần kiểm tra files
+            if (!proofFiles || proofFiles.length === 0) {
+                alert('Vui lòng chọn ít nhất một file chứng từ!');
+                return;
+            }
 
-        const formData = new FormData();
-        formData.append('import_date', importDate);
-        formData.append('supplier_id', supplierId);
-        formData.append('proof_image', imageFile);
+            // Build products data
+            const productsData = {};
+            selectedProducts.forEach(product => {
+                const productId = product.dataset.productId;
+                const variantId = product.dataset.variantId;
+                const priceInput = product.querySelector('input[name$="[price]"]');
+                const quantityInput = product.querySelector('input[name$="[quantity]"]');
+                const manufactureDateInput = product.querySelector('input[name$="[manufacture_date]"]');
+                const expiryDateInput = product.querySelector('input[name$="[expiry_date]"]');
 
-        // Build products data
-        const productsData = {};
-        selectedProducts.forEach(product => {
-            const productId = product.dataset.productId;
-            const variantId = product.dataset.variantId;
-            const priceInput = product.querySelector('input[name$="[price]"]');
-            const quantityInput = product.querySelector('input[name$="[quantity]"]');
-            const manufactureDateInput = product.querySelector('input[name$="[manufacture_date]"]');
-            const expiryDateInput = product.querySelector('input[name$="[expiry_date]"]');
+                if (!productsData[productId]) {
+                    productsData[productId] = {
+                        variants: {}
+                    };
+                }
 
-            if (!productsData[productId]) {
-                productsData[productId] = {
-                    variants: {}
+                // Validate required inputs
+                if (!priceInput.value || !quantityInput.value || 
+                    !manufactureDateInput.value || !expiryDateInput.value) {
+                    throw new Error('Vui lòng điền đầy đủ thông tin cho tất cả sản phẩm');
+                }
+
+                productsData[productId].variants[variantId] = {
+                    price: parseFloat(priceInput.value),
+                    quantity: parseInt(quantityInput.value),
+                    manufacture_date: manufactureDateInput.value,
+                    expiry_date: expiryDateInput.value
                 };
+            });
+
+            const formData = new FormData();
+            formData.append('import_date', importDate);
+            formData.append('supplier_id', supplierId);
+            formData.append('order_import_id', orderImportId);
+            formData.append('products', JSON.stringify(productsData));
+
+            // Append files
+            for (let i = 0; i < proofFiles.length; i++) {
+                formData.append('proof_files[]', proofFiles[i]);
             }
 
-            // Validate required inputs
-            if (!priceInput.value || !quantityInput.value || 
-                !manufactureDateInput.value || !expiryDateInput.value) {
-                throw new Error('Vui lòng điền đầy đủ thông tin cho tất cả sản phẩm');
+            const response = await fetch(importForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Nhập hàng thành công!');
+                    window.location.href = '/admin/imports';
+                } else {
+                    throw new Error(result.message || 'Có lỗi xảy ra');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra: ' + error.message);
             }
-
-            productsData[productId].variants[variantId] = {
-                price: parseFloat(priceInput.value),
-                quantity: parseInt(quantityInput.value),
-                manufacture_date: manufactureDateInput.value,
-                expiry_date: expiryDateInput.value
-            };
-        });
-
-        // Convert products data to JSON string and append to formData
-        formData.append('products', JSON.stringify(productsData));
-
-        // Debug log
-        console.log('Sending data:', {
-            import_date: importDate,
-            supplier_id: supplierId,
-            products: productsData
-        });
-
-        const response = await fetch(importForm.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            alert('Nhập hàng thành công!');
-            window.location.href = '/admin/imports';
-        } else {
-            throw new Error(result.message || 'Có lỗi xảy ra');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra: ' + error.message);
-    }
-});
+    });
 
 
     });

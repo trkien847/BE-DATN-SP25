@@ -7,6 +7,8 @@
         <thead>
             <tr>
                 <th>Loại biến thể</th>
+                <th>Số lượng biến thể</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
@@ -16,6 +18,14 @@
             @foreach ($groupedAttributes as $name => $group)
                 <tr class="group-header" data-name="{{ $name }}">
                     <td>{{ $name }}</td>
+                    <td>{{ $group->count() }}</td>
+                    <td>
+                        <a href="javascript:void(0)" 
+                        class="btn btn-primary btn-sm ms-2 add-variant-btn" 
+                        data-name="{{ $name }}">
+                            <i class="fas fa-plus"></i> Thêm dữ liệu vào biến thể
+                        </a>
+                    </td>
                 </tr>
                 <tr class="group-details" style="display: none;">
                     <td colspan="5">
@@ -144,6 +154,28 @@
         justify-content: space-between;
         align-items: center;
     }
+
+    .add-variant-btn {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    white-space: nowrap;
+}
+
+.add-variant-btn i {
+    margin-right: 0.25rem;
+}
+
+/* Prevent text selection on group header */
+.group-header {
+    user-select: none;
+}
+
+/* Style for readonly input */
+input[readonly] {
+    background-color: #e9ecef !important;
+    cursor: not-allowed !important;
+    color: #495057 !important;
+}
 </style>
 
 <!-- jQuery và SweetAlert2 -->
@@ -225,6 +257,33 @@ $(document).ready(function() {
         $('#slug').val(slug);
         $('#is_active').val(isActive ? '1' : '0');
         $('#submit-btn').text('Cập nhật');
+        $('#attribute-overlay').fadeIn(300).find('.overlay-content').addClass('active');
+        $('body').addClass('overlay-active');
+    });
+
+    // Add this inside your $(document).ready(function() { ... })
+    $('.add-variant-btn').on('click', function(e) {
+        e.stopPropagation(); // Prevent triggering the group-header click event
+        
+        const attributeName = $(this).data('name');
+        
+        $('#overlay-title').text('Thêm Biến Thể Mới');
+        $('#attribute-form').attr('action', '{{ route('attributes.store') }}');
+        $('#attribute-id').val('');
+        
+        // Set the name field and make it readonly
+        $('#name').val(attributeName).prop('readonly', true);
+        
+        // Reset other fields
+        $('#value').val('viên');
+        $('#slug').val('');
+        $('#is_active').val('1');
+        $('#submit-btn').text('Thêm');
+        
+        // Remove any existing method input
+        $('#attribute-form input[name="_method"]').remove();
+        
+        // Show the overlay
         $('#attribute-overlay').fadeIn(300).find('.overlay-content').addClass('active');
         $('body').addClass('overlay-active');
     });

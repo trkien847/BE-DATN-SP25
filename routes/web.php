@@ -151,6 +151,9 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
   Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
   Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
+
+  Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
+  Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
   //lịch sử mua hàng  order.refund.submit
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
