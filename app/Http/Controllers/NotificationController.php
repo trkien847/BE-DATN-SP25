@@ -2,78 +2,108 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
+use App\Models\ProductImport;
 use Illuminate\Http\Request;
+use DateTime;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class NotificationController extends Controller
 {
-    public function fetchNotifications(Request $request)
+    public function checkNotifications(Request $request)
     {
-        $user = auth()->user();
-        $notifications = $user->unreadNotifications()->get();
+        try {
+            if (!auth()->check() || auth()->user()->role_id != 3) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            $lastChecked = $request->input('last_checked');
+
+            $notifications = ProductImport::with('user')
+                ->where('is_active', 0)
+                ->latest('imported_at')
+                ->get();
+
+
+            $notifications = $notifications->map(function ($import) {
+                $user = $import->user;
+                $importedAt = $import->imported_at instanceof \Carbon\Carbon 
+                    ? $import->imported_at 
+                    : ($import->imported_at ? Carbon::parse($import->imported_at) : null);
+
+                return [
+                    'import_id' => $import->id,
+                    'user_name' => $user ? $user->fullname : 'Unknown User',
+                    'avatar' => $user && $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.jpg'),
+                    'created_at' => $importedAt ? $importedAt->diffForHumans() : 'N/A',
+                    'imported_at' => $importedAt ? $importedAt->toISOString() : null,
+                    'imported_by' => $user ? $user->fullname : 'Unknown User',
+                    'message' => $user ? "{$user->fullname} đang yêu cầu nhập hàng" : "Yêu cầu nhập hàng không xác định",
+                ];
+            });
+
+            $newNotifications = $lastChecked
+                ? $notifications->filter(function ($item) use ($lastChecked) {
+                    try {
+                        return $item['imported_at'] && (new DateTime($item['imported_at'])) > (new DateTime($lastChecked));
+                    } catch (\Exception $e) {
+                        return false;
+                    }
+                })->values()
+                : $notifications;
+
+            $imports = $newNotifications->map(function ($item) {
+                return [
+                    'import_id' => $item['import_id'],
+                    'message' => 'Bạn đang có một đơn hàng chờ xác nhận.',
+                    'imported_at' => $item['imported_at'],
+                    'imported_by' => $item['imported_by'],
+                ];
+            })->toArray();
+
+            return response()->json([
+                'notifications' => $notifications->toArray(),
+                'imports' => $imports
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal Server Error'], 500);
+        }
+    }
+
+
+    public function index()
+    {
+        $notifications = Notification::userOrSystem(Auth::id())
+            ->where('is_read', 0)
+            ->latest()
+            ->get();
+
+        return view('admin.notifications.index', compact('notifications'));
+    }
+
+    public function getNotifications()
+    {
+        $notifications = Notification::userOrSystem(Auth::id())
+            ->where('is_read', 0)
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        $count = $notifications->count();
+
         return response()->json([
+            'count' => $count,
             'notifications' => $notifications->map(function ($notification) {
                 return [
                     'id' => $notification->id,
-                    'message' => $notification->data['message'],
-                    'created_by' => $notification->data['created_by'],
-                    'url' => $notification->data['url'] ?? null,
-                    'created_at' => $notification->created_at->diffForHumans(),
-                    'read_at' => $notification->read_at,
-                    'avatar' => $notification->data['avatar'] ?? null,
+                    'title' => $notification->title,
+                    'content' => $notification->content,
+                    'type' => $notification->type,
+                    'data' => $notification->data,
+                    'is_read' => $notification->is_read,
                 ];
-            }),
+            })->toArray(),
         ]);
-    }
-    public function markAllAsRead()
-    {
-        auth()->user()->unreadNotifications->markAsRead();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'All notifications marked as read'
-        ]);
-    }
-    public function getCount()
-    {
-        $count = auth()->user()->unreadNotifications()->count();
-        return response()->json(['count' => $count]);
-    }
-    public function index()
-    {
-        $notifications = auth()->user()
-            ->notifications()
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        return view('admin.notifications.list', compact('notifications'));
-    }
-    public function markAsRead($id)
-    {
-        $notification = auth()->user()->notifications()->where('id', $id)->first();
-
-        if ($notification) {
-            $notification->markAsRead();
-            return response()->json(['success' => true]);
-        }
-
-        return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
-    }
-    public function clearAllRead()
-    {
-        try {
-            auth()->user()->notifications()
-                ->whereNotNull('read_at')
-                ->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xóa tất cả thông báo đã đọc'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
-        }
     }
 }

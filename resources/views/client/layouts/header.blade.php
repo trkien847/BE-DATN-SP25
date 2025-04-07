@@ -18,7 +18,7 @@
                                 <i class="icon-call"></i>
                             </div>
                             <div class="header-feature-info">
-                                <h6>Phone</h6>
+                                <h6>Điện thoại</h6>
                                 <p><a href="tel:0123456789">+0123-456-789</a></p>
                             </div>
                         </div>
@@ -85,14 +85,14 @@
                                             <a href="#"><i class="icon-user"></i></a>
                                             <ul>
                                                 @if (Auth::guest())
-                                                    <li><a href="{{ route('login') }}">Sign in</a></li>
-                                                    <li><a href="{{ route('register') }}">Register</a></li>
+                                                    <li><a href="{{ route('login') }}">Đăng nhập</a></li>
+                                                    <li><a href="{{ route('register') }}">Đăng ký</a></li>
                                                 @endif
                                             
                                                 @if (Auth::check())
                                                 
-                                                    <li><a href="{{ route('profile') }}">My Account</a></li>
-                                                    <li><a href="{{ route('logout') }}">Logout</a></li>
+                                                    <li><a href="{{ route('profile') }}">Tài khoản</a></li>
+                                                    <li><a href="{{ route('logout') }}">Đăng xuất</a></li>
                                                 @endif
                                             </ul>                                            
                                         </li>
@@ -107,7 +107,7 @@
                                                 <i class="icon-shopping-cart"></i>
                                                 <sup>{{ $carts->count() }}</sup>
                                             </span>
-                                            <h6><span>Your Cart</span> <span
+                                            <h6><span>Giỏ hàng</span> <span
                                                 class="ltn__secondary-color" id="cart-subtotal">{{ number_format($subtotal, 0) }}đ</span>
                                             </h6>
                                         </a>
@@ -129,7 +129,7 @@
                 <div class="col header-menu-column justify-content-center">
                     <div class="sticky-logo">
                         <div class="site-logo">
-                            <a href="index.html"><img src="{{ asset('client/img/logo-3.p') }}ng" alt="Logo"></a>
+                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo-3.p') }}ng" alt="Logo"></a>
                         </div>
                     </div>
                     <div class="header-menu header-menu-2">
@@ -138,7 +138,7 @@
                                 <ul>
                                     <li><a href="{{ route('index') }}">Trang chủ</a>
                                     </li>
-                                    <li class="menu-icon"><a href="#">About</a>
+                                    {{-- <li class="menu-icon"><a href="#">About</a>
                                         <ul>
                                             <li><a href="about.html">About</a></li>
                                             <li><a href="service.html">Services</a></li>
@@ -151,37 +151,10 @@
                                             <li><a href="faq.html">FAQ</a></li>
                                             <li><a href="locations.html">Google Map Locations</a></li>
                                         </ul>
-                                    </li>
-                                    <li class="menu-icon"><a href="#">Shop</a>
-                                        <ul>
-                                            <li><a href="shop.html">Shop</a></li>
-                                            <li><a href="shop-grid.html">Shop Grid</a></li>
-                                            <li><a href="shop-left-sidebar.html">Shop Left sidebar</a></li>
-                                            <li><a href="shop-right-sidebar.html">Shop right sidebar</a></li>
-                                            <li><a href="product-details.html">Shop details </a></li>
-                                            <li><a href="#">Other Pages <span class="float-right">>></span></a>
-                                                <ul>
-                                                    <li><a href="cart.html">Cart</a></li>
-                                                    <li><a href="wishlist.html">Wishlist</a></li>
-                                                    <li><a href="checkout.html">Checkout</a></li>
-                                                    <li><a href="order-tracking.html">Order Tracking</a></li>
-                                                    <li><a href="account.html">My Account</a></li>
-                                                    <li><a href="login.html">Sign in</a></li>
-                                                    <li><a href="register.html">Register</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="menu-icon"><a href="#">News</a>
-                                        <ul>
-                                            <li><a href="blog.html">News</a></li>
-                                            <li><a href="blog-grid.html">News Grid</a></li>
-                                            <li><a href="blog-left-sidebar.html">News Left sidebar</a></li>
-                                            <li><a href="blog-right-sidebar.html">News Right sidebar</a></li>
-                                            <li><a href="blog-details.html">News details</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="menu-icon"><a href="#">Pages</a>
+                                    </li> --}}
+                                    <li><a href="{{ route('category.show') }}">Sản phẩm</a>
+                                    <li><a href="{{ route('orderHistory') }}">Lịch sử mua hàng</a></li>
+                                    {{-- <li class="menu-icon"><a href="#">Pages</a>
                                         <ul class="mega-menu">
                                             <li><a href="#">Inner Pages</a>
                                                 <ul>
@@ -219,7 +192,7 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li><a href="contact.html">Contact</a></li>
+                                    <li><a href="contact.html">Contact</a></li> --}}
                                 </ul>
                             </div>
                         </nav>

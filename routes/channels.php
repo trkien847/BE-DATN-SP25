@@ -20,3 +20,7 @@ Broadcast::channel('notifications', function ($user) {
     return $user !== null;
 });
 
+Broadcast::channel('notifications.{userId}.admin', function ($user, $userId) {
+    $result = auth()->check() && (int) $user->id === (int) $userId && $user->role_id === 3;
+    return $result;
+});

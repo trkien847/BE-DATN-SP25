@@ -7,7 +7,155 @@
     <!-- Utilize Mobile Menu Start -->
     @include('client.components.MobileMenuStart')
     <!-- Utilize Mobile Menu End -->
+    <style>
+        .product-image {
+            width: 250px;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
 
+        .product-image:hover {
+            transform: scale(1.1);
+        }
+
+        a {
+            display: inline-block;
+            overflow: visible;
+        }
+
+        .section-title {
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .char {
+            display: inline-block;
+            font-size: 2.5rem;
+            color: #000;
+            opacity: 1;
+            animation: fadeOut 2s ease forwards,
+                fadeInFromBottom 2s ease forwards 2s,
+                greenFill 2s ease forwards 4s;
+        }
+
+        .section-title .char:nth-child(1) {
+            animation-delay: 0s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(2) {
+            animation-delay: 0.1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(3) {
+            animation-delay: 0.2s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(4) {
+            animation-delay: 0.3s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(5) {
+            animation-delay: 0.4s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(6) {
+            animation-delay: 0.5s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(7) {
+            animation-delay: 0.6s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(8) {
+            animation-delay: 0.7s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(9) {
+            animation-delay: 0.8s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(10) {
+            animation-delay: 0.9s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(11) {
+            animation-delay: 1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(12) {
+            animation-delay: 1.1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(13) {
+            animation-delay: 1.2s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(14) {
+            animation-delay: 1.3s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(15) {
+            animation-delay: 1.4s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(16) {
+            animation-delay: 1.5s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(17) {
+            animation-delay: 1.6s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(18) {
+            animation-delay: 1.7s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(19) {
+            animation-delay: 1.8s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(20) {
+            animation-delay: 1.9s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(21) {
+            animation-delay: 2s, 2s, 4s;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeInFromBottom {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes greenFill {
+            0% {
+                color: green;
+            }
+
+            100% {
+                color: #000;
+            }
+        }
+    </style>
     <div class="ltn__utilize-overlay"></div>
 
     <!-- SLIDER AREA START (slider-3) -->
@@ -18,7 +166,7 @@
                     <!-- CATEGORY-MENU-LIST START -->
                     <div class="ltn__category-menu-wrap">
                         <div class="ltn__category-menu-title">
-                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">categories</h2>
+                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">Danh mục</h2>
                         </div>
                         <div class="ltn__category-menu-toggle ltn__one-line-active">
                             <ul>
@@ -47,10 +195,10 @@
                                 <!-- Submenu Column - 4 -->
                                 <li class="ltn__category-menu-more-item-parent">
                                     <a class="rx-default">
-                                        More categories <span class="cat-thumb  icon-plus"></span>
+                                        Xem thêm danh mục <span class="cat-thumb  icon-plus"></span>
                                     </a>
                                     <a class="rx-show">
-                                        close menu <span class="cat-thumb  icon-remove"></span>
+                                        Đóng menu <span class="cat-thumb  icon-remove"></span>
                                     </a>
                                 </li>
                                 <!-- Single menu end -->
@@ -63,32 +211,32 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="img/slider/61.jpg">
+                            data-bs-bg="https://i.makeagif.com/media/1-10-2021/gwZO0J.gif">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
+
                                         <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
                                             <div class="slide-item-info">
                                                 <div class="slide-item-info-inner ltn__slide-animation">
                                                     <h5
                                                         class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                        Up To 50% Off Today Only!</h5>
+                                                        Giảm giá đến 50% chỉ hôm nay!</h5>
                                                     <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
                                                     </h1>
-                                                    <h5 class="color-orange  animated">Starting at &16.99</h5>
+                                                    <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
                                                     <div class="slide-brief animated d-none">
-                                                        <p>Predictive analytics is drastically changing the real
-                                                            estate industry. In the past, providing data for quick
-                                                        </p>
+                                                        <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                            phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
                                                     </div>
                                                     <div class="btn-wrapper  animated">
-                                                        <a href="shop.html"
-                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                            now</a>
+                                                        <a href="{{ route('category.show') }}"
+                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
                                                 <!-- <a href="shop.html"><img src="{{ asset('client/img/product/1.png') }}" alt="Image"></a> -->
@@ -100,7 +248,7 @@
                         </div>
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="img/slider/62.jpg">
+                            data-bs-bg="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGFuYnU1YjU5MmV4ZHFkdHo4NXU0NnpweG5oNzFvajhpcGxrZTN4ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l36kU80xPf0ojG0Erg/giphy.gif">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
@@ -109,7 +257,7 @@
                                                 <div class="slide-item-info-inner ltn__slide-animation">
                                                     <h4
                                                         class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                        Welcome to our shop</h4>
+                                                        Chào mừng đến với cửa hàng của chúng tôi</h4>
                                                     <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
                                                     </h1>
                                                     <div class="slide-brief animated d-none">
@@ -149,38 +297,29 @@
                     <div class="ltn__feature-item-box-wrap ltn__feature-item-box-wrap-2 ltn__border section-bg-1">
                         <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/8-t') }}rolley.svg" alt="#">
+                                <img src="{{ asset('client/img/icons/svg/8-t') }}rolley.svg" alt="Icon vận chuyển">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>Free shipping</h4>
-                                <p>On all orders over $49.00</p>
+                                <h4>Miễn phí vận chuyển</h4>
+                                <p>Cho đơn hàng trên 1.000.000đ</p>
                             </div>
                         </div>
                         <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/9-m') }}oney.svg" alt="#">
+                                <img src="{{ asset('client/img/icons/svg/9-m') }}oney.svg" alt="Icon hoàn tiền">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>15 days returns</h4>
-                                <p>Moneyback guarantee</p>
+                                <h4>Đổi trả trong 15 ngày</h4>
+                                <p>Đảm bảo hoàn tiền</p>
                             </div>
                         </div>
                         <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/10-') }}credit-card.svg" alt="#">
+                                <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="Icon quà tặng">
                             </div>
                             <div class="ltn__feature-info">
-                                <h4>Secure checkout</h4>
-                                <p>Protected by Paypal</p>
-                            </div>
-                        </div>
-                        <div class="ltn__feature-item ltn__feature-item-8">
-                            <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="#">
-                            </div>
-                            <div class="ltn__feature-info">
-                                <h4>Offer & gift here</h4>
-                                <p>On all orders over</p>
+                                <h4>Ưu đãi & quà tặng</h4>
+                                <p>Cho mọi đơn hàng</p>
                             </div>
                         </div>
                     </div>
@@ -197,8 +336,20 @@
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2--- text-center">
                         <!-- <h6 class="section-subtitle ltn__secondary-color">// Cars</h6> -->
-                        <h1 class="section-title">Our Products</h1>
-                        <p>A highly efficient slip-ring scanner for today's diagnostic requirements.</p>
+                        <h1 class="section-title">
+                            <span class="char">S</span><span class="char">ả</span><span class="char">n</span>
+                            <span class="char"> </span>
+                            <span class="char">p</span><span class="char">h</span><span class="char">ẩ</span><span
+                                class="char">m</span>
+                            <span class="char"> </span>
+                            <span class="char">c</span><span class="char">ủ</span><span class="char">a</span>
+                            <span class="char"> </span>
+                            <span class="char">c</span><span class="char">h</span><span class="char">ú</span><span
+                                class="char">n</span><span class="char">g</span>
+                            <span class="char"> </span>
+                            <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
+                        </h1>
+                        <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
                     </div>
                     <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                         <div class="nav">
@@ -224,7 +375,7 @@
                                                     <div class="product-img">
                                                         <a href="{{ route('products.productct', $product->id) }}">
                                                             <img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                                alt="{{ $product->name }}">
+                                                                alt="{{ $product->name }}" class="product-image">
                                                         </a>
                                                         <div class="product-badge">
                                                             <ul>
@@ -280,7 +431,6 @@
                                                                 <span>{{ number_format($regularPrice) }}đ</span>
                                                             @endif
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -356,16 +506,19 @@
                 <div class="col-lg-5 col-md-6 col-sm-8">
                     <div class="call-to-action-inner text-color-white--- text-center---">
                         <div class="section-title-area ltn__section-title-2--- text-center---">
-                            <h6 class="ltn__secondary-color">Todays Hot Offer</h6>
-                            <h1 class="section-title">Buy all your medicines <br> at 50% offer</h1>
-                            <p>Get extra cashback with great deals and discounts </p>
+                            <h6 class="ltn__secondary-color">Ưu đãi hot hôm nay</h6>
+                            <h1 class="section-title">Mua thuốc với<br>giá giảm 50%</h1>
+                            <p>Nhận thêm tiền hoàn lại với các ưu đãi và giảm giá đặc biệt</p>
                         </div>
                         <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
                         </div>
                         <div class="btn-wrapper animated">
-                            <a href="shop.html" class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop now</a>
-                            <a href="shop.html" class="ltn__secondary-color text-decoration-underline">Deal of
-                                The Day</a>
+                            <a href="{{ route('category.show') }}"
+                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua
+                                ngay</a>
+                            <a href="{{ route('category.show') }}"
+                                class="ltn__secondary-color text-decoration-underline">Ưu đãi
+                                trong ngày</a>
                         </div>
                     </div>
                 </div>
@@ -380,7 +533,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Best Selling Item</h1>
+                        <h1 class="section-title">Sản phẩm bán chạy</h1>
                     </div>
                 </div>
             </div>
@@ -458,7 +611,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Featured Products</h1>
+                        <h1 class="section-title">Sản phẩm nổi bật</h1>
                     </div>
                 </div>
             </div>
@@ -468,7 +621,7 @@
                     <div class="col-lg-4 col-md-6 col-12">
                         <div class="ltn__small-product-item">
                             <div class="small-product-item-img">
-                                <a href="product-details.html"><img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                <a href="{{ route('products.productct', $product->id) }}"><img src="{{ asset('upload/' . $product->thumbnail) }}"
                                         alt="Image"></a>
                             </div>
                             <div class="small-product-item-info">
@@ -481,13 +634,18 @@
                                     <li><a href="#"><i class="far fa-star"></i></a></li>
                                 </ul>
                             </div> --}}
-                                <h2 class="product-title"><a href="product-details.html">{{ $product->name }}</a></h2>
+                                <h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2>
                                 <div class="product-price">
-                                    @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                        <span>{{ number_format($product->sale_price) }}đ</span>
-                                        <del>{{ number_format($product->sell_price) }}đ</del>
+                                    @php
+                                        $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
+                                        $regularPrice = $product->variants->min('price');
+                                    @endphp
+
+                                    @if (!empty($salePrice) && $salePrice > 0)
+                                        <span>{{ number_format($salePrice) }}đ</span>
+                                        <del>{{ number_format($regularPrice) }}đ</del>
                                     @else
-                                        <span>{{ number_format($product->sell_price) }}đ</span>
+                                        <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
                                 </div>
                             </div>
@@ -506,8 +664,8 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h6 class="section-subtitle ltn__secondary-color">Testimonials</h6>
-                        <h1 class="section-title">Clients Feedbacks<span>.</span></h1>
+                        <h6 class="section-subtitle ltn__secondary-color">Đánh giá từ khách hàng</h6>
+                        <h1 class="section-title">Phản hồi của khách hàng<span>.</span></h1>
                     </div>
                 </div>
             </div>
@@ -515,13 +673,13 @@
                 <div class="col-lg-12">
                     <div class="ltn__testimonial-item ltn__testimonial-item-4">
                         <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/6') }}.jpg" alt="#">
+                            <img src="{{ asset('client/img/testimonial/6') }}.jpg" alt="Ảnh khách hàng">
                         </div>
                         <div class="ltn__testimoni-info">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipi sicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. </p>
-                            <h4>Rosalina D. William</h4>
-                            <h6>Founder</h6>
+                            <p>Tôi rất hài lòng với chất lượng sản phẩm và dịch vụ. Đội ngũ nhân viên nhiệt tình,
+                                tư vấn chuyên nghiệp giúp tôi chọn được sản phẩm phù hợp.</p>
+                            <h4>Nguyễn Thị Hương</h4>
+                            <h6>Khách hàng thân thiết</h6>
                         </div>
                         <div class="ltn__testimoni-bg-icon">
                             <i class="far fa-comments"></i>
@@ -531,13 +689,13 @@
                 <div class="col-lg-12">
                     <div class="ltn__testimonial-item ltn__testimonial-item-4">
                         <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/7') }}.jpg" alt="#">
+                            <img src="{{ asset('client/img/testimonial/7') }}.jpg" alt="Ảnh khách hàng">
                         </div>
                         <div class="ltn__testimoni-info">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipi sicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. </p>
-                            <h4>Rosalina D. William</h4>
-                            <h6>Founder</h6>
+                            <p>Sản phẩm chính hãng, giá cả hợp lý. Đặc biệt ấn tượng với chính sách bảo hành và
+                                chăm sóc khách hàng sau bán hàng rất tốt.</p>
+                            <h4>Trần Văn Nam</h4>
+                            <h6>Khách hàng thường xuyên</h6>
                         </div>
                         <div class="ltn__testimoni-bg-icon">
                             <i class="far fa-comments"></i>
@@ -547,52 +705,19 @@
                 <div class="col-lg-12">
                     <div class="ltn__testimonial-item ltn__testimonial-item-4">
                         <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/1') }}.jpg" alt="#">
+                            <img src="{{ asset('client/img/testimonial/1') }}.jpg" alt="Ảnh khách hàng">
                         </div>
                         <div class="ltn__testimoni-info">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipi sicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. </p>
-                            <h4>Rosalina D. William</h4>
-                            <h6>Founder</h6>
+                            <p>Mua hàng online rất thuận tiện, giao hàng nhanh chóng. Nhân viên tư vấn nhiệt tình,
+                                giải đáp mọi thắc mắc của tôi.</p>
+                            <h4>Lê Thị Minh</h4>
+                            <h6>Khách hàng mới</h6>
                         </div>
                         <div class="ltn__testimoni-bg-icon">
                             <i class="far fa-comments"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-12">
-                    <div class="ltn__testimonial-item ltn__testimonial-item-4">
-                        <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/2') }}.jpg" alt="#">
-                        </div>
-                        <div class="ltn__testimoni-info">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipi sicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. </p>
-                            <h4>Rosalina D. William</h4>
-                            <h6>Founder</h6>
-                        </div>
-                        <div class="ltn__testimoni-bg-icon">
-                            <i class="far fa-comments"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="ltn__testimonial-item ltn__testimonial-item-4">
-                        <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/5') }}.jpg" alt="#">
-                        </div>
-                        <div class="ltn__testimoni-info">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipi sicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. </p>
-                            <h4>Rosalina D. William</h4>
-                            <h6>Founder</h6>
-                        </div>
-                        <div class="ltn__testimoni-bg-icon">
-                            <i class="far fa-comments"></i>
-                        </div>
-                    </div>
-                </div>
-                <!--  -->
             </div>
         </div>
     </div>
@@ -604,183 +729,116 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2--- text-center">
-                        <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">News & Blogs</h6>
-                        <h1 class="section-title">Leatest News Feeds</h1>
+                        <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">Tin tức & Bài viết</h6>
+                        <h1 class="section-title">Bài viết mới nhất</h1>
                     </div>
                 </div>
             </div>
-            <div class="row  ltn__blog-slider-one-active slick-arrow-1 ltn__blog-item-3-normal">
+            <div class="row ltn__blog-slider-one-active slick-arrow-1 ltn__blog-item-3-normal">
                 <!-- Blog Item -->
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
-                                    alt="Blog Image"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
                                 <ul>
                                     <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>by: Admin</a>
+                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
                                     </li>
                                     <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Decorate</a>
+                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                     </li>
                                 </ul>
                             </div>
-                            <h3 class="ltn__blog-title"><a href="blog-details.html">10 Brilliant Ways To
-                                    Decorate Your Home</a></h3>
+                            <h3 class="ltn__blog-title">
+                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                            </h3>
                             <div class="ltn__blog-meta-btn">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date"><i class="far fa-calendar-alt"></i>June 24,
-                                            2021</li>
+                                        <li class="ltn__blog-date">
+                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Read more</a>
+                                    <a href="blog-details.html">Xem thêm</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Blog Item -->
+                <!-- Thêm các blog item khác tương tự -->
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/2.jpg') }}"
-                                    alt="#"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
                                 <ul>
                                     <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>by: Admin</a>
+                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
                                     </li>
                                     <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Interior</a>
+                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                     </li>
                                 </ul>
                             </div>
-                            <h3 class="ltn__blog-title"><a href="blog-details.html">The Most Inspiring Interior
-                                    Design Of 2021</a></h3>
+                            <h3 class="ltn__blog-title">
+                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                            </h3>
                             <div class="ltn__blog-meta-btn">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date"><i class="far fa-calendar-alt"></i>July 23,
-                                            2021</li>
+                                        <li class="ltn__blog-date">
+                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Read more</a>
+                                    <a href="blog-details.html">Xem thêm</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Blog Item -->
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/3.jpg') }}"
-                                    alt="#"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
                                 <ul>
                                     <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>by: Admin</a>
+                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
                                     </li>
                                     <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Estate</a>
+                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                     </li>
                                 </ul>
                             </div>
-                            <h3 class="ltn__blog-title"><a href="blog-details.html">Recent Commercial Real
-                                    Estate Transactions</a></h3>
+                            <h3 class="ltn__blog-title">
+                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                            </h3>
                             <div class="ltn__blog-meta-btn">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date"><i class="far fa-calendar-alt"></i>May 22,
-                                            2021</li>
+                                        <li class="ltn__blog-date">
+                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Read more</a>
+                                    <a href="blog-details.html">Xem thêm</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Blog Item -->
-                <div class="col-lg-12">
-                    <div class="ltn__blog-item ltn__blog-item-3">
-                        <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/4.jpg') }}"
-                                    alt="#"></a>
-                        </div>
-                        <div class="ltn__blog-brief">
-                            <div class="ltn__blog-meta">
-                                <ul>
-                                    <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>by: Admin</a>
-                                    </li>
-                                    <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Room</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <h3 class="ltn__blog-title"><a href="blog-details.html">Renovating a Living Room?
-                                    Experts Share Their Secrets</a></h3>
-                            <div class="ltn__blog-meta-btn">
-                                <div class="ltn__blog-meta">
-                                    <ul>
-                                        <li class="ltn__blog-date"><i class="far fa-calendar-alt"></i>June 24,
-                                            2021</li>
-                                    </ul>
-                                </div>
-                                <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Read more</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Blog Item -->
-                <div class="col-lg-12">
-                    <div class="ltn__blog-item ltn__blog-item-3">
-                        <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/5.jpg') }}"
-                                    alt="#"></a>
-                        </div>
-                        <div class="ltn__blog-brief">
-                            <div class="ltn__blog-meta">
-                                <ul>
-                                    <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>by: Admin</a>
-                                    </li>
-                                    <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Trends</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <h3 class="ltn__blog-title"><a href="blog-details.html">7 home trends that will
-                                    shape your house in 2021</a></h3>
-                            <div class="ltn__blog-meta-btn">
-                                <div class="ltn__blog-meta">
-                                    <ul>
-                                        <li class="ltn__blog-date"><i class="far fa-calendar-alt"></i>June 24,
-                                            2021</li>
-                                    </ul>
-                                </div>
-                                <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Read more</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--  -->
             </div>
         </div>
     </div>
@@ -1035,6 +1093,5 @@
         .modal-product-variants {
             margin: 15px 0;
         }
-        
     </style>
 @endpush

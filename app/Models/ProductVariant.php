@@ -12,7 +12,7 @@ class ProductVariant extends Model
 
     protected $fillable = [
         'product_id',
-        'sku',
+        'import_price',
         'price',
         'sale_price',
         'stock',
@@ -40,5 +40,17 @@ class ProductVariant extends Model
     public function cartVariant()
     {
         return $this->hasMany(Cart::class, 'product_variant_id');
+    }
+
+    public function getVariantName()
+    {
+        $attributeValues = $this->attributeValues()
+            ->with('attribute')
+            ->get()
+            ->map(function ($value) {
+                return $value->attribute->name . ': ' . $value->value;
+            });
+
+        return $attributeValues->join(', ');
     }
 }

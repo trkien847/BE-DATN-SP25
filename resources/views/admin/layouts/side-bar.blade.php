@@ -112,7 +112,7 @@
         <ul class="navbar-nav" id="navbar-nav">
 
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.dashboard.index') }}">
+                <a class="nav-link" href="{{ route('orders.statistics') }}">
                     <span class="nav-icon">
                         <iconify-icon icon="line-md:home-md" width="24" height="24"></iconify-icon>
                     </span>
@@ -154,7 +154,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('products.import') }}">
+                        <a class="dropdown-item" href="{{ route('admin.imports.index') }}">
                             <span class="nav-icon">
                                 <iconify-icon icon="mdi:application-edit-outline" width="24"
                                     height="24"></iconify-icon>
@@ -196,20 +196,14 @@
                     <span class="nav-text"> Quản Lý Người Dùng </span>
                 </a>
             </li>
-            @if (Auth::user()->role_id == 3)
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('notifications.index') }}">
-                        <span class="nav-icon">
-                            <iconify-icon icon="mdi:bell-notification" width="24" height="24"></iconify-icon>
-                        </span>
-                        <span class="nav-text">
-                            Thông báo
-                            <span
-                                class="badge bg-danger rounded-pill">{{ Auth::user()->unreadNotifications->count() }}</span>
-                        </span>
-                    </a>
-                </li>
-            @endif
+            <li class="nav-item">
+    <a class="nav-link" href="{{ route('notifications.index') }}">
+        <span class="nav-icon">
+            <iconify-icon icon="mdi:bell-outline" width="24" height="24"></iconify-icon>
+        </span>
+        <span class="nav-text"> Các thông báo </span>
+    </a>
+</li>
         </ul>
     </div>
 </div>

@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('conversations')) {
-            Schema::create('conversations', function (Blueprint $table) {
-                $table->id();
-                $table->timestamps();
-            });
-        }
+        Schema::table('coupons', function (Blueprint $table) {
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+        });
     }
 
     /**
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conversations');
+        Schema::table('coupons', function (Blueprint $table) {
+            //
+        });
     }
 };

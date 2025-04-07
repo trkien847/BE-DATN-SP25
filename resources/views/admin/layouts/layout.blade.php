@@ -8,9 +8,6 @@
     <!-- Title Meta -->
     <meta charset="utf-8" />
     <title>BeePharmacy | Nhà thuốc cho bạn</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -41,6 +38,7 @@
         }
     </style>
 </head>
+
 
 <body>
 
@@ -203,7 +201,6 @@
 
     </div>
     <!-- END Wrapper -->
-
     <!-- Vendor Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/vendor.js') }}"></script>
 
@@ -386,6 +383,7 @@
     @stack('scripts')
 
 </body>
+
 
 
 <!-- Mirrored from techzaa.in/rasket/admin/apps-invoices.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 14 Jan 2025 16:51:56 GMT -->

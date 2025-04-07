@@ -67,19 +67,19 @@
                                                         class="cart-plus-minus-box" min="1" readonly>
                                                 </div>
                                             </td>
-                                            <td class="cart-product-subtotal">
+                                            <td class="cart-product-subtotal" style="display: none;">
                                                 {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
                                             </td>
 
-                                            <td class="cart-product-attributes">{{ $cart->productVariant->id }}</td>
+                                            <td class="cart-product-attributes" style="display: none;">{{ $cart->productVariant->id }}</td>
 
-                                            <td class="cart-product-attributes-name">
+                                            <td class="cart-product-attributes-name" style="display: none;">
                                                 @foreach ($cart->productVariant->attributeValues as $attrValue)
                                                     {{ $attrValue->attribute->name }}
                                                 @endforeach
                                             </td>
 
-                                            <td class="cart-product-attributes-value">
+                                            <td class="cart-product-attributes-value" style="display: none;">
                                                 @foreach ($cart->productVariant->attributeValues as $attrValue)
                                                     {{ $attrValue->attribute->slug }}{{ $attrValue->value }}
                                                 @endforeach
@@ -512,11 +512,11 @@
             let cartId = $row.data('cart-id');
 
             let html = `
-        <tr data-cart-id="${cartId}">
-            <td><input type="checkbox" class="cart-details-checkbox" checked> ${productName}: ${new Intl.NumberFormat('vi-VN').format(price)}đ x ${quantity}</td>
-            <td>${new Intl.NumberFormat('vi-VN').format(subtotal)}đ</td>
-        </tr>
-    `;
+                <tr data-cart-id="${cartId}">
+                    <td><input type="checkbox" class="cart-details-checkbox" checked> ${productName}: ${new Intl.NumberFormat('vi-VN').format(price)}đ x ${quantity}</td>
+                    <td>${new Intl.NumberFormat('vi-VN').format(subtotal)}đ</td>
+                </tr>
+            `;
             $('#cart-details').append(html);
         }
 
@@ -540,22 +540,34 @@
         }
 
 
-        // Các hàm helper
         function updateCartTotal() {
             let total = 0;
-
-            $(".cart-product-subtotal").each(function() {
-                let value = $(this).text().replace(/[^0-9]/g, ''); // Chỉ giữ lại số
-                let price = value ? parseFloat(value) : 0; // Nếu rỗng thì gán 0 để tránh NaN
-                total += price;
+            let total2 = 0;
+            $("#cart-details tr").each(function() {
+                let subtotal = parseFloat($(this).find('td:last-child').text().replace(/[^0-9]/g, ''));
+                total += subtotal;
             });
 
-            // Kiểm tra nếu total hợp lệ, nếu không gán 0
-            total = isNaN(total) ? 0 : total;
+            $(".cart-product-subtotal").each(function() {
+                let value = $(this).text().replace(/[^0-9]/g, ''); 
+                let price = value ? parseFloat(value) : 0; 
+                total2 += price;
+            });
 
-            $("#cart-subtotal").text(total.toLocaleString('vi-VN') + "đ");
-            $(".mini-cart-sub-total span").text(total.toLocaleString('vi-VN') + "đ");
+            total = isNaN(total) ? 0 : total;
+            total2 = isNaN(total2) ? 0 : total2;
+
+            const discount = $('#discount-row').length ? parseFloat($('#discount-row td:last-child').text().replace(/[^0-9]/g, '')) : 0;
+            total -= discount;
+
             $("#cart-grand-total").text(total.toLocaleString('vi-VN') + "đ");
+            $("#cart-subtotal").text(total2.toLocaleString('vi-VN') + "đ");
+            $(".mini-cart-sub-total span").text(total2.toLocaleString('vi-VN') + "đ");
+            if (total > 0) {
+                $('.theme-btn-1').removeClass('disabled').prop('disabled', false);
+            } else {
+                $('.theme-btn-1').addClass('disabled').prop('disabled', true);
+            }
         }
 
 
@@ -707,6 +719,5 @@
             color: #888;
         }
 
-        .cart-product-subtotal {
     </style>
 @endpush

@@ -183,6 +183,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Prettus\Repository\Providers\RepositoryServiceProvider::class,
         RealRashid\SweetAlert\SweetAlertServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         /*
          * Package Service Providers...
          */

@@ -14,12 +14,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ltn__breadcrumb-inner">
-                        <h1 class="page-title">My Account</h1>
+                        <h1 class="page-title">Tài khoản</h1>
                         <div class="ltn__breadcrumb-list">
                             <ul>
                                 <li><a href="index.html"><span class="ltn__secondary-color"><i
-                                                class="fas fa-home"></i></span> Home</a></li>
-                                <li>My Account</li>
+                                                class="fas fa-home"></i></span> Trang chủ</a></li>
+                                <li>Tài khoản</li>
                             </ul>
                         </div>
                     </div>
@@ -41,15 +41,15 @@
                                 <div class="col-lg-4">
                                     <div class="ltn__tab-menu-list mb-50">
                                         <div class="nav">
-                                            <a class="active show" data-bs-toggle="tab" href="#liton_tab_1_1">Dashboard <i
+                                            <a class="active show" data-bs-toggle="tab" href="#liton_tab_1_1">Tài khoản <i
                                                     class="fas fa-home"></i></a>
-                                            <a data-bs-toggle="tab" href="#liton_tab_1_2">Orders <i
+                                            <a data-bs-toggle="tab" href="#liton_tab_1_2">Đơn hàng <i
                                                     class="fas fa-file-alt"></i></a>
-                                            <a data-bs-toggle="tab" href="#liton_tab_1_4">Address <i
+                                            <a data-bs-toggle="tab" href="#liton_tab_1_4">Địa chỉ <i
                                                     class="fas fa-map-marker-alt"></i></a>
-                                            <a data-bs-toggle="tab" href="#liton_tab_1_5">Account Details <i
+                                            <a data-bs-toggle="tab" href="#liton_tab_1_5">Thông tin tài khoản <i
                                                     class="fas fa-user"></i></a>
-                                            <a href="{{ route('logout') }}">Logout <i class="fas fa-sign-out-alt"></i></a>
+                                            <a href="{{ route('logout') }}">Đăng xuất <i class="fas fa-sign-out-alt"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -57,10 +57,9 @@
                                     <div class="tab-content">
                                         <div class="tab-pane fade active show" id="liton_tab_1_1">
                                             <div class="ltn__myaccount-tab-content-inner">
-                                                <p>Hello <strong>{{ Auth::user()->fullname }}</strong> </p>
-                                                <p>From your account dashboard you can view your <span>recent orders</span>,
-                                                    manage your <span>shipping and billing addresses</span>, and <span>edit
-                                                        your password and account details</span>.</p>
+                                                <p>Xin chào <strong>{{ Auth::user()->fullname }}</strong> </p>
+                                                <p>Từ bảng điều khiển tài khoản của bạn, bạn có thể xem<span>lịch sử mua hàng</span>
+                                                    của bạn <span>, địa chỉ vận chuyển và thanh toán</span>, và <span>chỉnh sửa mật khẩu và thông tin tài khoản</span>.</p>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="liton_tab_1_2">
@@ -69,11 +68,11 @@
                                                     <table class="table">
                                                         <thead>
                                                             <tr>
-                                                                <th>Order</th>
-                                                                <th>Date</th>
-                                                                <th>Status</th>
-                                                                <th>Total</th>
-                                                                <th>Action</th>
+                                                                <th>Đơn hàng</th>
+                                                                <th>Ngày mua</th>
+                                                                <th>Trạng thái</th>
+                                                                <th>Tông tiền</th>
+                                                                <th>Hành động</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -82,21 +81,21 @@
                                                                 <td>Jun 22, 2019</td>
                                                                 <td>Pending</td>
                                                                 <td>$3000</td>
-                                                                <td><a href="cart.html">View</a></td>
+                                                                <td><a href="cart.html">Xem</a></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>2</td>
                                                                 <td>Nov 22, 2019</td>
                                                                 <td>Approved</td>
                                                                 <td>$200</td>
-                                                                <td><a href="cart.html">View</a></td>
+                                                                <td><a href="cart.html">Xem</a></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>3</td>
                                                                 <td>Jan 12, 2020</td>
                                                                 <td>On Hold</td>
                                                                 <td>$990</td>
-                                                                <td><a href="cart.html">View</a></td>
+                                                                <td><a href="cart.html">Xem</a></td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -105,12 +104,12 @@
                                         </div>
                                         <div class="tab-pane fade" id="liton_tab_1_4">
                                             <div class="ltn__myaccount-tab-content-inner">
-                                                <p>The following addresses will be used on the checkout page by default.</p>
+                                                <p>Các địa chỉ sau sẽ được sử dụng trên trang thanh toán theo mặc định.</p>
                                                 <div class="row" id="addressList">
                                                     @foreach (auth()->user()->address as $address)
                                                         <div class="col-md-6 col-12 learts-mb-30"
                                                             id="address-{{ $address->id }}">
-                                                            <h4> Address
+                                                            <h4> Địa chỉ
                                                                 <small><a href="#" class="edit-address"
                                                                         data-id="{{ $address->id }}"
                                                                         data-address="{{ $address->address }}">edit</a></small>
@@ -157,34 +156,32 @@
 
                                                         <div class="row mb-50">
                                                             <div class="col-md-6">
-                                                                <label>Display Name:</label>
+                                                                <label>Tên hiển thị:</label>
                                                                 <input type="text" name="fullname"
                                                                     value="{{ old('display_name', auth()->user()->fullname) }}">
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <label>Display Email:</label>
+                                                                <label>Email:</label>
                                                                 <input type="email" name="email"
                                                                     value="{{ old('email', auth()->user()->email) }}">
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <label>Display Phone-Number:</label>
+                                                                <label>Số điện thoại:</label>
                                                                 <input type="text" name="phone_number"
                                                                     value="{{ old('phone_number', auth()->user()->phone_number) }}">
                                                             </div>
                                                         </div>
 
                                                         <fieldset>
-                                                            <legend>Password change</legend>
+                                                            <legend>Thay đổi mật khẩu</legend>
                                                             <div class="row">
                                                                 <div class="col-md-12">
-                                                                    <label>Current password (leave blank to leave
-                                                                        unchanged):</label>
+                                                                    <label>Mật khẩu hiện tại:</label>
                                                                     <input type="password" name="current_password">
-                                                                    <label>New password (leave blank to leave
-                                                                        unchanged):</label>
+                                                                    <label>Mật khóa mới:</label>
                                                                     <input type="password" name="new_password"
                                                                         id="new_password">
-                                                                    <label>Confirm new password:</label>
+                                                                    <label>Nhập lại mật khẩu:</label>
                                                                     <input type="password"
                                                                         name="new_password_confirmation"
                                                                         id="new_password_confirmation">
@@ -197,8 +194,7 @@
 
                                                         <div class="btn-wrapper">
                                                             <button type="submit"
-                                                                class="btn theme-btn-1 btn-effect-1 text-uppercase">Save
-                                                                Changes</button>
+                                                                class="btn theme-btn-1 btn-effect-1 text-uppercase">Lưu thay đổi</button>
                                                         </div>
                                                     </form>
                                                 </div>
@@ -321,6 +317,23 @@
         });
         document.addEventListener("DOMContentLoaded", function() {
             let csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const addBtn = document.getElementById("addAddressBtn");
+            const cancelBtn = document.getElementById("cancelAddAddress");
+
+            if (addBtn) {
+                addBtn.addEventListener("click", function() {
+                    document.getElementById("addAddressForm").style.display = "block";
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener("click", function() {
+                    document.getElementById("addAddressForm").style.display = "none";
+                    document.getElementById("newAddressForm").reset();
+                    document.getElementById("address_id").value = "";
+                     document.querySelector("#addAddressForm h4").innerText = "Thêm địa chỉ mới";
+                });
+            }
 
             // 🟢 Thêm địa chỉ mới
             document.getElementById("newAddressForm").addEventListener("submit", function(event) {
@@ -369,7 +382,9 @@
                                 attachEditEvent(); // Cập nhật sự kiện edit
                                 attachDeleteEvent(); // Cập nhật sự kiện delete
                             }
+                            document.getElementById("addAddressForm").style.display = "none";
                             document.getElementById("newAddressForm").reset();
+                            document.getElementById("address_id").value = "";
                         }
                     })
                     .catch(error => console.error("Lỗi Fetch:", error));
@@ -385,6 +400,7 @@
 
                         document.getElementById("address_id").value = id;
                         document.getElementById("address").value = address;
+                        document.getElementById("addAddressForm").style.display = "block";
                     });
                 });
             }

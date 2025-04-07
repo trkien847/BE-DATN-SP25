@@ -15,8 +15,6 @@ class Product extends Model
     protected $fillable = [
         'brand_id',
         'name',
-        'name_link',
-        'slug',
         'views',
         'content',
         'thumbnail',
@@ -27,6 +25,8 @@ class Product extends Model
         'sale_price_start_at',
         'sale_price_end_at',
         'is_active',
+        'is_active',
+        'import_at',
     ];
 
     public function brand()
@@ -43,7 +43,10 @@ class Product extends Model
     {
         return $this->belongsToMany(CategoryType::class, 'category_type_product', 'product_id', 'category_type_id');
     }
-
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'product_id');
+    }
     public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'product_id');
@@ -59,7 +62,7 @@ class Product extends Model
     public function attributes()
     {
         return $this->belongsToMany(Attribute::class, 'attribute_value_product', 'product_id', 'attribute_value_id')
-            ->withPivot('attribute_value_id'); // Nếu có dữ liệu trung gian
+            ->withPivot('attribute_value_id');
     }
     public function attributeValues()
     {
