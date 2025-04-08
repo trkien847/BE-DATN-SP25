@@ -18,14 +18,14 @@
                                 <i class="icon-call"></i>
                             </div>
                             <div class="header-feature-info">
-                                <h6>Điện thoại</h6>
+                                <h6>Tư vấn:</h6>
                                 <p><a href="tel:0123456789">+0123-456-789</a></p>
                             </div>
                         </div>
                         <!-- header-search-2 -->
                         <div class="header-search-2">
                             <form id="#123" method="get" action="#">
-                                <input type="text" name="search" value="" placeholder="Search here..." />
+                                <input type="text" name="search" value="" placeholder="Tìm kiếm ở đây..." />
                                 <button type="submit">
                                     <span><i class="icon-search"></i></span>
                                 </button>
@@ -37,7 +37,7 @@
                     <!-- header-options -->
                     <div class="ltn__header-options">
                         <ul>
-                            <li class="d-none">
+                            {{-- <li class="d-none">
                                 <!-- ltn__currency-menu -->
                                 <div class="ltn__drop-menu ltn__currency-menu">
                                     <ul>
@@ -56,7 +56,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                            </li>
+                            </li> --}}
                             <li class="d-lg-none">
                                 <!-- header-search-1 -->
                                 <div class="header-search-wrap">
@@ -69,7 +69,7 @@
                                     <div class="header-search-1-form">
                                         <form id="#" method="get" action="#">
                                             <input type="text" name="search" value=""
-                                                placeholder="Search here..." />
+                                                placeholder="Tìm kiếm ở đây..." />
                                             <button type="submit">
                                                 <span><i class="icon-search"></i></span>
                                             </button>
@@ -190,9 +190,9 @@
                                                         src="{{ asset('client/img/banner/m') }}enu-banner-1.png"
                                                         alt="#"></a>
                                             </li>
-                                        </ul>
+                                        </ul> --}}
                                     </li>
-                                    <li><a href="contact.html">Contact</a></li> --}}
+                                    <li><a href="contact.html">Liên hệ</a></li>
                                 </ul>
                             </div>
                         </nav>

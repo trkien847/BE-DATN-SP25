@@ -21,6 +21,7 @@ use App\Models\Import;
 use App\Models\ImportProduct;
 use App\Models\ImportProductVariant;
 use App\Models\Notification;
+use App\Models\OrderImport;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use Illuminate\Support\Str;
@@ -652,6 +653,49 @@ class ProductController extends Controller
         return redirect()->route('products.list')->with('success', 'Sản phẩm này đã bị cho tham gia trò chơi SAYGEX!');
     }
 
+    public function storeOrder(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'order_name' => 'required|string|max:255',
+                'notes' => 'nullable|string'
+            ]);
+
+            $orderImport = OrderImport::create([
+                'order_code' => 'LOT-' . Str::random(8),
+                'order_name' => $validated['order_name'],
+                'notes' => $validated['notes']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Thêm lô hàng thành công',
+                'data' => $orderImport
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showOrder($id)
+    {
+        try {
+            $orderImport = OrderImport::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'data' => $orderImport
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
 
     public function getProduct($id)
     {
@@ -1085,7 +1129,10 @@ class ProductController extends Controller
             ->with(['variants.attributeValues.attribute', 'attributeValues.attribute'])
             ->get();
         $suppliers = Supplier::all();
-        return view('admin.imports.create', compact('products', 'suppliers'));
+        $orderImport = OrderImport::where(function($query) {
+            $query->where('created_at', '>=', now()->subDays(2));
+        })->get();
+        return view('admin.imports.create', compact('products', 'suppliers', 'orderImport'));
     }
 
     public function showSupplier($id)
@@ -1113,52 +1160,57 @@ class ProductController extends Controller
     {
         try {
             DB::beginTransaction();
-    
+
             // Validate the request
             $validated = $request->validate([
                 'import_date' => 'required|date',
                 'supplier_id' => 'required|exists:suppliers,id',
                 'products' => 'required|json',
-                'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+                'proof_files' => 'required|array',
+                'proof_files.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'order_import_id' => 'required|exists:order_imports,id'
             ]);
-    
+
+            $orderImport = OrderImport::findOrFail($request->order_import_id);
             // Decode products JSON
             $products = json_decode($request->products, true);
-            
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \Exception('Dữ liệu sản phẩm không hợp lệ');
             }
-    
+
             // Handle image upload
-            $imageName = null;
-            if ($request->hasFile('proof_image')) {
-                $image = $request->file('proof_image');
-                $imageName = 'import_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('upload/imports'), $imageName);
+            $fileNames = [];
+            if ($request->hasFile('proof_files')) {
+                foreach ($request->file('proof_files') as $file) {
+                    $fileName = 'import_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('upload/imports'), $fileName);
+                    $fileNames[] = $fileName;
+                }
             }
-    
+
             // Create import record
             $import = Import::create([
-                'import_code' => 'IMP-' . Str::random(8),
+                'import_code' => $orderImport->order_code,
                 'import_date' => $request->import_date,
                 'user_id' => auth()->id(),
                 'supplier_id' => $request->supplier_id,
                 'is_confirmed' => false,
                 'total_quantity' => 0,
                 'total_price' => 0,
-                'proof_image' => $imageName
+                'proof_image' => json_encode($fileNames)
             ]);
-    
+
             $totalImportQuantity = 0;
             $totalImportPrice = 0;
-    
+
             foreach ($products as $productId => $productData) {
                 if (!isset($productData['variants']) || !is_array($productData['variants'])) {
                     throw new \Exception('Dữ liệu biến thể không hợp lệ');
                 }
-    
+
                 $product = Product::findOrFail($productId);
-                
+
                 $importProduct = ImportProduct::create([
                     'import_id' => $import->id,
                     'product_id' => $productId,
@@ -1167,17 +1219,17 @@ class ProductController extends Controller
                     'import_price' => 0,
                     'total_price' => 0
                 ]);
-    
+
                 $productTotalQuantity = 0;
                 $productTotalPrice = 0;
-    
+
                 foreach ($productData['variants'] as $variantId => $variantData) {
                     $variant = ProductVariant::findOrFail($variantId);
-                    
+
                     $quantity = (int)$variantData['quantity'];
                     $price = (float)$variantData['price'];
                     $totalPrice = $quantity * $price;
-    
+
                     ImportProductVariant::create([
                         'import_product_id' => $importProduct->id,
                         'product_variant_id' => $variantId,
@@ -1186,41 +1238,44 @@ class ProductController extends Controller
                         'import_price' => $price,
                         'total_price' => $totalPrice
                     ]);
-    
+
                     $productTotalQuantity += $quantity;
                     $productTotalPrice += $totalPrice;
                 }
-    
+
                 $importProduct->update([
                     'quantity' => $productTotalQuantity,
                     'total_price' => $productTotalPrice
                 ]);
-    
+
                 $totalImportQuantity += $productTotalQuantity;
                 $totalImportPrice += $productTotalPrice;
             }
-    
+
             $import->update([
                 'total_quantity' => $totalImportQuantity,
                 'total_price' => $totalImportPrice
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Import created successfully',
                 'data' => $import
             ]);
-    
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            // Delete uploaded image if exists
-            if (isset($imageName) && file_exists(public_path('upload/imports/' . $imageName))) {
-                unlink(public_path('upload/imports/' . $imageName));
+
+           // Delete uploaded files if they exist
+            if (!empty($fileNames)) {
+                foreach ($fileNames as $fileName) {
+                    if (file_exists(public_path('upload/imports/' . $fileName))) {
+                        unlink(public_path('upload/imports/' . $fileName));
+                    }
+                }
             }
-    
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating import: ' . $e->getMessage()

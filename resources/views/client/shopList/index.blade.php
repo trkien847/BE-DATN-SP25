@@ -22,6 +22,26 @@
                                 <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i
                                                 class="fas fa-home"></i></span>Trang chủ</a></li>
                                 <li>Sản phẩm</li>
+                        {{-- <h1 class="page-title"> 
+                            @foreach ($category->categoryTypes->where('is_active', true) as $type)
+                            
+                                <a href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
+                                    {{ $type->name }}
+                                </a>
+                            
+                        @endforeach</h1>
+                        <div class="ltn__breadcrumb-list">
+                            <ul>
+                                <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i
+                                                class="fas fa-home"></i></span> Trang chủ</a></li>
+                                               
+                                 @foreach ($category->categoryTypes->where('is_active', true) as $type)
+                                    <li>
+                                        <a href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
+                                            {{ $type->name }}
+                                        </a>
+                                    </li>
+                                @endforeach --}}
                             </ul>
                         </div>
                     </div>
@@ -57,10 +77,11 @@
                                     <form id="sortForm">
                                         <select name="sort" id="sortSelect">
                                             <option value="">Sắp xếp mặc định</option>
-                                            <option value="popularity">Sắp xếp theo sự phổ biến</option>
-                                            <option value="new">Sắp xếp theo hàng mới về</option>
-                                            <option value="price_asc">Sắp xếp theo giá: thấp đến cao</option>
-                                            <option value="price_desc">Sắp xếp theo giá: cao đến thấp</option>
+                                            <option value="popularity">Phổ biến nhất</option>
+                                            <option value="new">Hàng mới về</option>
+                                            <option value="price_asc">Giá: thấp đến cao</option>
+                                            <option value="price_desc">Giá: cao đến thấp</option>
+
                                         </select>
                                     </form>
                                 </div>
@@ -73,11 +94,15 @@
                                 <div id="product-list" class="row">
                                     @foreach ($products as $product)
                                         <div class="col-xl-4 col-sm-6 col-6">
-                                            <div class="ltn__product-item ltn__product-item-3 text-center">
+                                            <div class="ltn__product-item ltn__product-item-3 text-center"
+                                            style="height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;"> {{-- fix tràn ô  --}}
                                                 <div class="product-img">
-                                                    <a href="#"><img
-                                                            src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                            alt="#"></a>
+                                                    <a href="#">
+                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                                             alt="{{ $product->name }}"
+                                                             style="width: 250px; height: 200px; object-fit: cover;">
+                                                    </a>
+                                                
                                                     <div class="product-badge">
                                                         <ul>
                                                             @if (!empty($product->sale_price) && $product->sale_price > 0)
@@ -205,13 +230,13 @@
                         </div>
                         <!-- Top Rated Product Widget -->
                         <div class="widget ltn__top-rated-product-widget">
-                            <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm được xếp hạng hàng đầu</h4>
+                            <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
                             <ul>
                                 @foreach ($productTop as $product)
                                     <li>
                                         <div class="top-rated-product-item clearfix">
                                             <div class="top-rated-product-img">
-                                                <a href="product-details.html"><img
+                                                <a href="{{ route('products.productct', $product->id) }}"><img
                                                         src="{{ asset('upload/' . $product->thumbnail) }}"
                                                         alt="#"></a>
                                             </div>
@@ -268,12 +293,14 @@
                     <div
                         class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
+                        
                     </div>
                 </div>
             </div>

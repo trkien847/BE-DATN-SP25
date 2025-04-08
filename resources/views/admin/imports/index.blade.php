@@ -1,6 +1,7 @@
 @extends('admin.layouts.layout')
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <div class="container-fluid">
     <div class="imports-header">
         <h1><i class="fas fa-file-import"></i> Danh Sách Phiếu Nhập</h1>
@@ -42,15 +43,36 @@
                             <td>{{ number_format($import->total_price) }}đ</td>
                             <td>
                                 @if($import->proof_image)
-                                    <a href="javascript:void(0)" 
-                                    onclick="showImagePreview('{{ asset('upload/imports/' . $import->proof_image) }}')"
-                                    class="proof-image-link">
-                                        <img src="{{ asset('upload/imports/' . $import->proof_image) }}" 
-                                            alt="Ảnh minh chứng" 
-                                            class="proof-image-thumb">
-                                    </a>
+                                    @php
+                                        $files = json_decode($import->proof_image, true);
+                                    @endphp
+                                    <div class="proof-files">
+                                        @foreach($files as $file)
+                                            @php
+                                                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                                                $isPdf = strtolower($extension) === 'pdf';
+                                            @endphp
+                                            
+                                            @if($isPdf)
+                                                <a href="{{ asset('upload/imports/' . $file) }}"
+                                                target="_blank"
+                                                class="proof-file-link pdf-file"
+                                                title="Xem PDF">
+                                                    <i class="fas fa-file-pdf pdf-icon"></i>
+                                                </a>
+                                            @else
+                                                <a href="javascript:void(0)" 
+                                                onclick="showImagePreview('{{ asset('upload/imports/' . $file) }}')"
+                                                class="proof-file-link image-file">
+                                                    <img src="{{ asset('upload/imports/' . $file) }}" 
+                                                        alt="Minh chứng" 
+                                                        class="proof-image-thumb">
+                                                </a>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 @else
-                                    <span class="no-image">Không có ảnh</span>
+                                    <span class="no-image">Không có tệp</span>
                                 @endif
                             </td>
                             <td>
@@ -120,6 +142,75 @@
         align-items: center;
         gap: 8px;
         transition: all 0.3s;
+    }
+
+    .proof-files {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .proof-file-link {
+        display: inline-block;
+        position: relative;
+        width: 50px;
+        height: 50px;
+    }
+
+    .proof-file-link.pdf-file {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        transition: all 0.3s;
+    }
+
+    .proof-file-link.pdf-file:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .pdf-icon {
+        font-size: 24px;
+        color: #dc3545;
+    }
+
+    /* Thêm tooltip cho PDF */
+    .proof-file-link.pdf-file::after {
+        content: 'Xem PDF';
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+    }
+
+    .proof-file-link.pdf-file:hover::after {
+        opacity: 1;
+    }
+
+    .proof-image-thumb {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .proof-file-link:hover .proof-image-thumb {
+        transform: scale(1.1);
     }
 
     .btn-create:hover {
@@ -336,5 +427,13 @@ document.addEventListener('keydown', function(e) {
         closeImagePreview();
     }
 });
+
+function showImagePreview(imageUrl) {
+    const modal = document.getElementById('imagePreviewModal');
+    const previewImage = document.getElementById('previewImage');
+    
+    previewImage.src = imageUrl;
+    modal.style.display = 'flex';
+}
 </script>
 @endpush

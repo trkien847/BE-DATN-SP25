@@ -30,15 +30,28 @@
             overflow: hidden;
         }
 
-        .char {
-            display: inline-block;
-            font-size: 2.5rem;
-            color: #000;
-            opacity: 1;
-            animation: fadeOut 2s ease forwards,
-                fadeInFromBottom 2s ease forwards 2s,
-                greenFill 2s ease forwards 4s;
-        }
+
+.section-title .char:nth-child(1) { animation-delay: 0s, 2s, 4s; }
+.section-title .char:nth-child(2) { animation-delay: 0.1s, 2s, 4s; }
+.section-title .char:nth-child(3) { animation-delay: 0.2s, 2s, 4s; }
+.section-title .char:nth-child(4) { animation-delay: 0.3s, 2s, 4s; }
+.section-title .char:nth-child(5) { animation-delay: 0.4s, 2s, 4s; }
+.section-title .char:nth-child(6) { animation-delay: 0.5s, 2s, 4s; }
+.section-title .char:nth-child(7) { animation-delay: 0.6s, 2s, 4s; }
+.section-title .char:nth-child(8) { animation-delay: 0.7s, 2s, 4s; }
+.section-title .char:nth-child(9) { animation-delay: 0.8s, 2s, 4s; }
+.section-title .char:nth-child(10) { animation-delay: 0.9s, 2s, 4s; }
+.section-title .char:nth-child(11) { animation-delay: 1s, 2s, 4s; }
+.section-title .char:nth-child(12) { animation-delay: 1.1s, 2s, 4s; }
+.section-title .char:nth-child(13) { animation-delay: 1.2s, 2s, 4s; }
+.section-title .char:nth-child(14) { animation-delay: 1.3s, 2s, 4s; }
+.section-title .char:nth-child(15) { animation-delay: 1.4s, 2s, 4s; }
+.section-title .char:nth-child(16) { animation-delay: 1.5s, 2s, 4s; }
+.section-title .char:nth-child(17) { animation-delay: 1.6s, 2s, 4s; }
+.section-title .char:nth-child(18) { animation-delay: 1.7s, 2s, 4s; }
+.section-title .char:nth-child(19) { animation-delay: 1.8s, 2s, 4s; }
+.section-title .char:nth-child(20) { animation-delay: 1.9s, 2s, 4s; }
+.section-title .char:nth-child(21) { animation-delay: 2s, 2s, 4s; }
 
         .section-title .char:nth-child(1) {
             animation-delay: 0s, 2s, 4s;
@@ -166,7 +179,7 @@
                     <!-- CATEGORY-MENU-LIST START -->
                     <div class="ltn__category-menu-wrap">
                         <div class="ltn__category-menu-title">
-                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">Danh mục</h2>
+                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">DANH MỤC</h2>
                         </div>
                         <div class="ltn__category-menu-toggle ltn__one-line-active">
                             <ul>
@@ -195,10 +208,10 @@
                                 <!-- Submenu Column - 4 -->
                                 <li class="ltn__category-menu-more-item-parent">
                                     <a class="rx-default">
-                                        Xem thêm danh mục <span class="cat-thumb  icon-plus"></span>
+                                        Danh mục khác <span class="cat-thumb  icon-plus"></span>
                                     </a>
                                     <a class="rx-show">
-                                        Đóng menu <span class="cat-thumb  icon-remove"></span>
+                                        Đóng danh mục <span class="cat-thumb  icon-remove"></span>
                                     </a>
                                 </li>
                                 <!-- Single menu end -->
@@ -222,7 +235,7 @@
                                                     <h5
                                                         class="slide-sub-title ltn__secondary-color animated text-uppercase">
                                                         Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                    <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                    <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
                                                     </h1>
                                                     <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
                                                     <div class="slide-brief animated d-none">
@@ -236,6 +249,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
 
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
@@ -301,10 +315,10 @@
                             </div>
                             <div class="ltn__feature-info">
                                 <h4>Miễn phí vận chuyển</h4>
-                                <p>Cho đơn hàng trên 1.000.000đ</p>
-                            </div>
+                                <p>Cho tất cả các đơn hàng trên 49,000</p>
+                            </div>                            
                         </div>
-                        <div class="ltn__feature-item ltn__feature-item-8">
+                        {{-- <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
                                 <img src="{{ asset('client/img/icons/svg/9-m') }}oney.svg" alt="Icon hoàn tiền">
                             </div>
@@ -312,17 +326,27 @@
                                 <h4>Đổi trả trong 15 ngày</h4>
                                 <p>Đảm bảo hoàn tiền</p>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
                                 <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="Icon quà tặng">
                             </div>
                             <div class="ltn__feature-info">
+                                <h4>Thanh toán nhanh</h4>
+                                <p>Liên kết toàn bộ ngân hàng trên cả nước</p>
+                            </div>
+                        </div>
+                        <div class="ltn__feature-item ltn__feature-item-8">
+                            <div class="ltn__feature-icon">
+                                <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="#">
+                            </div>
+                            <div class="ltn__feature-info">
                                 <h4>Ưu đãi & quà tặng</h4>
-                                <p>Cho mọi đơn hàng</p>
+                                <p>Cho tất cả các đơn hàng trên 99,000</p>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -373,10 +397,9 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                        <a href="{{ route('products.productct', $product->id) }}">
-                                                            <img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                                alt="{{ $product->name }}" class="product-image">
-                                                        </a>
+                                                    <a href="{{ route('products.productct', $product->id) }}">
+                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="product-image" width="250px" height="200px">
+                                                    </a>
                                                         <div class="product-badge">
                                                             <ul>
                                                                 @if (!empty($salePrice) && $salePrice > 0)
@@ -387,7 +410,7 @@
                                                                                 100,
                                                                         );
                                                                     @endphp
-                                                                    <li class="sale-badge">-{{ $discount }}%</li>
+                                                                    <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
                                                                 @endif
                                                             </ul>
                                                         </div>
@@ -425,8 +448,8 @@
                                                             @endphp
 
                                                             @if (!empty($salePrice) && $salePrice > 0)
-                                                                <span>{{ number_format($salePrice) }}đ</span>
-                                                                <del>{{ number_format($regularPrice) }}đ</del>
+                                                                <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
+                                                                <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
                                                             @else
                                                                 <span>{{ number_format($regularPrice) }}đ</span>
                                                             @endif
@@ -533,7 +556,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Sản phẩm bán chạy</h1>
+                        <h1 class="section-title">SẢN PHẨM BÁN CHẠY</h1>
                     </div>
                 </div>
             </div>
@@ -542,9 +565,9 @@
                 @foreach ($productBestSale as $product)
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
-                            <div class="product-img">
+                            <div class="product-img" >
                                 <a href="{{ route('products.productct', $product->id) }}">
-                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}">
+                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }} " width="250px" height="200px">
                                 </a>
                                 <div class="product-badge">
                                     <ul>
@@ -556,7 +579,7 @@
                                                         100,
                                                 );
                                             @endphp
-                                            <li class="sale-badge">-{{ $discount }}%</li>
+                                            <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
                                         @endif
                                     </ul>
                                 </div>
@@ -589,8 +612,8 @@
                                     @endphp
 
                                     @if (!empty($salePrice) && $salePrice > 0)
-                                        <span>{{ number_format($salePrice) }}đ</span>
-                                        <del>{{ number_format($regularPrice) }}đ</del>
+                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
+                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
                                     @else
                                         <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
@@ -606,12 +629,12 @@
     <!-- PRODUCT AREA END -->
 
     <!-- SMALL PRODUCT LIST AREA START -->
-    <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-90 mb-120">
+    <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-70 mb-100">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">Sản phẩm nổi bật</h1>
+                        <h1 class="section-title" >SẢN PHẨM NỔI BẬT</h1>
                     </div>
                 </div>
             </div>
@@ -622,10 +645,10 @@
                         <div class="ltn__small-product-item">
                             <div class="small-product-item-img">
                                 <a href="{{ route('products.productct', $product->id) }}"><img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                        alt="Image"></a>
+                                        alt="Image" width="250px" height="100px"></a>
                             </div>
                             <div class="small-product-item-info">
-                                {{-- <div class="product-ratting">
+                                <div class="product-ratting">
                                 <ul>
                                     <li><a href="#"><i class="fas fa-star"></i></a></li>
                                     <li><a href="#"><i class="fas fa-star"></i></a></li>
@@ -633,7 +656,7 @@
                                     <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
                                     <li><a href="#"><i class="far fa-star"></i></a></li>
                                 </ul>
-                            </div> --}}
+                            </div>
                                 <h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2>
                                 <div class="product-price">
                                     @php
@@ -852,12 +875,14 @@
                     <div
                         class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
+                        
                     </div>
                 </div>
             </div>

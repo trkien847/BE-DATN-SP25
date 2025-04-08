@@ -39,5 +39,10 @@ class Import extends Model
     {
         return $this->hasMany(ImportProduct::class);
     }
+
+    public function orderImport()
+    {
+        return $this->hasOne(OrderImport::class);
+    }
     
 }
