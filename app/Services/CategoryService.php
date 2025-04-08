@@ -2,13 +2,9 @@
 
 namespace App\Services;
 
-use App\Events\NewNotificationEvent;
-use App\Models\Category;
 use App\Models\CategoryType;
-use App\Models\User;
 use App\Repositories\Interfaces\CategoryRepository;
 use App\Repositories\Interfaces\CategoryTypeRepository;
-use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
@@ -22,45 +18,25 @@ class CategoryService
     }
     public function createCategory($data)
     {
+        $category = $this->categoryRepository->create(['name' => $data['name']]);
 
-        $user = auth()->user();
-        $category = $this->categoryRepository->create([
-            'name' => $data['name'],
-            'status' => 'pending',
-        ]);
-        Log::info("Creating new category, sending notification...");
         if (!empty($data['subcategories'])) {
             foreach ($data['subcategories'] as $index => $subcategoryName) {
                 if (!empty($subcategoryName)) {
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
-                        'status' => 'pending',
                     ]);
                 }
             }
-        }
-        $admins = User::where('role_id', 3)->get();
-        foreach ($admins as $admin) {
-            Log::info("Sending notification to admin: {$admin->id}");
-            $admin->notify(new NewNotificationEvent(
-                'Có danh mục mới cần duyệt',
-                $user->fullname
-            ));
         }
         return $category;
     }
 
     public function getAllCategories()
     {
-        return $this->categoryRepository
-            ->with(['categoryTypes' => function ($query) {
-                $query->where('status', 'approved');
-            }])
-            ->where('status', 'approved')
-            ->paginate(10);
+        return $this->categoryRepository->with('categoryTypes')->paginate(10);
     }
-
     public function getCategoryById($id)
     {
         return $this->categoryRepository->with('categoryTypes')->find($id);
@@ -110,9 +86,9 @@ class CategoryService
         $category = $this->categoryRepository->find($id);
         $category->is_active = $isActive;
         $category->save();
-        if ($isActive == 0 && $category->categoryTypes()->count() > 0) {
+        if($isActive == 0 && $category->categoryTypes()->count() > 0){
             $category->categoryTypes()->update(['is_active' => 0]);
-        }
+}
         return $category;
     }
     public function toggleSubcategoryActive($id, $isActive)
@@ -128,50 +104,5 @@ class CategoryService
         $subcategory->save();
 
         return $subcategory;
-    }
-    public function acceptCategory($categoryId)
-    {
-        $category = $this->categoryRepository->find($categoryId);
-
-        if ($category->status == 'pending') {
-            $category->status = 'approved';
-            $category->save();
-
-            // Cập nhật tất cả danh mục con của danh mục này
-            $category->categoryTypes()->update(['status' => 'approved']);
-
-            return response()->json(['message' => 'Category and its subcategories approved successfully']);
-        }
-
-        return response()->json(['message' => 'Category is not pending'], 400);
-    }
-
-    public function rejectCategory($categoryId)
-    {
-        $category = $this->categoryRepository->find($categoryId);
-
-        if ($category->status == 'pending') {
-            $category->status = 'rejected';
-            $category->save();
-
-            // Cập nhật tất cả danh mục con của danh mục này
-            $category->categoryTypes()->update(['status' => 'rejected']);
-
-            return response()->json(['message' => 'Category and its subcategories rejected successfully']);
-        }
-
-        return response()->json(['message' => 'Category is not pending'], 400);
-    }
-
-    public function getPendingCategories()
-    {
-        $pendingCategories = $this->categoryRepository
-            ->with(['categoryTypes' => function ($query) {
-                $query->where('status', 'pending');
-            }])
-            ->where('status', 'pending')
-            ->paginate(10);
-
-        return $pendingCategories;
     }
 }
