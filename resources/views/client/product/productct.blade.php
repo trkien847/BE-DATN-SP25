@@ -179,11 +179,11 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="ltn__breadcrumb-inner">
-                    <h1 class="page-title">Product Details</h1>
+                    <h1 class="page-title">Chi tiết sản phẩm</h1>
                     <div class="ltn__breadcrumb-list">
                         <ul>
-                            <li><a href="index.html"><span class="ltn__secondary-color"><i class="fas fa-home"></i></span> Home</a></li>
-                            <li>Product Details</li>
+                            <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i class="fas fa-home"></i></span>Trang chủ</a></li>
+                            <li>Chi tiết sản phẩm</li>
                         </ul>
                     </div>
                 </div>
@@ -248,15 +248,22 @@
                                 @endphp
 
 
-                                <div class="product-price">
-                                    <span id="current-price">{{ number_format($min_variant_sale_price, 0, ',', '.') }} VND</span>
-                                    <del id="original-price">{{ number_format($min_variant_price, 0, ',', '.') }} VND</del>
-                                    <span id="stock-info">Số lượng: {{ $product->variants->first()->stock }}</span>
+                                <div class="fw-bold fs-5 text-dark">
+                                    <p id="current-price" class="text-success fs-3 mb-1">
+                                        {{ number_format($min_variant_sale_price, 0, ',', '.') }} VND
+                                    </p>
+                                    <del id="original-price" class="text-danger fs-6 d-block mb-2">
+                                        {{ number_format($min_variant_price, 0, ',', '.') }} VND
+                                    </del>
+                                    <p id="stock-info" class="text-muted fst-italic">
+                                        Số lượng còn: {{ $product->variants->first()->stock }}
+                                    </p>
                                 </div>
+
                                 <div class="modal-product-meta ltn__product-details-menu-1">
                                     <ul>
                                         <li>
-                                            <strong>Biến thể:</strong>
+                                            <h3>Phân loại:</h3>
                                             <div class="variant-buttons rounded-sm width: 200px; height: 200px">
                                                 @foreach($product->variants as $variant)
                                                 <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
@@ -327,18 +334,18 @@
                                     });
                                 </script>
                                 <div class="ltn__product-details-menu-3">
-                                    <h5>Thông tin chi tiết sản phẩm</h5>
+                                    <h4>THÔNG TIN CHI TIẾT SẢN PHẨM </h4>
                                     <ul class="product-details-list">
                                         <li><strong>Danh mục:</strong> <span>{{ $product->categories->isNotEmpty() ? $product->categories->first()->name : 'Không có danh mục' }}</span></li>
-                                        <li><strong>Xuất xứ thương hiệu:</strong> <span>{{ $product->brand->name ?? 'Không có thương hiệu' }}</span></li>
-                                        <li><strong>Nhà sản xuất:</strong> <span>{{ $product->brand->name ?? 'Chưa xác định' }}</span></li>
-                                        <li><strong>Nước sản xuất:</strong> <span>Việt Nam</span></li>
-                                        <li><strong>Lưu ý:</strong> <span>Mọi thông tin trên đây chỉ mang tính chất tham khảo. Đọc kỹ hướng dẫn sử dụng trước khi dùng</span></li>
+                                        <li><strong>Thương hiệu:</strong> <span>{{ $product->brand->name ?? 'Không có thương hiệu' }}</span></li>
+                                        <li><strong>Nhà sản xuất:</strong> <span>{{ $product->brand->name ?? 'Chưa xác định' }}</span></li><br>
+                                        <li><strong>Xuất xứ:</strong> <span>Việt Nam</span></li>
+                                        <li><strong>Lưu ý:</strong> <span>Mọi thông tin trên đây chỉ mang tính chất tham khảo. Đọc kỹ hướng dẫn sử dụng trước khi dùng!</span></li>
                                     </ul>
                                 </div>
                                 <div class="ltn__product-details-menu-2">
                                     <ul>
-                                        <li>
+                                        <li >
                                         <div class="cart-plus-minus">
                                                     <input type="number" value="1" name="qtybutton"
                                                         class="cart-plus-minus-box" id="quantity-input" min="1">
@@ -348,7 +355,7 @@
                                         <button id="add-to-cart-btn" class="theme-btn-1 btn btn-effect-1"
                                                     title="Add to Cart" data-product-id="{{ $product->id }}">
                                                     <i class="fas fa-shopping-cart"></i>
-                                                    <span>ADD TO CART</span>
+                                                    <span>MUA NGAY</span>
                                                 </button>
                                         </li>
                                     </ul>
@@ -363,8 +370,8 @@
                 <div class="ltn__shop-details-tab-inner ltn__shop-details-tab-inner-2">
                     <div class="ltn__shop-details-tab-menu">
                         <div class="nav">
-                            <a class="active show" data-bs-toggle="tab" href="#liton_tab_details_1_1">Description</a>
-                            <a data-bs-toggle="tab" href="#liton_tab_details_1_2" class="">Reviews</a>
+                            <a class="active show" data-bs-toggle="tab" href="#liton_tab_details_1_1">MÔ TẢ SẢN PHẨM</a>
+                            <a data-bs-toggle="tab" href="#liton_tab_details_1_2" class="">ĐÁNH GIÁ</a>
                         </div>
                     </div>
                     <div class="tab-content">
@@ -375,7 +382,7 @@
                         </div>
                         <div class="tab-pane fade" id="liton_tab_details_1_2">
                             <div class="ltn__shop-details-tab-content-inner">
-                                <h4 class="title-2">Customer Reviews</h4>
+                                <h4 class="title-2">ĐÁNH GIÁ TỪ NGƯỜI MUA</h4>
                                 <div class="product-ratting">
                                     <ul>
                                         <li><a href="#"><i class="fas fa-star"></i></a></li>
@@ -383,7 +390,7 @@
                                         <li><a href="#"><i class="fas fa-star"></i></a></li>
                                         <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
                                         <li><a href="#"><i class="far fa-star"></i></a></li>
-                                        <li class="review-total"> <a href="#"> ( 95 Reviews )</a></li>
+                                        <li class="review-total"> <a href="#"> ( 95 Đánh gia )</a></li>
                                     </ul>
                                 </div>
                                 <hr>
@@ -503,7 +510,7 @@
                 <aside class="sidebar ltn__shop-sidebar ltn__right-sidebar">
                     <!-- Top Rated Product Widget -->
                     <div class="widget ltn__top-rated-product-widget">
-                        <h4 class="ltn__widget-title ltn__widget-title-border">Top Rated Product</h4>
+                        <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
                         <ul>
                             <li>
                                 <div class="top-rated-product-item clearfix">
@@ -593,7 +600,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title-area ltn__section-title-2">
-                    <h4 class="title-2">Related Products<span>.</span></h1>
+                    <h4 class="title-2">SẢN PHẨM LIÊN QUAN<span>.</span></h1>
                 </div>
             </div>
         </div>
@@ -601,12 +608,18 @@
             <!-- ltn__product-item -->
             @foreach($relatedProducts as $product)
             <div class="col-lg-12">
-                <div class="ltn__product-item ltn__product-item-3 text-center">
-                    <div class="product-img">
-                        <a href="{{ route('products.productct', $product->id) }}"><img src="{{ asset('upload/'.$product->thumbnail)  }}" alt="#"></a>
+                <div class="ltn__product-item ltn__product-item-3 text-center"
+                style="height: 420px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+           
+                <div class="product-img d-flex justify-content-center align-items-center" style="height: 200px;">
+                    <a href="{{ route('products.productct', $product->id) }}">
+                        <img src="{{ asset('upload/' . $product->thumbnail) }}"
+                             alt="{{ $product->name }}"
+                             style="width: 250px; height: 200px; object-fit: cover; display: block;">
+                    </a>
                         <div class="product-badge">
                             <ul>
-                                <li class="sale-badge">New</li>
+                                <li class="sale-badge bg-danger rounded-1">New</li>
                             </ul>
                         </div>
                         <div class="product-hover-action">
@@ -629,7 +642,7 @@
                         </div>
                     </div>
                     <div class="product-info">
-                        <div class="product-ratting">
+                        <div class="product-ratting d-flex justify-content-center">
                             <ul>
                                 <li><a href="#"><i class="fas fa-star"></i></a></li>
                                 <li><a href="#"><i class="fas fa-star"></i></a></li>
@@ -638,7 +651,7 @@
                                 <li><a href="#"><i class="far fa-star"></i></a></li>
                             </ul>
                         </div>
-                        <h2 class="product-title"><a href="product-details.html">{{ $product->name }}</a></h2>
+                        <h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2>
                         <div class="product-price">
                             @php
                                 // Lấy giá rẻ nhất từ biến thể
@@ -647,8 +660,8 @@
                                 // Nếu không có sale_price hoặc sale_price = 0, dùng price
                                 $displaySalePrice = $minVariantSalePrice && $minVariantSalePrice > 0 ? $minVariantSalePrice : $minVariantPrice;
                             @endphp
-                            <span>{{ number_format($displaySalePrice, 0, ',', '.') }} VND</span>
-                            <del>{{ number_format($minVariantPrice, 0, ',', '.') }} VND</del>
+                            <span class="text-success fs-6 d-block mb-2">{{ number_format($displaySalePrice, 0, ',', '.') }} VND</span>
+                            <del class="text-danger fs-6 d-block mb-2">{{ number_format($minVariantPrice, 0, ',', '.') }} VND</del>
                         </div>
                     </div>
                 </div>
@@ -667,11 +680,14 @@
             <div class="col-lg-12">
                 <div class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                     <div class="coll-to-info text-color-white">
-                        <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                        <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                     </div>
                     <div class="btn-wrapper">
-                        <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i class="icon-next"></i></a>
+                        <a class="btn btn-effect-3 btn-white" href="shop.html">
+                            Khám phá sản phẩm <i class="icon-next"></i>
+                        </a>
                     </div>
+                    
                 </div>
             </div>
         </div>
