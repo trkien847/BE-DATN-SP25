@@ -129,34 +129,17 @@
                 <div class="col header-menu-column justify-content-center">
                     <div class="sticky-logo">
                         <div class="site-logo">
-                            <a href="index.html"><img src="{{ asset('client/img/logo-3.p') }}ng" alt="Logo"></a>
+                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo-3.p') }}ng" alt="Logo"></a>
                         </div>
                     </div>
                     <div class="header-menu header-menu-2">
                         <nav>
                             <div class="ltn__main-menu">
                                 <ul>
-                                    <li class=""><a href="{{ route('index') }}">Trang chủ</a>
-                                        {{-- <ul class="sub-menu menu-pages-img-show ltn__sub-menu-col-2---">
-                                            <li>
-                                                <a href="index.html">Home Style 01</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-1.jpg"
-                                                    alt="#">
-                                            </li>
-                                            <li>
-                                                <a href="index-2.html">Home Style 02</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-2.jpg"
-                                                    alt="#">
-                                            </li>
-                                            <li>
-                                                <a href="index-3.html">Home Style 03</a>
-                                                <img src="{{ asset('client/img/home-dem') }}os/home-3.jpg"
-                                                    alt="#">
-                                            </li>
-                                        </ul> --}}
+                                    <li><a href="{{ route('index') }}">Trang chủ</a>
                                     </li>
-                                    <li class=""><a href="#">Thông tin</a>
-                                        {{-- <ul>
+                                    {{-- <li class="menu-icon"><a href="#">About</a>
+                                        <ul>
                                             <li><a href="about.html">About</a></li>
                                             <li><a href="service.html">Services</a></li>
                                             <li><a href="service-details.html">Service Details</a></li>
@@ -167,33 +150,12 @@
                                             <li><a href="team-details.html">Team Details</a></li>
                                             <li><a href="faq.html">FAQ</a></li>
                                             <li><a href="locations.html">Google Map Locations</a></li>
-                                        </ul> --}}
-                                    </li>
-                                    <li class=""><a href="#">Cửa hàng</a>
-                                        {{-- <ul>
-                                            <li><a href="shop.html">Shop</a></li>
-                                            <li><a href="shop-grid.html">Shop Grid</a></li>
-                                            <li><a href="shop-left-sidebar.html">Shop Left sidebar</a></li>
-                                            <li><a href="shop-right-sidebar.html">Shop right sidebar</a></li>
-                                            <li><a href="product-details.html">Shop details </a></li>
-                                            <li><a href="#">Other Pages <span class="float-right">>></span></a>
-                                                <ul>
-                                                    <li><a href="cart.html">Cart</a></li>
-                                                    <li><a href="wishlist.html">Wishlist</a></li>
-                                                    <li><a href="checkout.html">Checkout</a></li>
-                                                    <li><a href="order-tracking.html">Order Tracking</a></li>
-                                                    <li><a href="account.html">My Account</a></li>
-                                                    <li><a href="login.html">Sign in</a></li>
-                                                    <li><a href="register.html">Register</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul> --}}
-                                    </li>
-
-                                    <li class="menu"><a href="{{ route('orderHistory') }}">Lịch sử mua hàng</a></li>
-
-                                    <li class=""><a href="#">Trang</a>
-                                        {{-- <ul class="mega-menu">
+                                        </ul>
+                                    </li> --}}
+                                    <li><a href="{{ route('category.show') }}">Sản phẩm</a>
+                                    <li><a href="{{ route('orderHistory') }}">Lịch sử mua hàng</a></li>
+                                    {{-- <li class="menu-icon"><a href="#">Pages</a>
+                                        <ul class="mega-menu">
                                             <li><a href="#">Inner Pages</a>
                                                 <ul>
                                                     <li><a href="portfolio.html">Gallery</a></li>

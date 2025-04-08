@@ -8,12 +8,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ltn__breadcrumb-inner">
-                        <h1 class="page-title">Account</h1>
+                        <h1 class="page-title">Tài Khoản</h1>
                         <div class="ltn__breadcrumb-list">
                             <ul>
                                 <li><a href="index.html"><span class="ltn__secondary-color"><i
-                                                class="fas fa-home"></i></span> Home</a></li>
-                                <li>Register</li>
+                                                class="fas fa-home"></i></span> Trang chủ</a></li>
+                                <li>Đăng ký</li>
                             </ul>
                         </div>
                     </div>
@@ -29,9 +29,9 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area text-center">
-                        <h1 class="section-title">Register <br>Your Account</h1>
-                        <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. <br>
-                            Sit aliquid, Non distinctio vel iste.</p>
+                        <h1 class="section-title">Đăng Ký<br>Tài Khoản</h1>
+                        <p>Hãy tạo tài khoản để có trải nghiệm mua sắm tốt nhất<br>
+                            cùng với nhiều ưu đãi hấp dẫn.</p>
                     </div>
                 </div>
             </div>
@@ -40,11 +40,11 @@
                     <div class="account-login-inner">
                         <form action="{{route('register.submit')}}" class="ltn__form-box contact-form-box" method="POST">
                             @csrf
-                            <input type="text" name="firstname" placeholder="First Name">
+                            <input type="text" name="firstname" placeholder="Tên">
                             @error('firstname')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
-                            <input type="text" name="lastname" placeholder="Last Name">
+                            <input type="text" name="lastname" placeholder="Họ">
                             @error('lastname')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
@@ -52,39 +52,25 @@
                             @error('email')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
-                            <input type="password" name="password" placeholder="Password*">
+                            <input type="password" name="password" placeholder="Mật khẩu*">
                             @error('password')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
-                            <input type="password" name="password_confirmation" placeholder="Confirm Password*">
+                            <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu*">
                             @error('password_confirmation')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
-                            
-                            <label class="checkbox-inline">
-                                <input type="checkbox" value="">
-                                I consent to Herboil processing my personal data in order to send personalized marketing
-                                material in accordance with the consent form and the privacy policy.
-                            </label>
-                            <label class="checkbox-inline">
-                                <input type="checkbox" value="">
-                                I consent to Herboil processing my personal data in order to send personalized marketing
-                                material in accordance with the consent form and the privacy policy.
-                            </label>
-                            <label class="checkbox-inline">
-                                <input type="checkbox" value="">
-                                By clicking "create account", I consent to the privacy policy.
-                            </label>
                             <div class="btn-wrapper">
-                                <button class="theme-btn-1 btn reverse-color btn-block" type="submit">CREATE
-                                    ACCOUNT</button>
+                                <button class="theme-btn-1 btn reverse-color btn-block" type="submit">
+                                    ĐĂNG KÝ TÀI KHOẢN
+                                </button>
                             </div>
                         </form>
                         <div class="by-agree text-center">
-                            <p>By creating an account, you agree to our:</p>
-                            <p><a href="#">TERMS OF CONDITIONS &nbsp; &nbsp; | &nbsp; &nbsp; PRIVACY POLICY</a></p>
+                            <p>Bằng việc đăng ký, bạn đồng ý với:</p>
+                            <p><a href="#">ĐIỀU KHOẢN DỊCH VỤ &nbsp; &nbsp; | &nbsp; &nbsp; CHÍNH SÁCH BẢO MẬT</a></p>
                             <div class="go-to-btn mt-50">
-                                <a href="login.html">ALREADY HAVE AN ACCOUNT ?</a>
+                                <a href="{{ route('login') }}">ĐÃ CÓ TÀI KHOẢN?</a>
                             </div>
                         </div>
                     </div>
@@ -99,14 +85,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div
-                        class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
+                    <div class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ những người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="{{ route('category.show') }}">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -10,13 +10,8 @@
                             <input type="search" class="form-control" id="search" placeholder="Search categories...">
                         </div>
                         <div>
-                            @if (auth()->user()->role_id == 3)
-                                <a href="{{ route('categories.pending') }}" class="btn btn-success">
-                                    <i class="bx bx-plus me-1"></i>Danh mục đợi duyệt
-                                </a>
-                            @endif
-                            <a href="{{ route('categories.create') }}" class="btn btn-success">
-                                <i class="bx bx-plus me-1"></i>Thêm Danh Mục
+                            <a href="{{ route('categories.list') }}" class="btn btn-success">
+                                <i class="bx bx-plus me-1"></i>Danh mục
                             </a>
                         </div>
                     </div> <!-- end row -->
@@ -29,8 +24,6 @@
                                     <th class="border-0 py-2 sortable" data-sort="id">ID</th>
                                     <th class="border-0 py-2 sortable" data-sort="name">Tên danh mục</th>
                                     <th class="border-0 py-2 sortable" data-sort="created_at">Ngày tạo</th>
-                                    <th class="border-0 py-2 sortable" data-sort="updated_at">Ngày cập nhật</th>
-                                    <th class="border-0 py-2">Trạng Thái</th>
                                     <th class="border-0 py-2">Hành Động</th>
                                 </tr>
                             </thead> <!-- end thead-->
@@ -54,30 +47,21 @@
                                             </div>
                                         </td>
                                         <td>{{ $category->created_at }}</td>
-                                        <td>{{ $category->updated_at }}</td>
-                                        <td>
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input toggle-active" type="checkbox" role="switch"
-                                                    data-id="{{ $category->id }}"
-                                                    {{ $category->is_active ? 'checked' : '' }}>
-                                            </div>
-                                        </td>
 
                                         <td>
-                                            <a href="{{ route('categories.edit', $category->id) }}"
-                                                class="btn btn-sm btn-soft-secondary me-1">
-                                                <i class="bx bx-edit fs-16"></i>
-                                            </a>
-                                            {{-- <form action="{{ route('categories.destroy', $category->id) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-soft-danger"
-                                                    onclick="return confirm('Are you sure you want to delete this category?');">
-                                                    <i class="bx bx-trash fs-16"></i>
+                                            @if ($category->status == 'pending')
+                                                <button class="btn btn-sm btn-soft-success approve-category"
+                                                    data-id="{{ $category->id }}">
+                                                    <i class="bx bx-check fs-16"></i> Duyệt
                                                 </button>
-                                            </form> --}}
+
+                                                <button class="btn btn-sm btn-soft-danger reject-category"
+                                                    data-id="{{ $category->id }}">
+                                                    <i class="bx bx-x fs-16"></i> Từ chối
+                                                </button>
+                                            @endif
                                         </td>
+
                                     </tr>
                                     @if ($category->categoryTypes->isNotEmpty())
                                         @foreach ($category->categoryTypes as $subcategory)
@@ -93,15 +77,6 @@
                                                 </td>
                                                 <td>{{ $subcategory->created_at }}</td>
                                                 <td>{{ $subcategory->updated_at }}</td>
-                                                <td>
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input toggle-active" type="checkbox"
-                                                            role="switch" data-id="{{ $subcategory->id }}"
-                                                            data-parent-id="{{ $category->id }}"
-                                                            {{ $subcategory->is_active ? 'checked' : '' }}
-                                                            {{ !$category->is_active ? 'disabled' : '' }}>
-                                                    </div>
-                                                </td>
                                             </tr>
                                         @endforeach
                                     @endif
@@ -112,10 +87,6 @@
                     </div>
                     <div class="d-flex justify-content-between mt-3">
                         <div>
-                            Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of
-                            {{ $categories->total() }} entries
-                        </div>
-                        <div>
                             {{ $categories->links() }}
                         </div>
                     </div>
@@ -125,36 +96,8 @@
     </div>
 @endsection
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // document.addEventListener('DOMContentLoaded', function() {
-
-
-        //     document.querySelectorAll('.category-row').forEach(function(row) {
-        //         row.addEventListener('click', function() {
-        //             const categoryId = this.getAttribute('data-category-id');
-        //             const subRows = document.querySelectorAll(
-        //                 `.subcategory-row[data-parent-id="${categoryId}"]`);
-
-        //             // Toggle display of subcategory rows
-        //             subRows.forEach(function(subRow) {
-        //                 subRow.style.display = subRow.style.display === 'none' ?
-        //                     'table-row' : 'none';
-        //             });
-
-        //             // Toggle active class on category row
-        //             this.classList.toggle('active');
-
-        //             // Change background color of subcategory rows
-        //             subRows.forEach(function(subRow) {
-        //                 if (subRow.style.display === 'table-row') {
-        //                     subRow.classList.add('highlight');
-        //                 } else {
-        //                     subRow.classList.remove('highlight');
-        //                 }
-        //             });
-        //         });
-        //     });
-        // });
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll(".toggle-subcategories").forEach(button => {
                 button.addEventListener("click", function() {
@@ -238,9 +181,127 @@
                 });
             });
         });
+        document.addEventListener("DOMContentLoaded", function() {
+            let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+            // Xử lý khi bấm nút "Duyệt"
+            document.querySelectorAll(".approve-category").forEach(button => {
+                button.addEventListener("click", function() {
+                    let categoryId = this.getAttribute("data-id");
+                    let row = this.closest('tr'); // Lấy dòng chứa nút
+
+                    fetch(`/category/${categoryId}/accept`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": csrfToken
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                // Xóa các nút action
+                                row.querySelector('td:last-child').innerHTML =
+                                    '<span class="badge bg-success">Đã duyệt</span>';
+
+                                // Hiển thị thông báo thành công
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: data.message || 'Có lỗi xảy ra'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Lỗi:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Có lỗi xảy ra khi xử lý yêu cầu'
+                            });
+                        });
+                });
+            });
+
+            // Xử lý khi bấm nút "Từ chối"
+            document.querySelectorAll(".reject-category").forEach(button => {
+                button.addEventListener("click", function() {
+                    let categoryId = this.getAttribute("data-id");
+                    let row = this.closest('tr');
+
+                    Swal.fire({
+                        title: 'Xác nhận',
+                        text: 'Bạn có chắc chắn muốn từ chối danh mục này?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Đồng ý',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`/category/${categoryId}/reject`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": csrfToken
+                                    }
+                                })
+                                .then(response => {
+                                    if (!response.ok) throw new Error(
+                                        'Network response was not ok');
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.success) {
+                                        // Xóa các nút action
+                                        row.querySelector('td:last-child').innerHTML =
+                                            '<span class="badge bg-danger">Đã từ chối</span>';
+
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Thành công',
+                                            text: data.message,
+                                            showConfirmButton: false,
+                                            timer: 1500
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Lỗi',
+                                            text: data.message ||
+                                                'Có lỗi xảy ra'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Lỗi:", error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: 'Có lỗi xảy ra khi xử lý yêu cầu'
+                                    });
+                                });
+                        }
+                    });
+                });
+            });
+        });
     </script>
 @endpush
 @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
     <style>
         .category-row.active {
             background-color: #f0f0f0;

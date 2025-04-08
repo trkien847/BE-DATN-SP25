@@ -178,7 +178,8 @@
             <td>{{ $user->email }}</td>
             <td>{{ $user->phone_number }}</td>
             <td>
-                {{ ['Khách', 'Nhân viên', 'Quản trị viên'][$user->role_id - 1] ?? 'Khách' }}
+                {{ $user->role->name }}
+                {{-- Debug giá trị role --}}
             </td>
             
               <td>

@@ -24,19 +24,17 @@ use App\Models\ProductImportDetail;
 use App\Models\User;
 
 
-
-Route::post('/login', [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout', [UserController::class, 'logout'])->name('logout');
-Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
-Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
-Route::post('/register', [UserController::class, 'register'])->name('register.submit');
-Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
-Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
-Route::get('/forgot-password', [UserController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password', [UserController::class, 'sendResetLink'])->name('password.email');
-Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
-
+Route::post('/login',                           [UserController::class, 'login'])->name('login.submit');
+Route::get('/logout',                           [UserController::class, 'logout'])->name('logout');
+Route::get('/loginForm',                        [UserController::class, 'showLogin'])->name('login');
+Route::get('/registerForm',                     [UserController::class, 'showRegister'])->name('register');
+Route::post('/register',                        [UserController::class, 'register'])->name('register.submit');
+Route::get('/profile',                          [UserController::class, 'showProfile'])->name('profile');
+Route::put('/profile',                          [UserController::class, 'updateProfile'])->name('profile.update');
+Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password',                  [UserController::class, 'resetPassword'])->name('password.update');
 Route::middleware(['check.auth'])->group(function () {
   Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
@@ -45,11 +43,11 @@ Route::middleware(['check.auth'])->group(function () {
 
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
-Route::get('/{categoryId}/{subcategoryId?}', [ShopListController::class, 'show'])
-  ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]*'])
-  ->name('category.show');
+Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
+    ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
+    ->name('category.show');
 
-Route::get('/search/{categoryId}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
+Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 
@@ -94,6 +92,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
 
   // Quản lý danh mục
+
   Route::get('/admin/categories', [CategoryController::class, 'index'])->name('categories.list');
   Route::get('/admin/categories/create', [CategoryController::class, 'create'])->name('categories.create');
   Route::post('/admin/categories/store', [CategoryController::class, 'store'])->name('categories.store');
@@ -101,6 +100,10 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
   Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
   Route::post('/categories/{id}/toggle-active', [CategoryController::class, 'toggleActive']);
+  Route::get('/admin/categories/peding', [CategoryController::class, 'getPendingCategories'])->name('categories.pending');
+  Route::post('/category/{id}/accept', [CategoryController::class, 'acceptCategory'])->name('category.accept');
+  Route::post('/category/{id}/reject', [CategoryController::class, 'rejectCategory'])->name('category.reject');
+
   Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::class, 'toggleSubcategoryActive'])->name('categories.toggleSubcategoryActive');
 
   // Quản lý thương hiệu
