@@ -393,12 +393,12 @@
 
                         <h6 class="dropdown-header">Xin chào <span class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
 
-                        <a class="dropdown-item" href="apps-chat.html">
+                        {{-- <a class="dropdown-item" href="apps-chat.html">
                             <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span
-                                class="align-middle">Messages</span>
-                        </a>
+                                class="align-middle">Tin nhắn</span>
+                        </a> --}}
 
-                        <a class="dropdown-item" href="pages-pricing.html">
+                        {{-- <a class="dropdown-item" href="pages-pricing.html">
                             <i class="bx bx-wallet text-muted fs-18 align-middle me-1"></i><span
                                 class="align-middle">Pricing</span>
                         </a>
@@ -411,7 +411,7 @@
                                 class="align-middle">Lock screen</span>
                         </a>
 
-                        <div class="dropdown-divider my-1"></div>
+                        <div class="dropdown-divider my-1"></div> --}}
 
                         <a class="dropdown-item text-danger" href="auth-signin.html">
                             <i class="bx bx-log-out fs-18 align-middle me-1"></i><span

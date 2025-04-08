@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
@@ -25,30 +25,30 @@
                                                 <li><a href="#"><i class="fas fa-star"></i></a></li>
                                                 <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
                                                 <li><a href="#"><i class="far fa-star"></i></a></li>
-                                                <li class="review-total"> <a href="#"> ( 95 Reviews )</a></li>
+                                                <li class="review-total"> <a href="#"> ( 95 đánh giá )</a></li>
                                             </ul>
                                         </div>
-                                        <h3>Digital Stethoscope</h3>
+                                        <h3>Ống nghe kỹ thuật số</h3>
                                         <div class="product-price">
-                                            <span>$149.00</span>
-                                            <del>$165.00</del>
+                                            <span>3.490.000đ</span>
+                                            <del>3.850.000đ</del>
                                         </div>
                                         <div class="modal-product-meta ltn__product-details-menu-1">
                                             <ul>
                                                 <li>
-                                                    <strong>Categories:</strong>
+                                                    <strong>Danh mục:</strong>
                                                     <span>
-                                                        <a href="#">Parts</a>
-                                                        <a href="#">Car</a>
-                                                        <a href="#">Seat</a>
-                                                        <a href="#">Cover</a>
+                                                        <a href="#">Phụ kiện</a>
+                                                        <a href="#">Xe hơi</a>
+                                                        <a href="#">Ghế</a>
+                                                        <a href="#">Bọc ghế</a>
                                                     </span>
                                                 </li>
                                             </ul>
                                         </div>
                                         <!-- Phần variants -->
                                         <div class="modal-product-variants ltn__product-details-menu-1">
-                                            <strong>Variants:</strong>
+                                            <strong>Phân loại:</strong>
                                             <div class="variant-list"></div>
                                         </div>
                                         <div class="ltn__product-details-menu-2">
@@ -63,7 +63,7 @@
                                                     <button id="quick-add-to-cart-btn"
                                                         class="theme-btn-1 btn btn-effect-1">
                                                         <i class="fas fa-shopping-cart"></i>
-                                                        <span>ADD TO CART</span>
+                                                        <span>Thêm vào giỏ</span>
                                                     </button>
                                                 </li>
                                             </ul>

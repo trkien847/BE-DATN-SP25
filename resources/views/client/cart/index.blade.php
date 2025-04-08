@@ -9,12 +9,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ltn__breadcrumb-inner">
-                        <h1 class="page-title">Cart</h1>
+                        <h1 class="page-title">Giỏ hàng</h1>
                         <div class="ltn__breadcrumb-list">
                             <ul>
-                                <li><a href="index.html"><span class="ltn__secondary-color"><i
-                                                class="fas fa-home"></i></span> Home</a></li>
-                                <li id="cart-page">Cart</li>
+                                <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i
+                                                class="fas fa-home"></i></span>Trang chủ</a></li>
+                                <li id="cart-page">Giỏ hàng</li>
                             </ul>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
                                             <td><input type="checkbox" class="cart-item-checkbox"
                                                     data-cart-id="{{ $cart->id }}"
                                                     data-product-id="{{ $cart->product->id }}"></td>
-                                            <td class="cart-product-remove">x</td>
+                                            <td class="cart-product-remove"><i class="fas fa-trash-alt"></td>
                                             <td class="cart-product-image">
                                                 <a href="product-details.html"><img
                                                         src="{{ asset('upload/' . $cart->product->thumbnail) }}"
@@ -112,7 +112,7 @@
                         </div>
 
                         <div class="shoping-cart-total mt-50">
-                            <h4>Thông tin Sikibidi</h4>
+                            <h4>Thông tin đơn hàng:</h4>
                             <table class="table">
                                 <tbody id="cart-details">
 
@@ -125,7 +125,7 @@
                                         </tr>
                                     @endif
                                     <tr>
-                                        <td><strong>Số tiền bốc hơi của bạn</strong></td>
+                                        <td><strong>Số tiền cần thanh toán: </strong></td>
                                         <td><strong
                                                 id="cart-grand-total">{{ number_format($subtotal - ($appliedCoupon['discount'] ?? 0)) }}đ</strong>
                                         </td>
@@ -167,12 +167,14 @@
                     <div
                         class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
-                            <h1>Buy medical disposable face mask <br> to protect your loved ones</h1>
+                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">Explore Products <i
-                                    class="icon-next"></i></a>
+                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                Khám phá sản phẩm <i class="icon-next"></i>
+                            </a>
                         </div>
+                        
                     </div>
                 </div>
             </div>
