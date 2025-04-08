@@ -99,10 +99,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Chi Tiết Phiếu Nhập</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <h5 class="modal-title">Chi Tiết Phiếu Nhập ( Designed by TG )</h5>
             </div>
             <div class="modal-body">
                 <div id="importDetail">
@@ -358,48 +355,53 @@ async function showImportDetail(importId) {
                                     <th>Biến thể</th>
                                     <th>Số lượng</th>
                                     <th>Giá nhập</th>
+                                    <th>NSX</th>
+                                    <th>HSD</th>
                                     <th>Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody>`;
 
-            data.import.import_products.forEach(product => {
-                product.variants.forEach(variant => {
-                    html += `
-                        <tr>
-                            <td>${product.product_name}</td>
-                            <td>${variant.variant_name}</td>
-                            <td>${variant.quantity}</td>
-                            <td>${new Intl.NumberFormat('vi-VN').format(variant.import_price)}đ</td>
-                            <td>${new Intl.NumberFormat('vi-VN').format(variant.total_price)}đ</td>
-                        </tr>
-                    `;
-                });
-            });
+                            data.import.import_products.forEach(product => {
+                                product.variants.forEach(variant => {
+                                    html += `
+                                        <tr>
+                                            <td>${product.product_name}</td>
+                                            <td>${variant.variant_name}</td>
+                                            <td>${variant.quantity}</td>
+                                            <td>${new Intl.NumberFormat('vi-VN').format(variant.import_price)}đ</td>
+                                            <td>${product.manufacture_date}</td>
+                                            <td>${product.expiry_date}</td>
+                                            <td>${new Intl.NumberFormat('vi-VN').format(variant.total_price)}đ</td>
+                                        </tr>
+                                    `;
+                                });
+                            });
 
-            html += `
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="2"><strong>Tổng cộng:</strong></td>
-                                    <td><strong>${new Intl.NumberFormat('vi-VN').format(data.import.total_quantity)}</strong></td>
-                                    <td></td>
-                                    <td><strong>${new Intl.NumberFormat('vi-VN').format(data.import.total_price)}đ</strong></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            `;
+                            html += `
+                                            </tbody>
+                                            <hr>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="2"><strong>Tổng cộng:</strong></td>
+                                                    <td><strong>${new Intl.NumberFormat('vi-VN').format(data.import.total_quantity)}</strong></td>
+                                                    <td></td>
+                                                    <td><strong>${new Intl.NumberFormat('vi-VN').format(data.import.total_price)}đ</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
 
-            document.getElementById('importDetail').innerHTML = html;
-            $('#importDetailModal').modal('show');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi tải dữ liệu');
-    }
-}
+                            document.getElementById('importDetail').innerHTML = html;
+                            $('#importDetailModal').modal('show');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi tải dữ liệu');
+                    }
+                }
 
 function showImagePreview(imageUrl) {
     const modal = document.getElementById('imagePreviewModal');

@@ -20,7 +20,7 @@ class Attribute extends Model
 
     public function values()
     {
-        return $this->hasMany(AttributeValue::class, 'attribute_id'); // Định nghĩa khóa ngoại
+        return $this->hasMany(AttributeValue::class, 'attribute_id'); 
     }
 }
 

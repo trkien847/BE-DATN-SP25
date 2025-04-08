@@ -35,6 +35,15 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+    public function importProduct()
+    {
+        return $this->belongsTo(ImportProduct::class, 'product_id', 'product_id')
+            ->latest('created_at');
+    }
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');

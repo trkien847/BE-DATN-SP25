@@ -223,6 +223,11 @@
             <form id="orderImportForm">
                 @csrf
                 <div class="form-group">
+                    <label for="order_code">Mã lô <span class="text-danger">*</span></label>
+                    <input type="text" id="order_code" name="order_code" value="LOT-"  pattern="LOT-.*" title="Mã lô phải bắt đầu bằng 'LOT-' và có ít nhất 1 ký tự sau đó" required>
+                    <small class="form-text text-muted">Mã lô phải bắt đầu bằng "LOT-"</small>
+                </div>
+                <div class="form-group">
                     <label for="order_name">Tên lô hàng <span class="text-danger">*</span></label>
                     <input type="text" id="order_name" name="order_name" required>
                 </div>
@@ -1240,7 +1245,6 @@
 
 @push('scripts')
 <script>
-    // Copy toàn bộ JavaScript từ file HTML cũ và thêm các chức năng mới
     document.addEventListener('DOMContentLoaded', () => {
         const viewMoreBtn = document.getElementById('view-more-btn');
         const userDetails = document.getElementById('user-details');
@@ -1248,12 +1252,10 @@
         const supplierDetails = document.getElementById('supplier-details');
         const addSupplierBtn = document.getElementById('add-supplier-btn');
         const searchInput = document.getElementById('search-product');
-
         const modal = document.getElementById('supplierModal');
         const closeBtn = document.querySelector('.close');
         const cancelBtn = document.querySelector('.btn-cancel');
         const supplierForm = document.getElementById('supplierForm');
-
         const addProductBtn = document.getElementById('add-product-btn');
         const productModal = document.getElementById('productModal');
         const closeProductBtn = document.querySelector('.close-product');
@@ -1261,25 +1263,22 @@
         const confirmProductsBtn = document.getElementById('confirm-products');
         const selectedProductsContainer = document.getElementById('selected-products');
         const productCheckboxes = document.querySelectorAll('.product-checkbox');
-        // Image Upload Preview
         const fileInput = document.getElementById('proof-files');
         const filesPreview = document.getElementById('files-preview');
         const uploadArea = document.querySelector('.file-preview-area');
         const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
         const allowedFileTypes = [...allowedImageTypes, 'application/pdf'];
         let files = [];
-
         const orderImportModal = document.getElementById('orderImportModal');
         const addOrderBatchBtn = document.getElementById('add-order-batch-btn');
         const orderImportForm = document.getElementById('orderImportForm');
         const orderBatchSelect = document.getElementById('order-batch-select');
         const orderBatchDetails = document.getElementById('order-batch-details');
-        // Toggle user details with animation
+
         viewMoreBtn.addEventListener('click', () => {
             userDetails.classList.toggle('hidden');
         });
 
-       //Chức năng lấy thông tin nhà cung cấp  
         supplierSelect.addEventListener('change', async () => {
             const supplierId = supplierSelect.value;
             if (supplierId) {
@@ -1300,7 +1299,6 @@
             }
         });
 
-        // Add new supplier
         addSupplierBtn.addEventListener('click', () => {
             modal.style.display = 'block';
         });
@@ -1319,7 +1317,6 @@
             }
         });
 
-        //
         supplierForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1340,27 +1337,18 @@
                 }
 
                 const supplier = await response.json();
-                
-                // Thêm supplier mới vào select box
                 const option = new Option(supplier.name, supplier.id);
                 supplierSelect.add(option);
-                
-                // Chọn supplier mới thêm
                 supplierSelect.value = supplier.id;
-                
-                // Hiển thị thông tin chi tiết
                 document.getElementById('supplier-details').innerHTML = `
                     <p><i class="fas fa-map-marker-alt"></i> ${supplier.address || 'N/A'}</p>
                     <p><i class="fas fa-envelope"></i> ${supplier.email || 'N/A'}</p>
                     <p><i class="fas fa-phone"></i> ${supplier.phone || 'N/A'}</p>
                 `;
                 document.getElementById('supplier-details').classList.remove('hidden');
-
-                // Đóng modal và reset form
                 modal.style.display = 'none';
                 supplierForm.reset();
 
-                // Hiển thị thông báo thành công
                 alert('Thêm nhà cung cấp thành công!');
 
             } catch (error) {
@@ -1369,10 +1357,8 @@
             }
         });
 
-        // Handle file input change removeProduct
         fileInput.addEventListener('change', handleFilesSelect);
 
-        // Handle drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('drag-over');
@@ -1396,10 +1382,8 @@
             
             newFiles.forEach(file => {
                 try {
-                    // Validate file
                     validateFile(file);
                     
-                    // Kiểm tra xem file đã tồn tại chưa
                     if (!files.some(f => f.name === file.name)) {
                         files.push(file);
                         createPreviewElement(file);
@@ -1413,12 +1397,10 @@
         }
 
         function validateFile(file) {
-            // Check file type
             if (!file.type.match('image.*') && file.type !== 'application/pdf') {
                 throw new Error('Chỉ chấp nhận file ảnh hoặc PDF!');
             }
 
-            // Check file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 throw new Error('Kích thước file không được vượt quá 5MB!');
             }
@@ -1427,17 +1409,16 @@
         }
 
         function updateFilePreview(files) {
-            filesPreview.innerHTML = ''; // Clear existing previews
+            filesPreview.innerHTML = '';
             files.forEach(file => createPreviewElement(file));
         }
 
-        // Cập nhật hàm createPreviewElement
         function createPreviewElement(file) {
             const div = document.createElement('div');
             div.className = 'file-preview-item';
             
             if (file.type.startsWith('image/')) {
-                // For images
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     div.innerHTML = `
@@ -1450,7 +1431,6 @@
                         </div>
                     `;
                     
-                    // Add remove event listener
                     div.querySelector('.remove-file').addEventListener('click', () => {
                         const index = files.indexOf(file);
                         if (index > -1) {
@@ -1462,7 +1442,6 @@
                 };
                 reader.readAsDataURL(file);
             } else {
-                // For PDFs
                 div.classList.add('pdf-preview');
                 div.innerHTML = `
                     <div class="file-preview-content">
@@ -1474,7 +1453,6 @@
                     </div>
                 `;
 
-                // Add remove event listener
                 div.querySelector('.remove-file').addEventListener('click', () => {
                     const index = files.indexOf(file);
                     if (index > -1) {
@@ -1494,12 +1472,10 @@
             fileInput.files = dataTransfer.files;
         }
 
-        // Show modal
         addOrderBatchBtn.addEventListener('click', () => {
             orderImportModal.style.display = 'block';
         });
 
-        // Close modal
         orderImportModal.querySelector('.close').addEventListener('click', () => {
             orderImportModal.style.display = 'none';
         });
@@ -1508,10 +1484,18 @@
             orderImportModal.style.display = 'none';
         });
 
-        // Handle form submission
         orderImportForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const orderCode = document.getElementById('order_code').value;
+            const orderName = document.getElementById('order_name').value;
+            
+            
+            if (!orderCode.startsWith('LOT-') || orderCode.length <= 4) {
+                alert('Mã lô phải bắt đầu bằng "LOT-" và có ít nhất 1 ký tự sau đó');
+                return;
+            }
+
             const formData = new FormData(orderImportForm);
             try {
                 const response = await fetch('/admin/order-imports', {
@@ -1527,7 +1511,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    const option = new Option(result.data.order_name, result.data.id);
+                    const option = new Option(`${result.data.order_code} (${result.data.order_name})`, result.data.id);
                     orderBatchSelect.add(option);
                     orderBatchSelect.value = result.data.id;
                     orderBatchDetails.innerHTML = `
@@ -1538,6 +1522,8 @@
                     orderBatchDetails.classList.remove('hidden');
                     orderImportModal.style.display = 'none';
                     orderImportForm.reset();
+                   
+                    document.getElementById('order_code').value = 'LOT-';
 
                     alert('Thêm lô hàng thành công!');
                 } else {
@@ -1549,6 +1535,13 @@
             }
         });
 
+        document.getElementById('order_code').addEventListener('input', function(e) {
+            let value = e.target.value;
+            if (!value.startsWith('LOT-')) {
+                value = 'LOT-' + value.replace('LOT-', '');
+            }
+            e.target.value = value;
+        });
 
         orderBatchSelect.addEventListener('change', async (e) => {
             const selectedId = e.target.value;
@@ -1796,13 +1789,10 @@
     });
 
     function handleImageUpload(file) {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
             alert('Vui lòng chọn file ảnh!');
             return;
         }
-
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert('Kích thước ảnh không được vượt quá 5MB!');
             return;
@@ -1824,12 +1814,10 @@
                 const productItem = this.closest('.product-item');
                 const checkbox = productItem.querySelector('.product-checkbox');
                 checkbox.checked = false;
-                // Trigger the change event
                 checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        // Improve variant search functionality
         document.querySelectorAll('.variant-search-input').forEach(input => {
             input.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase().trim();
@@ -1844,14 +1832,12 @@
         });
 
         function cleanup() {
-            // Remove event listeners when component is unmounted
             window.removeEventListener('click', handleWindowClick);
             uploadArea.removeEventListener('dragover', handleDragOver);
             uploadArea.removeEventListener('dragleave', handleDragLeave);
             uploadArea.removeEventListener('drop', handleDrop);
         }
 
-        // Search functionality
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const productItems = document.querySelectorAll('.product-item');
@@ -1879,7 +1865,6 @@
             const proofFiles = document.getElementById('proof-files').files; // FileList object
             const selectedProducts = document.querySelectorAll('.selected-product-item');
 
-            // Validate required fields
             if (!importDate) {
                 alert('Vui lòng chọn ngày nhập hàng!');
                 return;
@@ -1895,13 +1880,11 @@
                 return;
             }
 
-            // Sửa lại phần kiểm tra files
             if (!proofFiles || proofFiles.length === 0) {
                 alert('Vui lòng chọn ít nhất một file chứng từ!');
                 return;
             }
 
-            // Build products data
             const productsData = {};
             selectedProducts.forEach(product => {
                 const productId = product.dataset.productId;
@@ -1917,7 +1900,6 @@
                     };
                 }
 
-                // Validate required inputs
                 if (!priceInput.value || !quantityInput.value || 
                     !manufactureDateInput.value || !expiryDateInput.value) {
                     throw new Error('Vui lòng điền đầy đủ thông tin cho tất cả sản phẩm');
@@ -1937,7 +1919,6 @@
             formData.append('order_import_id', orderImportId);
             formData.append('products', JSON.stringify(productsData));
 
-            // Append files
             for (let i = 0; i < proofFiles.length; i++) {
                 formData.append('proof_files[]', proofFiles[i]);
             }

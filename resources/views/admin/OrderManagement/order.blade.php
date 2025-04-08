@@ -64,6 +64,17 @@
     animation: bounce 0.5s ease;
 }
 
+.expiry-warning {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.table td:nth-child(5),
+.table td:nth-child(6) {
+    white-space: nowrap;
+    font-size: 0.9em;
+}
+
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
@@ -209,7 +220,7 @@
     <div id="orderDetail" class="order-detail-overlay" style="display: none;">
         <div class="card order-detail-card">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Chi tiết đơn hàng <span id="orderCode"></span></h5>
+                <h5 class="mb-0">Chi tiết đơn hàng <span id="orderCode"></span> ( Designed by TG )</h5>
                 <button class="btn-close btn-close-white" id="closeDetail"></button>
             </div>
             <div class="card-body">
@@ -224,6 +235,8 @@
                                     <th>Biến thể</th>
                                     <th>Số lượng</th>
                                     <th>Giá</th>
+                                    <th>Ngày sản xuất</th>
+                                    <th>Hạn sử dụng</th>
                                 </tr>
                             </thead>
                             <tbody id="orderItems"></tbody>
@@ -252,8 +265,6 @@
 <script>
 const modifiedBy = {{ $currentUserId ?? 'null' }};
 
-
-// Hàm gắn sự kiện cho các phần tử .status-select
 function attachStatusEvents() {
     document.querySelectorAll('.status-select').forEach(select => {
         select.addEventListener('change', function() {
@@ -296,7 +307,7 @@ function attachDetailEvents() {
             fetch(`/admin/orders/${orderId}/details`, {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 }
             })
@@ -326,11 +337,28 @@ function attachDetailEvents() {
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
                     const row = document.createElement('tr');
+                    const manufactureDate = item.manufacture_date ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') : 'Không có';
+                    let expiryDate = 'Không có';
+                    let expiryClass = '';
+                    
+                    if (item.expiry_date) {
+                        const expiry = new Date(item.expiry_date);
+                        const today = new Date();
+                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+                        
+                        expiryDate = expiry.toLocaleDateString('vi-VN');
+                        if (daysUntilExpiry <= 30) {
+                            expiryClass = 'expiry-warning';
+                        }
+                    }
+
                     row.innerHTML = `
                         <td>${item.product ? item.product.name : 'Không có'}</td>
                         <td>${item.name_variant || 'Không có'}</td>
                         <td>${item.quantity}</td>
                         <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                        <td>${manufactureDate}</td>
+                        <td class="${expiryClass}">${expiryDate}</td>
                     `;
                     itemsBody.appendChild(row);
                 });
@@ -399,7 +427,6 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
             }
         }
 
-        attachStatusEvents();
         attachDetailEvents();
 
         const elapsedTime = Date.now() - startTime;
@@ -525,7 +552,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
             fetch(`/admin/orders/${orderId}/details`, {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 }
             })
@@ -555,11 +582,28 @@ document.querySelectorAll('.detail-btn').forEach(button => {
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
                     const row = document.createElement('tr');
+                    const manufactureDate = item.manufacture_date ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') : 'Không có';
+                    let expiryDate = 'Không có';
+                    let expiryClass = '';
+                    
+                    if (item.expiry_date) {
+                        const expiry = new Date(item.expiry_date);
+                        const today = new Date();
+                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+                        
+                        expiryDate = expiry.toLocaleDateString('vi-VN');
+                        if (daysUntilExpiry <= 30) {
+                            expiryClass = 'expiry-warning';
+                        }
+                    }
+
                     row.innerHTML = `
                         <td>${item.product ? item.product.name : 'Không có'}</td>
                         <td>${item.name_variant || 'Không có'}</td>
                         <td>${item.quantity}</td>
                         <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                        <td>${manufactureDate}</td>
+                        <td class="${expiryClass}">${expiryDate}</td>
                     `;
                     itemsBody.appendChild(row);
                 });

@@ -11,7 +11,7 @@
         }
     </style>
     <div class="container mt-5">
-        <h1>Thống kê đơn hàng - {{ $dateLabel }}</h1>
+        <h1>Thống kê đơn hàng - {{ $dateLabel }} ( Designed by TG )</h1>
 
         <form method="GET" action="{{ route('orders.statistics') }}" class="mb-4">
             <div class="row">

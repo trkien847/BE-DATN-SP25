@@ -657,12 +657,13 @@ class ProductController extends Controller
     {
         try {
             $validated = $request->validate([
+                'order_code' => 'required|string|max:255|unique:order_imports,order_code',
                 'order_name' => 'required|string|max:255',
                 'notes' => 'nullable|string'
             ]);
 
             $orderImport = OrderImport::create([
-                'order_code' => 'LOT-' . Str::random(8),
+                'order_code' => $validated['order_code'],
                 'order_name' => $validated['order_name'],
                 'notes' => $validated['notes']
             ]);
@@ -796,67 +797,29 @@ class ProductController extends Controller
         return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được thêm!');
     }
 
-    public function attributesUpdate(Request $request, $id)
+    public function toggleStatus(Request $request, Attribute $attribute)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'is_variant' => 'boolean',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $attribute->update([
+                'is_active' => $request->is_active
+            ]);
 
-
-        $attribute = Attribute::findOrFail($id);
-
-
-        $existingAttribute = Attribute::where('name', $request->name)
-            ->where('slug', $request->slug)
-            ->where('id', '!=', $id)
-            ->first();
-
-        if ($existingAttribute) {
-            $existingValue = AttributeValue::where('attribute_id', $existingAttribute->id)
-                ->where('value', $request->value)
-                ->first();
-
-            if ($existingValue) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', "Thuộc tính '$request->name' với slug '$request->slug' và giá trị '$request->value' đã tồn tại!");
-            }
+            return response()->json([
+                'success' => true,
+                'message' => $request->is_active ?
+                    'Thuộc tính đã được hiển thị' :
+                    'Thuộc tính đã được ẩn'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái'
+            ], 500);
         }
-
-
-        $attribute->name = $request->name;
-        $attribute->slug = $request->slug;
-        $attribute->is_variant = 1;
-        $attribute->is_active = $request->has('is_active') ? $request->is_active : 1;
-        $attribute->save();
-
-
-        $attributeValue = AttributeValue::where('attribute_id', $id)->first();
-        if ($attributeValue) {
-            $attributeValue->value = $request->value;
-            $attributeValue->is_active = 1;
-            $attributeValue->save();
-        } else {
-            $attributeValue = new AttributeValue();
-            $attributeValue->attribute_id = $attribute->id;
-            $attributeValue->value = $request->value;
-            $attributeValue->is_active = 1;
-            $attributeValue->save();
-        }
-
-        return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được cập nhật!');
     }
 
 
-
-
-    // cli
-
-
-
+    // client
     public function productct($id)
     {
         $carts = Cart::where('user_id', auth()->id())->get();
@@ -1129,7 +1092,7 @@ class ProductController extends Controller
             ->with(['variants.attributeValues.attribute', 'attributeValues.attribute'])
             ->get();
         $suppliers = Supplier::all();
-        $orderImport = OrderImport::where(function($query) {
+        $orderImport = OrderImport::where(function ($query) {
             $query->where('created_at', '>=', now()->subDays(2));
         })->get();
         return view('admin.imports.create', compact('products', 'suppliers', 'orderImport'));
@@ -1161,7 +1124,6 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            // Validate the request
             $validated = $request->validate([
                 'import_date' => 'required|date',
                 'supplier_id' => 'required|exists:suppliers,id',
@@ -1172,14 +1134,12 @@ class ProductController extends Controller
             ]);
 
             $orderImport = OrderImport::findOrFail($request->order_import_id);
-            // Decode products JSON
             $products = json_decode($request->products, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \Exception('Dữ liệu sản phẩm không hợp lệ');
             }
 
-            // Handle image upload
             $fileNames = [];
             if ($request->hasFile('proof_files')) {
                 foreach ($request->file('proof_files') as $file) {
@@ -1189,7 +1149,6 @@ class ProductController extends Controller
                 }
             }
 
-            // Create import record
             $import = Import::create([
                 'import_code' => $orderImport->order_code,
                 'import_date' => $request->import_date,
@@ -1208,16 +1167,20 @@ class ProductController extends Controller
                 if (!isset($productData['variants']) || !is_array($productData['variants'])) {
                     throw new \Exception('Dữ liệu biến thể không hợp lệ');
                 }
-
                 $product = Product::findOrFail($productId);
+
+                $firstVariant = reset($productData['variants']);
+                $manufactureDate = $firstVariant['manufacture_date'] ?? null;
+                $expiryDate = $firstVariant['expiry_date'] ?? null;
 
                 $importProduct = ImportProduct::create([
                     'import_id' => $import->id,
                     'product_id' => $productId,
                     'product_name' => $product->name,
                     'quantity' => 0,
-                    'import_price' => 0,
-                    'total_price' => 0
+                    'total_price' => 0,
+                    'manufacture_date' => $manufactureDate,
+                    'expiry_date' => $expiryDate
                 ]);
 
                 $productTotalQuantity = 0;
@@ -1266,8 +1229,6 @@ class ProductController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-
-           // Delete uploaded files if they exist
             if (!empty($fileNames)) {
                 foreach ($fileNames as $fileName) {
                     if (file_exists(public_path('upload/imports/' . $fileName))) {

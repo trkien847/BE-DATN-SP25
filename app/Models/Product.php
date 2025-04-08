@@ -68,6 +68,10 @@ class Product extends Model
     {
         return $this->belongsToMany(AttributeValue::class, 'attribute_value_product');
     }
+    public function importProducts()
+    {
+        return $this->hasMany(ImportProduct::class);
+    }
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 }

@@ -455,9 +455,12 @@ class CartController extends Controller
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
+
         $user = Auth::user();
         $orders = Order::where('user_id', $user->id)
-            ->with(['latestOrderStatus', 'items']) 
+            ->with(['latestOrderStatus', 'items.product.importProducts' => function ($query) {
+                $query->latest();
+            }])
             ->get();
 
         return view('client.cart.history', compact('orders', 'carts', 'subtotal'));
@@ -549,7 +552,7 @@ class CartController extends Controller
         $order = Order::findOrFail($orderId);
 
         $request->validate([
-            'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048', 
+            'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if ($request->hasFile('proof_image')) {
@@ -713,15 +716,15 @@ class CartController extends Controller
         }
 
         $currentStatus = $order->latestOrderStatus->name;
-        $cancelableStatuses = ['Chờ hủy', 'Yêu cầu hoàn hàng']; 
+        $cancelableStatuses = ['Chờ hủy', 'Yêu cầu hoàn hàng'];
 
         if (!in_array($currentStatus, $cancelableStatuses)) {
             return redirect()->back()->with('error', 'Không thể chấp nhận yêu cầu này!');
         }
 
         $paymentStatusMap = [
-            1 => 'Đã hủy',        
-            2 => 'Chờ hoàn tiền',  
+            1 => 'Đã hủy',
+            2 => 'Chờ hoàn tiền',
         ];
 
         if (!array_key_exists($order->payment_id, $paymentStatusMap)) {
@@ -748,7 +751,7 @@ class CartController extends Controller
                 'order_id' => $order->id,
                 'order_status_id' => $canceledStatus->id,
                 'note' => $note,
-                'modified_by' => Auth::id(), 
+                'modified_by' => Auth::id(),
             ]);
 
             $productVariantIds = $order->items->pluck('product_variant_id')->all();

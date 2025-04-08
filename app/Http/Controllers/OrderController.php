@@ -7,7 +7,9 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Order;
 use App\Models\OrderOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ImportProduct;
 use App\Models\Notification;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
@@ -52,18 +54,29 @@ class OrderController extends Controller
 
     public function getOrderDetails($id)
     {
-        try {
-            $order = Order::with(['items.product'])->findOrFail($id);
-            return response()->json([
-                'order' => $order,
-                'items' => $order->items
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Không thể lấy chi tiết đơn hàng',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $order = Order::findOrFail($id);
+        $items = OrderItem::with(['product' => function ($query) {
+            $query->with(['importProducts' => function ($query) {
+                $query->orderBy('created_at', 'desc')->first(); 
+            }]);
+        }])->where('order_id', $id)->get()
+            ->map(function ($item) {
+                $latestImport = $item->product->importProducts->first();
+
+                return [
+                    'product' => $item->product,
+                    'name_variant' => $item->name_variant,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'manufacture_date' => $latestImport ? $latestImport->manufacture_date : null,
+                    'expiry_date' => $latestImport ? $latestImport->expiry_date : null
+                ];
+            });
+
+        return response()->json([
+            'order' => $order,
+            'items' => $items
+        ]);
     }
 
     public function updateStatus(Request $request)

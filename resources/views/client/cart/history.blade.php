@@ -9,6 +9,16 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
+    .text-danger {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .order-details ul li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        line-height: 1.6;
+    }
     .order-table th,
     .order-table td {
         padding: 12px 15px;
@@ -17,7 +27,7 @@
     }
 
     .order-table th {
-        background-color: #4CAF50;
+        background-color:rgb(0, 157, 115);
         color: white;
         font-weight: 600;
     }
@@ -38,12 +48,12 @@
     }
 
     .detail-btn {
-        background-color: #4CAF50;
+        background-color:rgb(0, 157, 115);
         color: white;
     }
 
     .detail-btn:hover {
-        background-color: #45a049;
+        background-color: rgb(0, 157, 115);
     }
 
     .cancel-btn {
@@ -216,23 +226,54 @@
         <div class="modal-content">
             <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">×</button>
             <div class="order-details">
-                <h3>Chi tiết đơn hàng {{ $order->code }}</h3>
+                <h3>Chi tiết đơn hàng {{ $order->code }} ( Designed by TG )</h3>
                 <p><strong>Ngày mua:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
                 <p><strong>Trạng thái:</strong> {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</p>
                 <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
-                <p><strong>Ảnh hoàn tiền:</strong> <img src="{{ asset('upload/'.$order->refund_proof_image) }}" class="img-thumbnail" alt="Product Image" width="100px" height="100px"></p>
+                @if($order->refund_proof_image)
+                    <p>
+                        <strong>Ảnh hoàn tiền:</strong> 
+                        <img src="{{ asset('upload/'.$order->refund_proof_image) }}" 
+                            class="img-thumbnail" 
+                            alt="Ảnh chứng minh hoàn tiền" 
+                            width="100px" 
+                            height="100px"
+                            onclick="showFullImage('{{ asset('upload/'.$order->refund_proof_image) }}')"
+                            style="cursor: pointer;">
+                    </p>
+                @endif
 
                 <h4>Thông tin sản phẩm:</h4>
                 <ul>
                     @foreach($order->items as $item)
                     <li>
-                        <strong>Sản phẩm:</strong> {{ $item->name }} <br>
+                        <strong><a href="{{ route('products.productct', $item->id) }}">Sản phẩm:</a></strong> {{ $item->name }} <br>
                         <strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }}
                         @if($item->attributes_variant)
                         ({{ $item->attributes_variant }})
                         @endif <br>
                         <strong>Giá:</strong> {{ number_format($item->price_variant ?? $item->price) }} VNĐ <br>
-                        <strong>Số lượng:</strong> {{ $item->quantity }}
+                        <strong>Số lượng:</strong> {{ $item->quantity }} <br>
+                        @if($item->product && $item->product->importProducts->isNotEmpty())
+                            <strong>Ngày sản xuất:</strong> 
+                            {{ $item->product->importProducts->first()->manufacture_date ? 
+                            \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y') : 
+                            'Không có' }} <br>
+                            <strong>Hạn sử dụng:</strong> 
+                            @php
+                                $expiryDate = $item->product->importProducts->first()->expiry_date;
+                                $daysUntilExpiry = $expiryDate ? \Carbon\Carbon::parse($expiryDate)->diffInDays(now()) : null;
+                            @endphp
+                            <span class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                @if($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                    (Còn {{ $daysUntilExpiry }} ngày)
+                                @endif
+                            </span>
+                        @else
+                            <strong>Ngày sản xuất:</strong> Không có <br>
+                            <strong>Hạn sử dụng:</strong> Không có
+                        @endif
                     </li>
                     @endforeach
                 </ul>

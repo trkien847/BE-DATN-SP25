@@ -154,7 +154,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng  order.refund.submit
+  //lịch sử mua hàng 
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
@@ -178,7 +178,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   // thông kê
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
-  //nhập  search /order/23/details
+  //nhập  search 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
   Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
   Route::patch('products/import/confirm/{id}', [ProductController::class, 'confirmImport'])->name('products.import.confirm');
@@ -188,7 +188,8 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/products/search', [ProductController::class, 'search'])->name('products.import.search');
 
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-  // Quản lý thuộc tính sản phẩm /orders/35/refund-form
+  // Quản lý thuộc tính sản phẩm 
+  Route::post('/admin/attributes/{attribute}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.attributes.toggle-status');
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
   Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
   Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
@@ -206,7 +207,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
   Route::post('/update-bulk-status', [OrderController::class, 'updateBulkStatus'])->name('update.bulk.status');
 
-  // phân quyền quản lý đơn hàng products/import/confirm
+  // phân quyền quản lý đơn hàng /cart/orderHistory
   Route::post('/notifications/accept/{order_id}', [OrderController::class, 'accept'])->name('notifications.accept');
   Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
   Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
