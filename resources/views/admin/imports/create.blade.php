@@ -10,7 +10,6 @@
             <i class="fas fa-plus"></i> Thêm Sản Phẩm ( Designed by TG )
         </a>
         
-        <!-- Product selection modal -->
         <div id="productModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -38,11 +37,9 @@
 
                     <div class="variants-container hidden">
                         <div class="variants-controls">
-                            <!-- Search bar on top -->
                             <div class="variants-search">
                                 <input type="text" placeholder="Tìm biến thể..." class="variant-search-input">
                             </div>
-                            <!-- Buttons row below -->
                             <div class="variants-actions">    
                                 <div class="select-all-variants">
                                     <input type="checkbox" id="select-all-{{ $product->id }}" class="select-all-checkbox">
@@ -81,9 +78,8 @@
             </div>
         </div>
 
-        <!-- Selected products list -->
         <div id="selected-products" class="selected-products">
-            <!-- Selected products will be displayed here -->
+
         </div>
 
     </div>
@@ -185,7 +181,7 @@
     </form>
 
 
-<div class="modal" id="supplierModal">
+    <div class="modal" id="supplierModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Thêm Nhà Cung Cấp Mới</h3>
@@ -290,23 +286,23 @@
     }
 
     .expired-batch {
-    text-decoration: line-through;
-    color: #999;
-    position: relative;
-}
+        text-decoration: line-through;
+        color: #999;
+        position: relative;
+    }
 
-/* Style cho disabled option */
-select option:disabled {
-    background-color: #f8f9fa;
-    color: #999;
-}
+    /* Style cho disabled option */
+    select option:disabled {
+        background-color: #f8f9fa;
+        color: #999;
+    }
 
-/* Thêm dấu hiệu hết hạn */
-.expired-batch::after {
-    content: " (Hết hạn)";
-    color: #dc3545;
-    font-style: italic;
-}
+    /* Thêm dấu hiệu hết hạn */
+    .expired-batch::after {
+        content: " (Hết hạn)";
+        color: #dc3545;
+        font-style: italic;
+    }
 
     .count-badge i {
         color: var(--primary-color);
@@ -1531,20 +1527,15 @@ select option:disabled {
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Add new option to select
                     const option = new Option(result.data.order_name, result.data.id);
                     orderBatchSelect.add(option);
                     orderBatchSelect.value = result.data.id;
-
-                    // Update details
                     orderBatchDetails.innerHTML = `
                         <p><strong>Mã lô:</strong> ${result.data.order_code}</p>
                         <p><strong>Tên lô:</strong> ${result.data.order_name}</p>
                         <p><strong>Ghi chú:</strong> ${result.data.notes || 'Không có'}</p>
                     `;
                     orderBatchDetails.classList.remove('hidden');
-
-                    // Close modal and reset form
                     orderImportModal.style.display = 'none';
                     orderImportForm.reset();
 
@@ -1559,7 +1550,6 @@ select option:disabled {
         });
 
 
-        // Handle select change
         orderBatchSelect.addEventListener('change', async (e) => {
             const selectedId = e.target.value;
             if (!selectedId) {
@@ -1569,7 +1559,7 @@ select option:disabled {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.classList.contains('expired-batch')) {
                 alert('Không thể chọn lô hàng đã hết hạn!');
-                this.value = ''; // Reset về giá trị mặc định
+                this.value = '';
             }
 
             try {
@@ -1590,14 +1580,12 @@ select option:disabled {
             }
         });
 
-        // Close modal when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target == orderImportModal) {
                 orderImportModal.style.display = 'none';
             }
         });
 
-        // Show/hide product modal
         addProductBtn.addEventListener('click', () => {
             productModal.style.display = 'block';
         });
@@ -1610,7 +1598,6 @@ select option:disabled {
             productModal.style.display = 'none';
         });
 
-        // Thêm vào phần DOMContentLoaded
         document.querySelectorAll('.product-header').forEach(header => {
             header.addEventListener('click', (e) => {
                 if (!e.target.matches('input[type="checkbox"]')) {
@@ -1622,7 +1609,6 @@ select option:disabled {
             });
         });
 
-        // Xử lý chọn tất cả biến thể
         document.querySelectorAll('.select-all-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const variantsList = this.closest('.variants-container')
@@ -1632,7 +1618,6 @@ select option:disabled {
             });
         });
 
-        // Tìm kiếm biến thể
         document.querySelectorAll('.variant-search-input').forEach(input => {
             input.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
@@ -1646,7 +1631,6 @@ select option:disabled {
             });
         });
 
-        // Handle product selection DOMContentLoaded
         confirmProductsBtn.addEventListener('click', () => {
             const checkedProducts = document.querySelectorAll('.product-checkbox:checked');
             
@@ -1661,7 +1645,6 @@ select option:disabled {
                 const productId = checkbox.dataset.id;
                 const productName = checkbox.dataset.name;
                 
-                // Kiểm tra và thêm sản phẩm
                 addSelectedProduct(productId, productName);
             });
         });
@@ -1688,7 +1671,6 @@ select option:disabled {
             selectedVariants.forEach(variantCheckbox => {
                 const variantId = variantCheckbox.dataset.variantId;
                 
-                // Kiểm tra xem biến thể đã được thêm chưa
                 if (document.querySelector(`.selected-product-item[data-variant-id="${variantId}"]`)) {
                     console.log('Biến thể đã được thêm:', variantId);
                     return;
@@ -1730,7 +1712,6 @@ select option:disabled {
                 
                 selectedProductsContainer.insertAdjacentHTML('beforeend', productHtml);
 
-                // Thêm event listener cho nút xóa
                 const newRemoveButton = selectedProductsContainer.querySelector(
                     `.remove-product[data-variant-id="${variantId}"]`
                 );
@@ -1742,27 +1723,20 @@ select option:disabled {
                 }
             });
 
-            // Cập nhật tổng số sản phẩm đã chọn
             selectedProductCount += newProductsAdded;
             updateProductCount();
-            // Đóng modal sau khi thêm thành công
             productModal.style.display = 'none';
         }
 
-        // Thêm function cập nhật hiển thị số lượng
         function updateProductCount() {
-            // Kiểm tra xem element hiển thị số lượng đã tồn tại chưa
             let countElement = document.getElementById('selected-product-count');
             if (!countElement) {
-                // Nếu chưa có, tạo mới element
                 countElement = document.createElement('div');
                 countElement.id = 'selected-product-count';
                 countElement.className = 'selected-product-count';
-                // Thêm vào trước selectedProductsContainer
                 selectedProductsContainer.parentNode.insertBefore(countElement, selectedProductsContainer);
             }
             
-            // Cập nhật nội dung
             countElement.innerHTML = `
                 <div class="count-badge">
                     <i class="fas fa-box"></i>
@@ -1775,19 +1749,16 @@ select option:disabled {
         function removeProduct(button) {
             const productItem = button.closest('.selected-product-item');
             const productId = productItem.dataset.productId;
-            
-            // Uncheck checkbox trong modal
             const checkbox = document.querySelector(`#product-${productId}`);
             if (checkbox) {
                 checkbox.checked = false;
             }
             
             productItem.remove();
-            selectedProductCount--; // Giảm số lượng
-            updateProductCount(); // Cập nhật hiển thị
+            selectedProductCount--; 
+            updateProductCount(); 
         }
 
-       // Cập nhật lại event listener cho imageInput
         document.querySelectorAll('.product-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const productItem = this.closest('.product-item');
@@ -1800,15 +1771,12 @@ select option:disabled {
                 } else {
                     variantsContainer.classList.add('hidden');
                     removeBtn.classList.remove('visible');
-                    // Uncheck all variants
                     variantsContainer.querySelectorAll('.variant-checkbox').forEach(v => v.checked = false);
-                    // Uncheck select all
                     variantsContainer.querySelector('.select-all-checkbox').checked = false;
                 }
             });
         });
 
-        // Handle drag and drop handleFilesSelect
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('drag-over');
