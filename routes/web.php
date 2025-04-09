@@ -79,7 +79,7 @@ Route::get('/thank-you', function () {
 Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
 
 
-// Ai thích hợp /products/import
+// Ai thích hợp products.store
 Route::get('/ai-tg', function () {
   return view('ai.aitg');
 })->name('ai-tg');

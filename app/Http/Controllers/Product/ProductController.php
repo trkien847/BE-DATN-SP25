@@ -100,12 +100,25 @@ class ProductController extends Controller
             'sku' => 'required|max:100',
             'brand_id' => 'required',
             'thumbnail' => 'nullable',
+
+            'variant_prices.*.price' => 'required|numeric|min:0',
+            'variant_prices.*.sale_price' => 'nullable|numeric|min:0|lt:variant_prices.*.price',
+            'variant_prices.*.sale_price_start_at' => 'required_with:variant_prices.*.sale_price',
+            'variant_prices.*.sale_price_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_price_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
+
+            'variant_prices.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
+            'variant_prices.*.price.numeric' => 'Giá bán phải là số',
+            'variant_prices.*.price.min' => 'Giá bán phải lớn hơn 0',
+            'variant_prices.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
+            'variant_prices.*.sale_price_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variant_prices.*.sale_price_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variant_prices.*.sale_price_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -229,8 +242,14 @@ class ProductController extends Controller
         if ($request->has('variants')) {
             foreach ($request->variants as $attributeId => $variantValues) {
                 foreach ($variantValues as $valueId) {
+                    $variantPriceData = $request->input("variant_prices.{$valueId}", []);
+
                     $productVariant = ProductVariant::create([
                         'product_id' => $product->id,
+                        'price' => $variantPriceData['price'] ?? null,
+                        'sale_price' => $variantPriceData['sale_price'] ?? null,
+                        'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? null,
+                        'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? null,
                     ]);
 
                     AttributeValueProductVariant::create([
