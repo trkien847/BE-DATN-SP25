@@ -194,6 +194,62 @@
           background-position: 0 0;
       }
   }
+
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+.loading-text span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-text span:nth-child(1) { animation-delay: 0.1s; }
+.loading-text span:nth-child(2) { animation-delay: 0.2s; }
+.loading-text span:nth-child(3) { animation-delay: 0.3s; }
+.loading-text span:nth-child(4) { animation-delay: 0.4s; }
+.loading-text span:nth-child(5) { animation-delay: 0.5s; }
+.loading-text span:nth-child(6) { animation-delay: 0.6s; }
+.loading-text span:nth-child(7) { animation-delay: 0.7s; }
+.loading-text span:nth-child(8) { animation-delay: 0.8s; }
+.loading-text span:nth-child(9) { animation-delay: 0.9s; }
+.loading-text span:nth-child(10) { animation-delay: 1.0s; }
+.loading-text span:nth-child(11) { animation-delay: 1.1s; }
+.loading-text span:nth-child(12) { animation-delay: 1.2s; }
+.loading-text span:nth-child(13) { animation-delay: 1.3s; }
+.loading-text span:nth-child(14) { animation-delay: 1.4s; }
 </style>
 
 @if(session('success'))
@@ -209,13 +265,34 @@
 </script>
 @endif
 
+<div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-text">
+                <span>D</span>
+                <span>e</span>
+                <span>s</span>
+                <span>i</span>
+                <span>g</span>
+                <span>n</span>
+                <span>e</span>
+                <span>d</span>
+                <span>&nbsp;</span>
+                <span>b</span>
+                <span>y</span>
+                <span>&nbsp;</span>
+                <span>T</span>
+                <span>G</span>
+            </div>
+        </div>
+    </div>
+
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="rainbow-text">DANH SÁCH SẢN PHẨM</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
-      <a href="{{ route('products.add') }}" class="btn btn-success shake">
-        <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
-        Thêm Sản Phẩm
+      <a href="{{ route('products.add') }}" class="btn btn-success btn-animate shake-link">
+          <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
+          Thêm Sản Phẩm
       </a>
       <a href="{{ route('products.hidden') }}" class="btn btn-secondary">
         <i class="bx bx-hide me-1"></i>
@@ -450,5 +527,32 @@ $(document).ready(function() {
       width: '100%'
     });
   });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay when navigating away
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (link && !link.hasAttribute('data-no-loader')) {
+            e.preventDefault();
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('active');
+            
+            setTimeout(() => {
+                window.location.href = link.href;
+            }, 2000); // Show animation for 2 seconds
+        }
+    });
+
+    // Show loading overlay on page load
+    const loadingOverlay = document.getElementById('loading-overlay');
+    loadingOverlay.classList.add('active');
+
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            loadingOverlay.classList.remove('active');
+        }, 2000); // Keep showing for 2 seconds after page load
+    });
+});
 </script>
 @endsection

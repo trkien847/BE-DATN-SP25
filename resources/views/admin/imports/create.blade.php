@@ -296,7 +296,30 @@
         position: relative;
     }
 
-    /* Style cho disabled option */
+    .date-error {
+        border-color: #dc3545 !important;
+        background-color: #fff8f8 !important;
+    }
+
+    .selected-product-item.date-error {
+        border: 1px solid #dc3545 !important;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .date-error input {
+        border-color: #dc3545 !important;
+    }
+
+    /* Add animation for error highlight */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    .date-error {
+        animation: shake 0.5s ease-in-out;
+    }
     select option:disabled {
         background-color: #f8f9fa;
         color: #999;
@@ -1738,6 +1761,36 @@
             `;
         }
 
+        function validateDates(manufactureDateStr, expiryDateStr, productName, variantName) {
+            const manufactureDate = new Date(manufactureDateStr);
+            const expiryDate = new Date(expiryDateStr);
+            const today = new Date();
+            const oneYear = 365 * 24 * 60 * 60 * 1000;
+
+            if (!manufactureDateStr || !expiryDateStr) {
+                return {
+                    isValid: false,
+                    message: `Sản phẩm "${productName}" - Biến thể "${variantName}": Vui lòng nhập đầy đủ ngày sản xuất và hạn sử dụng`
+                };
+            }
+
+            if (expiryDate <= manufactureDate) {
+                return {
+                    isValid: false,
+                    message: `Sản phẩm "${productName}" - Biến thể "${variantName}": Ngày hết hạn phải lớn hơn ngày sản xuất`
+                };
+            }
+
+            const dateDiff = expiryDate - manufactureDate;
+            if (dateDiff < oneYear) {
+                return {
+                    isValid: false,
+                    message: `Sản phẩm "${productName}" - Biến thể "${variantName}": Thời hạn sử dụng phải từ 1 năm trở lên`
+                };
+            }
+
+            return { isValid: true };
+        }
 
         function removeProduct(button) {
             const productItem = button.closest('.selected-product-item');
@@ -1862,8 +1915,10 @@
             const importDate = document.getElementById('import-date').value;
             const supplierId = document.getElementById('supplier-select').value;
             const orderImportId = document.getElementById('order-batch-select').value;
-            const proofFiles = document.getElementById('proof-files').files; // FileList object
+            const proofFiles = document.getElementById('proof-files').files; 
             const selectedProducts = document.querySelectorAll('.selected-product-item');
+            const errors = [];
+            const productsData = {};
 
             if (!importDate) {
                 alert('Vui lòng chọn ngày nhập hàng!');
@@ -1884,15 +1939,34 @@
                 alert('Vui lòng chọn ít nhất một file chứng từ!');
                 return;
             }
+            document.querySelectorAll('.date-error').forEach(el => {
+                el.classList.remove('date-error');
+            });
 
-            const productsData = {};
             selectedProducts.forEach(product => {
                 const productId = product.dataset.productId;
                 const variantId = product.dataset.variantId;
+                const productName = product.querySelector('h4').textContent;
+                const variantName = product.querySelector('.variant-info').textContent;
+
                 const priceInput = product.querySelector('input[name$="[price]"]');
                 const quantityInput = product.querySelector('input[name$="[quantity]"]');
                 const manufactureDateInput = product.querySelector('input[name$="[manufacture_date]"]');
                 const expiryDateInput = product.querySelector('input[name$="[expiry_date]"]');
+
+                const dateValidation = validateDates(
+                    manufactureDateInput.value, 
+                    expiryDateInput.value,
+                    productName,
+                    variantName.replace('Biến thể: ', '')
+                );
+
+                if (!dateValidation.isValid) {
+                    errors.push(dateValidation.message);
+                    product.classList.add('date-error');
+                    manufactureDateInput.classList.add('date-error');
+                    expiryDateInput.classList.add('date-error');
+                }
 
                 if (!productsData[productId]) {
                     productsData[productId] = {
@@ -1912,6 +1986,16 @@
                     expiry_date: expiryDateInput.value
                 };
             });
+
+            if (errors.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    html: errors.join('<br>'),
+                    confirmButtonText: 'Đóng'
+                });
+                return;
+            }
 
             const formData = new FormData();
             formData.append('import_date', importDate);
@@ -1942,7 +2026,12 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Có lỗi xảy ra: ' + error.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: error.message,
+                    confirmButtonText: 'Đóng'
+                });
             }
     });
 

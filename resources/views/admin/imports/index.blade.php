@@ -2,6 +2,12 @@
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-text">Designed by TG</div>
+            <div class="loading-animation"></div>
+        </div>
+    </div>
 <div class="container-fluid">
     <div class="imports-header">
         <h1><i class="fas fa-file-import"></i> Danh Sách Phiếu Nhập</h1>
@@ -94,7 +100,7 @@
     </div>
 </div>
 
-<!-- Modal Chi tiết -->
+
 <div class="modal fade" id="importDetailModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -103,7 +109,7 @@
             </div>
             <div class="modal-body">
                 <div id="importDetail">
-                    <!-- Nội dung chi tiết sẽ được load động -->
+                    
                 </div>
             </div>
         </div>
@@ -152,6 +158,87 @@
         position: relative;
         width: 50px;
         height: 50px;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .loading-content {
+        text-align: center;
+    }
+
+    .loading-text {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1a73e8;
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .loading-animation {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 3px solid #1a73e8;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Add hover effect for create button */
+    .btn-create {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-create::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-create:active::after {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
     }
 
     .proof-file-link.pdf-file {
@@ -410,7 +497,7 @@ function showImagePreview(imageUrl) {
     previewImage.src = imageUrl;
     modal.style.display = 'flex';
     
-    // Đóng modal khi click bên ngoài ảnh
+    
     modal.onclick = function(e) {
         if (e.target === modal) {
             closeImagePreview();
@@ -423,7 +510,6 @@ function closeImagePreview() {
     modal.style.display = 'none';
 }
 
-// Thêm phím tắt ESC để đóng modal
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeImagePreview();
@@ -437,5 +523,22 @@ function showImagePreview(imageUrl) {
     previewImage.src = imageUrl;
     modal.style.display = 'flex';
 }
+
+
+document.querySelector('.btn-create').addEventListener('click', function(e) {
+    e.preventDefault();
+    const loadingOverlay = document.getElementById('loading-overlay');
+    loadingOverlay.classList.add('active');
+    const destination = this.href;
+    setTimeout(() => {
+        window.location.href = destination;
+    }, 500);
+});
+
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        document.getElementById('loading-overlay').classList.remove('active');
+    }
+});
 </script>
 @endpush

@@ -31,16 +31,17 @@
             animation: shake 0.3s;
         }
         .variant-group {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.variant-group:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-.variant-group.selected {
-    transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .variant-group:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .variant-group.selected {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -274,9 +275,49 @@
                                     <div class="variant-options" style="display: none; margin-top: 10px;">
                                         @foreach ($group as $attribute)
                                             @foreach ($attribute->values as $value)
-                                                <div>
-                                                    <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" id="variant-{{ $attribute->id }}-{{ $value->id }}">
-                                                    <label for="variant-{{ $attribute->id }}-{{ $value->id }}">{{ $attribute->slug }} {{ $value->value }}</label>
+                                                <div class="variant-item mb-3">
+                                                    <div class="variant-checkbox">
+                                                        <input type="checkbox" 
+                                                            name="variants[{{ $attribute->id }}][]" 
+                                                            value="{{ $value->id }}" 
+                                                            id="variant-{{ $attribute->id }}-{{ $value->id }}"
+                                                            class="variant-checkbox-input">
+                                                        <label for="variant-{{ $attribute->id }}-{{ $value->id }}">
+                                                            {{ $attribute->slug }} {{ $value->value }}
+                                                        </label>
+                                                    </div>
+                                                    <div class="variant-prices hidden mt-2 bg-gray-50 p-3 rounded">
+                                                        <div class="grid grid-cols-2 gap-2 mb-2">
+                                                            <div>
+                                                                <label class="text-sm font-medium">Giá bán:</label>
+                                                                <input type="number" 
+                                                                    name="variant_prices[{{ $value->id }}][price]" 
+                                                                    class="form-control" 
+                                                                    placeholder="Nhập giá bán">
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-sm font-medium">Giá khuyến mãi:</label>
+                                                                <input type="number" 
+                                                                    name="variant_prices[{{ $value->id }}][sale_price]" 
+                                                                    class="form-control" 
+                                                                    placeholder="Nhập giá khuyến mãi">
+                                                            </div>
+                                                        </div>
+                                                        <div class="grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <label class="text-sm font-medium">Bắt đầu khuyến mãi:</label>
+                                                                <input type="datetime-local" 
+                                                                    name="variant_prices[{{ $value->id }}][sale_start]" 
+                                                                    class="form-control">
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-sm font-medium">Kết thúc khuyến mãi:</label>
+                                                                <input type="datetime-local" 
+                                                                    name="variant_prices[{{ $value->id }}][sale_end]" 
+                                                                    class="form-control">
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         @endforeach
@@ -304,6 +345,64 @@
                 }
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.variant-checkbox-input');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const pricesDiv = this.closest('.variant-item').querySelector('.variant-prices');
+            
+            if (this.checked) {
+                pricesDiv.classList.remove('hidden');
+                pricesDiv.classList.add('show');
+                
+                // Make price field required when checkbox is checked
+                pricesDiv.querySelectorAll('input[type="number"]')[0].required = true;
+            } else {
+                pricesDiv.classList.remove('show');
+                pricesDiv.classList.add('hidden');
+                
+                // Remove required attribute and clear values when unchecked
+                const inputs = pricesDiv.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.required = false;
+                    input.value = '';
+                });
+            }
+        });
+    });
+    
+    // Add validation for sale prices and dates
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const checkedVariants = document.querySelectorAll('.variant-checkbox-input:checked');
+        
+        checkedVariants.forEach(checkbox => {
+            const pricesDiv = checkbox.closest('.variant-item').querySelector('.variant-prices');
+            const regularPrice = pricesDiv.querySelector('input[name$="[price]"]');
+            const salePrice = pricesDiv.querySelector('input[name$="[sale_price]"]');
+            const saleStart = pricesDiv.querySelector('input[name$="[sale_start]"]');
+            const saleEnd = pricesDiv.querySelector('input[name$="[sale_end]"]');
+            
+            if (salePrice.value && parseFloat(salePrice.value) >= parseFloat(regularPrice.value)) {
+                e.preventDefault();
+                alert('Giá khuyến mãi phải nhỏ hơn giá bán thường!');
+                salePrice.focus();
+            }
+            
+            if (salePrice.value && (!saleStart.value || !saleEnd.value)) {
+                e.preventDefault();
+                alert('Vui lòng nhập đầy đủ thời gian khuyến mãi!');
+            }
+            
+            if (saleStart.value && saleEnd.value && new Date(saleStart.value) >= new Date(saleEnd.value)) {
+                e.preventDefault();
+                alert('Thời gian kết thúc khuyến mãi phải sau thời gian bắt đầu!');
+                saleEnd.focus();
+            }
+        });
+    });
+});
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
