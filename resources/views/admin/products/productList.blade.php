@@ -265,35 +265,36 @@
 </script>
 @endif
 
+<!-- Keep the loading overlay HTML -->
 <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-content">
-            <div class="loading-text">
-                <span>D</span>
-                <span>e</span>
-                <span>s</span>
-                <span>i</span>
-                <span>g</span>
-                <span>n</span>
-                <span>e</span>
-                <span>d</span>
-                <span>&nbsp;</span>
-                <span>b</span>
-                <span>y</span>
-                <span>&nbsp;</span>
-                <span>T</span>
-                <span>G</span>
-            </div>
+    <div class="loading-content">
+        <div class="loading-text">
+            <span>D</span>
+            <span>e</span>
+            <span>s</span>
+            <span>i</span>
+            <span>g</span>
+            <span>n</span>
+            <span>e</span>
+            <span>d</span>
+            <span>&nbsp;</span>
+            <span>b</span>
+            <span>y</span>
+            <span>&nbsp;</span>
+            <span>T</span>
+            <span>G</span>
         </div>
     </div>
+</div>
 
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="rainbow-text">DANH SÁCH SẢN PHẨM</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
-      <a href="{{ route('products.add') }}" class="btn btn-success btn-animate shake-link">
-          <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
-          Thêm Sản Phẩm
-      </a>
+    <a href="{{ route('products.add') }}" class="btn btn-success btn-animate shake-link add-product-btn">
+        <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
+        Thêm Sản Phẩm
+    </a>
       <a href="{{ route('products.hidden') }}" class="btn btn-secondary">
         <i class="bx bx-hide me-1"></i>
         Xem Sản Phẩm Đã Ẩn
@@ -529,30 +530,19 @@ $(document).ready(function() {
   });
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Show loading overlay when navigating away
-    document.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        if (link && !link.hasAttribute('data-no-loader')) {
+    const addProductBtn = document.querySelector('.add-product-btn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.classList.add('active');
             
             setTimeout(() => {
-                window.location.href = link.href;
-            }, 2000); // Show animation for 2 seconds
-        }
-    });
-
-    // Show loading overlay on page load
-    const loadingOverlay = document.getElementById('loading-overlay');
-    loadingOverlay.classList.add('active');
-
-    // Hide loading overlay when page is fully loaded
-    window.addEventListener('load', function() {
-        setTimeout(() => {
-            loadingOverlay.classList.remove('active');
-        }, 2000); // Keep showing for 2 seconds after page load
-    });
+                window.location.href = this.href;
+            }, 2000);
+        });
+    }
 });
 </script>
 @endsection

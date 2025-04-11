@@ -51,60 +51,77 @@
         }
 
         .variant-card {
-    @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200;
-    animation: slideIn 0.3s ease-out;
-}
+            @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200;
+            animation: slideIn 0.3s ease-out;
+        }
 
-.variant-card:hover {
-    @apply shadow-md;
-    transform: translateY(-2px);
-}
+        .variant-card:hover {
+            @apply shadow-md;
+            transform: translateY(-2px);
+        }
 
-#selected-variants-container {
-    max-height: 600px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #0d9488 #e5e7eb;
-}
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
 
-#selected-variants-container::-webkit-scrollbar {
-    width: 6px;
-}
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
 
-#selected-variants-container::-webkit-scrollbar-track {
-    background: #e5e7eb;
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-#selected-variants-container::-webkit-scrollbar-thumb {
-    background-color: #0d9488;
-    border-radius: 3px;
-}
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
+        }
+        #selected-variants-container {
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #0d9488 #e5e7eb;
+        }
 
-.variant-group {
-    height: fit-content;
-}
+        #selected-variants-container::-webkit-scrollbar {
+            width: 6px;
+        }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        #selected-variants-container::-webkit-scrollbar-track {
+            background: #e5e7eb;
+        }
 
-@keyframes slideOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100px);
-    }
-}
+        #selected-variants-container::-webkit-scrollbar-thumb {
+            background-color: #0d9488;
+            border-radius: 3px;
+        }
+
+        .variant-group {
+            height: fit-content;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
     </style>
 </head>
 @if(session('error'))
@@ -318,52 +335,71 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                    <div class="space-y-6">
-                        <div class="w-full">
-                            <h4 class="text-lg font-semibold mb-4">Chọn Biến Thể</h4>
-                            <div id="variant-container" class="grid grid-cols-3 gap-4">
-                                @php
-                                    $groupedAttributes = $attributes->groupBy('name');
-                                @endphp
-                                @foreach ($groupedAttributes as $name => $group)
-                                    <div class="variant-group border p-4 rounded hover:shadow-lg transition-all">
-                                        <strong class="variant-name block mb-2" data-name="{{ $name }}" style="cursor: pointer;">
-                                            <i class="fas fa-chevron-right mr-2 transform transition-transform"></i>
-                                            {{ $name }}
-                                        </strong>
-                                        <div class="variant-options hidden mt-3 pl-2 border-l-2 border-teal-500">
-                                            @foreach ($group as $attribute)
-                                                @foreach ($attribute->values as $value)
-                                                    <div class="variant-item mb-3 hover:bg-gray-50 p-2 rounded">
-                                                        <div class="variant-checkbox flex items-center">
-                                                            <input type="checkbox" 
-                                                                name="variants[{{ $attribute->id }}][]" 
-                                                                value="{{ $value->id }}" 
-                                                                data-variant-name="{{ $attribute->slug }} {{ $value->value }}"
-                                                                id="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                                class="variant-checkbox-input w-4 h-4">
-                                                            <label for="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                                class="ml-2 text-sm cursor-pointer">
-                                                                {{ $attribute->slug }} {{ $value->value }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
+                        <div class="space-y-6">
 
-                        <!-- Bottom panel - Selected variants details -->
-                        <div class="w-full mt-8 border-t pt-8">
-                            <h4 class="text-lg font-semibold mb-4">Biến Thể Đã Chọn</h4>
-                            <div id="selected-variants-container" class="grid grid-cols-2 gap-6">
-                                <!-- Selected variants will be dynamically added here -->
+                            <div class="w-full bg-white p-6 rounded-lg shadow-sm">
+                                <h4 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+                                    <i class="fas fa-tags mr-2"></i>Chọn Biến Thể Sản Phẩm
+                                </h4>
+
+                                <div id="variant-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    @php
+                                        $groupedAttributes = $attributes->groupBy('name');
+                                    @endphp
+                                    
+                                    @foreach ($groupedAttributes as $name => $group)
+                                        <div class="variant-group bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+                                            <!-- Variant Group Header -->
+                                            <div class="variant-header bg-gray-50 p-4 cursor-pointer select-none"
+                                                data-name="{{ $name }}">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center space-x-2">
+                                                        <i class="fas fa-chevron-right transform transition-transform duration-300"></i>
+                                                        <span class="font-medium text-gray-700">{{ $name }}</span>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500 variant-counter">0 đã chọn</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Variant Options -->
+                                            <div class="variant-options hidden">
+                                                <div class="p-4 space-y-3 border-t">
+                                                    @foreach ($group as $attribute)
+                                                        <div class="variant-group-items">
+                                                            @foreach ($attribute->values as $value)
+                                                                <div class="variant-item hover:bg-gray-50 rounded-md transition-colors duration-200">
+                                                                    <label class="flex items-center p-2 cursor-pointer">
+                                                                        <input type="checkbox" 
+                                                                            name="variants[{{ $attribute->id }}][]" 
+                                                                            value="{{ $value->id }}" 
+                                                                            data-variant-name="{{ $attribute->name }} {{ $value->value }}"
+                                                                            data-group="{{ $name }}"
+                                                                            id="variant-{{ $attribute->id }}-{{ $value->id }}"
+                                                                            class="variant-checkbox-input w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                                                                        <span class="ml-3 text-sm text-gray-700">
+                                                                            {{ $value->value }}
+                                                                        </span>
+                                                                    </label>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="mt-8 border-t pt-6">
+                                <h5 class="text-lg font-medium mb-4 text-gray-800">
+                                    <i class="fas fa-list-check mr-2"></i>Biến Thể Đã Chọn
+                                </h5>
+                                <div id="selected-variants-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Selected variants will be added here dynamically -->
+                                </div>
                             </div>
                         </div>
-                    </div>
                         <button type="submit" class="btn text-white bg-teal-500 w-full mt-6 py-3 rounded-lg hover:bg-teal-600 transition-colors">
                             Lưu Sản Phẩm
                         </button>
@@ -388,225 +424,105 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-    // Toggle variant options when clicking on variant name
-    document.querySelectorAll('.variant-name').forEach(item => {
-        item.addEventListener('click', function() {
-            this.classList.toggle('active');
-            const icon = this.querySelector('i');
-            icon.style.transform = this.classList.contains('active') ? 'rotate(90deg)' : '';
-            const options = this.nextElementSibling;
-            options.classList.toggle('hidden');
-        });
-    });
-
-    // Handle checkbox changes
-    const selectedVariantsContainer = document.getElementById('selected-variants-container');
-    const variantData = new Map();
-
-    document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const variantId = this.value;
-            const variantName = this.dataset.variantName;
-
-            if (this.checked) {
-                // Create new variant card
-                const card = createVariantCard(variantId, variantName);
-                selectedVariantsContainer.appendChild(card);
+        // Variant group toggle
+        document.querySelectorAll('.variant-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const options = this.parentElement.querySelector('.variant-options');
+                const icon = this.querySelector('.fas.fa-chevron-right');
                 
-                // Add validation listeners to inputs
-                addInputValidation(card, variantId);
+                // Toggle options visibility
+                options.classList.toggle('hidden');
+                
+                // Rotate icon
+                if (options.classList.contains('hidden')) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(90deg)';
+                }
+            });
+        });
+
+        // Update counter when checkbox changes
+        document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateVariantCounter(this);
+                handleVariantSelection(this);
+            });
+        });
+
+        function updateVariantCounter(checkbox) {
+            const group = checkbox.closest('.variant-group');
+            const counter = group.querySelector('.variant-counter');
+            const checkedCount = group.querySelectorAll('.variant-checkbox-input:checked').length;
+            counter.textContent = `${checkedCount} đã chọn`;
+        }
+
+        function handleVariantSelection(checkbox) {
+            const variantId = checkbox.value;
+            const variantName = checkbox.dataset.variantName;
+            const selectedContainer = document.getElementById('selected-variants-container');
+
+            if (checkbox.checked) {
+                // Add variant card
+                const card = createVariantCard(variantId, variantName);
+                selectedContainer.appendChild(card);
             } else {
                 // Remove variant card
-                const card = document.getElementById(`variant-card-${variantId}`);
-                if (card) {
-                    card.remove();
+                const existingCard = document.getElementById(`variant-card-${variantId}`);
+                if (existingCard) {
+                    existingCard.classList.add('fade-out');
+                    setTimeout(() => existingCard.remove(), 300);
                 }
-                variantData.delete(variantId);
-            }
-        });
-    });
-
-    function createVariantCard(variantId, variantName) {
-    const card = document.createElement('div');
-    card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm mb-4';
-    card.id = `variant-card-${variantId}`;
-    
-    card.innerHTML = `
-        <div class="flex justify-between items-center mb-3">
-            <h5 class="font-medium text-teal-600">${variantName}</h5>
-            <button type="button" 
-                    onclick="window.removeVariant('${variantId}')"
-                    class="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-sm font-medium">Giá bán:</label>
-                    <input type="number" 
-                        name="variant_prices[${variantId}][price]" 
-                        class="form-control w-full price-input" 
-                        placeholder="Nhập giá bán"
-                        required>
-                </div>
-                <div>
-                    <label class="text-sm font-medium">Giá khuyến mãi:</label>
-                    <input type="number" 
-                        name="variant_prices[${variantId}][sale_price]" 
-                        class="form-control w-full sale-price-input" 
-                        placeholder="Nhập giá khuyến mãi">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-sm font-medium">Bắt đầu khuyến mãi:</label>
-                    <input type="datetime-local" 
-                        name="variant_prices[${variantId}][sale_price_start_at]" 
-                        class="form-control w-full sale-start-input">
-                </div>
-                <div>
-                    <label class="text-sm font-medium">Kết thúc khuyến mãi:</label>
-                    <input type="datetime-local" 
-                        name="variant_prices[${variantId}][sale_price_end_at]" 
-                        class="form-control w-full sale-end-input">
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Add hover effect for delete button
-    const deleteButton = card.querySelector('button');
-    deleteButton.addEventListener('mouseover', function() {
-        this.querySelector('i').classList.add('fa-spin');
-    });
-    deleteButton.addEventListener('mouseout', function() {
-        this.querySelector('i').classList.remove('fa-spin');
-    });
-    
-    return card;
-}
-
-    function addInputValidation(card, variantId) {
-        const inputs = card.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('change', () => validateAndUpdateData(card, variantId));
-        });
-    }
-
-    function validateAndUpdateData(card, variantId) {
-        const price = card.querySelector('.price-input').value;
-        const salePrice = card.querySelector('.sale-price-input').value;
-        const saleStart = card.querySelector('.sale-start-input').value;
-        const saleEnd = card.querySelector('.sale-end-input').value;
-
-        // Reset error states
-        card.querySelectorAll('input').forEach(input => {
-            input.classList.remove('error');
-        });
-
-        let isValid = true;
-
-        if (!price) {
-            card.querySelector('.price-input').classList.add('error');
-            isValid = false;
-        }
-
-        if (salePrice) {
-            if (parseFloat(salePrice) >= parseFloat(price)) {
-                card.querySelector('.sale-price-input').classList.add('error');
-                isValid = false;
-            }
-
-            if (!saleStart || !saleEnd) {
-                if (!saleStart) card.querySelector('.sale-start-input').classList.add('error');
-                if (!saleEnd) card.querySelector('.sale-end-input').classList.add('error');
-                isValid = false;
-            }
-
-            if (saleStart && saleEnd && new Date(saleEnd) <= new Date(saleStart)) {
-                card.querySelector('.sale-end-input').classList.add('error');
-                isValid = false;
             }
         }
 
-        if (isValid) {
-            variantData.set(variantId, {
-                price,
-                sale_price: salePrice,
-                sale_start: saleStart,
-                sale_end: saleEnd
-            });
+        function createVariantCard(variantId, variantName) {
+            const card = document.createElement('div');
+            card.id = `variant-card-${variantId}`;
+            card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm border fade-in';
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <h6 class="font-medium text-gray-800">${variantName}</h6>
+                    <button type="button" onclick="removeVariant('${variantId}')"
+                            class="text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm text-gray-600">Giá bán</label>
+                            <input type="number" name="variant_prices[${variantId}][price]" 
+                                class="form-control w-full mt-1" required>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Giá khuyến mãi</label>
+                            <input type="number" name="variant_prices[${variantId}][sale_price]" 
+                                class="form-control w-full mt-1">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
         }
 
-        return isValid;
-    }
-
-    // Add this to global scope for the remove button to work
-    // Add this before your DOMContentLoaded event handler
-window.removeVariant = function(variantId) {
-    Swal.fire({
-        title: 'Xác nhận xóa',
-        text: 'Bạn có chắc muốn xóa biến thể này?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Uncheck the checkbox
+        // Global function to remove variant
+        window.removeVariant = function(variantId) {
             const checkbox = document.querySelector(`input[value="${variantId}"]`);
             if (checkbox) {
                 checkbox.checked = false;
+                updateVariantCounter(checkbox);
             }
             
-            // Remove the card with animation
             const card = document.getElementById(`variant-card-${variantId}`);
             if (card) {
-                card.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => {
-                    card.remove();
-                }, 300);
-            }
-            
-            // Remove data from variantData
-            if (window.variantData) {
-                window.variantData.delete(variantId);
-            }
-
-            // Trigger change event on checkbox to ensure proper state update
-            if (checkbox) {
-                const event = new Event('change');
-                checkbox.dispatchEvent(event);
+                card.classList.add('fade-out');
+                setTimeout(() => card.remove(), 300);
             }
         }
     });
-};
-
-    // Form submission validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const selectedVariants = document.querySelectorAll('.variant-card');
-        let hasError = false;
-
-        selectedVariants.forEach(card => {
-            if (!validateAndUpdateData(card, card.id.replace('variant-card-', ''))) {
-                hasError = true;
-            }
-        });
-
-        if (hasError) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Vui lòng kiểm tra lại thông tin biến thể',
-                confirmButtonText: 'Đóng'
-            });
-        }
-    });
-});
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

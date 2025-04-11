@@ -244,34 +244,64 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                        <h4>Chọn Biến Thể</h4>
-                        <div id="variant-container" class="grid grid-cols-4 gap-4">
-                            @php
-                                $groupedAttributes = $attributes->groupBy('name');
-                            @endphp
-                            @foreach ($groupedAttributes as $name => $group)
-                                <div class="variant-group border p-4 rounded">
-                                    <strong class="variant-name" data-name="{{ $name }}" style="cursor: pointer;">
-                                        {{ $name }}
-                                    </strong>
-                                    <div class="variant-options" style="display: none; margin-top: 10px;">
-                                        @foreach ($group as $attribute)
-                                            @foreach ($attribute->values as $value)
-                                                <div>
-                                                    <input type="checkbox" name="variants[{{ $attribute->id }}][]" value="{{ $value->id }}" 
-                                                        id="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                        @if(in_array($value->id, $selectedVariantIds)) checked @endif>
-                                                    <label for="variant-{{ $attribute->id }}-{{ $value->id }}">{{ $attribute->slug }} {{ $value->value }}</label>
-                                                </div>
-                                            @endforeach
-                                        @endforeach
-                                    </div>
+                        <div class="space-y-6">
+                            <div class="w-full">
+                                <h4 class="text-lg font-semibold mb-4">Chọn Biến Thể</h4>
+                                <div id="variant-container" class="grid grid-cols-3 gap-4">
+                                    @php
+                                        $groupedAttributes = $attributes->groupBy('name');
+                                    @endphp
+                                    @foreach ($groupedAttributes as $name => $group)
+                                        <div class="variant-group border p-4 rounded hover:shadow-lg transition-all">
+                                            <strong class="variant-name block mb-2" data-name="{{ $name }}" style="cursor: pointer;">
+                                                <i class="fas fa-chevron-right mr-2 transform transition-transform"></i>
+                                                {{ $name }}
+                                            </strong>
+                                            <div class="variant-options hidden mt-3 pl-2 border-l-2 border-teal-500">
+                                                @foreach ($group as $attribute)
+                                                    @foreach ($attribute->values as $value)
+                                                        <div class="variant-item mb-3 hover:bg-gray-50 p-2 rounded">
+                                                            <div class="variant-checkbox flex items-center">
+                                                            <input type="checkbox" 
+                                                                name="variants[{{ $attribute->id }}][]" 
+                                                                value="{{ $value->id }}" 
+                                                                data-variant-name="{{ $attribute->slug }} {{ $value->value }}"
+                                                                id="variant-{{ $attribute->id }}-{{ $value->id }}"
+                                                                class="variant-checkbox-input w-4 h-4"
+                                                                @if(isset($selectedVariantIds) && in_array($value->id, $selectedVariantIds)) 
+                                                                    checked 
+                                                                    data-has-data="true"
+                                                                    data-price="{{ $variantData[$value->id]['price'] ?? '' }}"
+                                                                    data-sale-price="{{ $variantData[$value->id]['sale_price'] ?? '' }}"
+                                                                    data-sale-start="{{ $variantData[$value->id]['sale_price_start_at'] ? date('Y-m-d\TH:i', strtotime($variantData[$value->id]['sale_price_start_at'])) : '' }}"
+                                                                    data-sale-end="{{ $variantData[$value->id]['sale_price_end_at'] ? date('Y-m-d\TH:i', strtotime($variantData[$value->id]['sale_price_end_at'])) : '' }}"
+                                                                @endif>
+                                                                <label for="variant-{{ $attribute->id }}-{{ $value->id }}"
+                                                                    class="ml-2 text-sm cursor-pointer">
+                                                                    {{ $attribute->slug }} {{ $value->value }}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        </div>
-                        <button type="submit" class="btn text-white bg-teal-500 w-100" style="margin-top: 10px;">Lưu Sản Phẩm</button>
-                    </div>
+                            </div>
 
+                            <!-- Bottom panel - Selected variants details -->
+                            <div class="w-full mt-8 border-t pt-8">
+                                <h4 class="text-lg font-semibold mb-4">Biến Thể Đã Chọn</h4>
+                                <div id="selected-variants-container" class="grid grid-cols-2 gap-6">
+                                    <!-- Selected variants will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn text-white bg-teal-500 w-full mt-6 py-3 rounded-lg hover:bg-teal-600 transition-colors">
+                            Lưu Sản Phẩm
+                        </button>
+                    </div>
 
                 </form>
             </div>
@@ -290,6 +320,187 @@
             }
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const variantData = new Map();
+
+    // Toggle variant options when clicking on variant name
+    document.querySelectorAll('.variant-name').forEach(item => {
+        item.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const icon = this.querySelector('i');
+            icon.style.transform = this.classList.contains('active') ? 'rotate(90deg)' : '';
+            const options = this.nextElementSibling;
+            options.classList.toggle('hidden');
+        });
+    });
+
+    // Handle checkbox changes
+    document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const variantId = this.value;
+            const variantName = this.dataset.variantName;
+
+            if (this.checked) {
+                const card = createVariantCard(variantId, variantName);
+                document.getElementById('selected-variants-container').appendChild(card);
+                addInputValidation(card, variantId);
+            } else {
+                removeVariantCard(variantId);
+                variantData.delete(variantId);
+            }
+        });
+    });
+
+    // Handle pre-selected variants for edit mode
+    document.querySelectorAll('.variant-checkbox-input[data-has-data="true"]').forEach(checkbox => {
+        if (checkbox.checked) {
+            const variantId = checkbox.value;
+            const variantName = checkbox.dataset.variantName;
+            const price = checkbox.dataset.price;
+            const salePrice = checkbox.dataset.salePrice;
+            const saleStart = checkbox.dataset.saleStart;
+            const saleEnd = checkbox.dataset.saleEnd;
+
+            const card = createVariantCard(variantId, variantName);
+            document.getElementById('selected-variants-container').appendChild(card);
+
+            // Set existing values
+            const cardElement = document.getElementById(`variant-card-${variantId}`);
+            if (cardElement) {
+                cardElement.querySelector('input[name$="[price]"]').value = price;
+                cardElement.querySelector('input[name$="[sale_price]"]').value = salePrice;
+                cardElement.querySelector('input[name$="[sale_price_start_at]"]').value = saleStart;
+                cardElement.querySelector('input[name$="[sale_price_end_at]"]').value = saleEnd;
+            }
+        }
+    });
+
+    function createVariantCard(variantId, variantName) {
+        const card = document.createElement('div');
+        card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm mb-4';
+        card.id = `variant-card-${variantId}`;
+        
+        card.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+                <h5 class="font-medium text-teal-600">${variantName}</h5>
+                <button type="button" 
+                        onclick="removeVariant('${variantId}')"
+                        class="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium">Giá bán:</label>
+                        <input type="number" 
+                            name="variant_prices[${variantId}][price]" 
+                            class="form-control w-full price-input" 
+                            placeholder="Nhập giá bán"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Giá khuyến mãi:</label>
+                        <input type="number" 
+                            name="variant_prices[${variantId}][sale_price]" 
+                            class="form-control w-full sale-price-input" 
+                            placeholder="Nhập giá khuyến mãi">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium">Bắt đầu khuyến mãi:</label>
+                        <input type="datetime-local" 
+                            name="variant_prices[${variantId}][sale_price_start_at]" 
+                            class="form-control w-full sale-start-input">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Kết thúc khuyến mãi:</label>
+                        <input type="datetime-local" 
+                            name="variant_prices[${variantId}][sale_price_end_at]" 
+                            class="form-control w-full sale-end-input">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    function removeVariantCard(variantId) {
+        const card = document.getElementById(`variant-card-${variantId}`);
+        if (card) {
+            card.remove();
+        }
+        const checkbox = document.querySelector(`input[value="${variantId}"]`);
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+    }
+
+    // Add to global scope for onclick access
+    window.removeVariant = function(variantId) {
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc muốn xóa biến thể này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                removeVariantCard(variantId);
+                variantData.delete(variantId);
+            }
+        });
+    };
+
+    // Form validation before submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const selectedVariants = document.querySelectorAll('.variant-card');
+        let hasError = false;
+
+        selectedVariants.forEach(card => {
+            const price = card.querySelector('.price-input').value;
+            const salePrice = card.querySelector('.sale-price-input').value;
+            const saleStart = card.querySelector('.sale-start-input').value;
+            const saleEnd = card.querySelector('.sale-end-input').value;
+
+            if (!price) {
+                hasError = true;
+                alert('Vui lòng nhập giá bán cho tất cả biến thể');
+                e.preventDefault();
+                return;
+            }
+
+            if (salePrice) {
+                if (parseFloat(salePrice) >= parseFloat(price)) {
+                    hasError = true;
+                    alert('Giá khuyến mãi phải nhỏ hơn giá bán');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (!saleStart || !saleEnd) {
+                    hasError = true;
+                    alert('Vui lòng nhập đầy đủ thời gian khuyến mãi');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (new Date(saleEnd) <= new Date(saleStart)) {
+                    hasError = true;
+                    alert('Thời gian kết thúc phải sau thời gian bắt đầu khuyến mãi');
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+    });
+});
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

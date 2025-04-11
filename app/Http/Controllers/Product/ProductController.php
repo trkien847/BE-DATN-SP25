@@ -277,7 +277,17 @@ class ProductController extends Controller
                 'categories',
                 'categoryTypes',
                 'variants.attributeValues.attribute',
-                'attributeValues.attribute'
+                'attributeValues.attribute',
+                'variants' => function ($query) {
+                    $query->with(['attributeValues' => function ($q) {
+                        $q->select('attribute_values.*')
+                            ->selectRaw('product_variants.price as variant_price')
+                            ->selectRaw('product_variants.sale_price as variant_sale_price')
+                            ->selectRaw('product_variants.sale_price_start_at as variant_sale_start')
+                            ->selectRaw('product_variants.sale_price_end_at as variant_sale_end')
+                            ->join('product_variants', 'attribute_value_product_variant.product_variant_id', '=', 'product_variants.id');
+                    }]);
+                }
             ])
             ->where('id', $id)->firstOrFail();
 
@@ -287,9 +297,30 @@ class ProductController extends Controller
         $productGallery = ProductGalleries::where('product_id', $id)->get();
         $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
 
+        $variantData = [];
+        foreach ($product->variants as $variant) {
+            foreach ($variant->attributeValues as $value) {
+                $variantData[$value->id] = [
+                    'price' => $variant->price,
+                    'sale_price' => $variant->sale_price,
+                    'sale_price_start_at' => $variant->sale_price_start_at,
+                    'sale_price_end_at' => $variant->sale_price_end_at
+                ];
+            }
+        }
+
         $selectedVariantIds = $product->variants->pluck('attributeValues.*.id')->flatten()->toArray();
 
-        return view('admin.products.productUpdateForm', compact('product', 'categories', 'brands', 'categoryTypes', 'productGallery', 'attributes', 'selectedVariantIds'));
+        return view('admin.products.productUpdateForm', compact(
+            'product',
+            'categories',
+            'brands',
+            'categoryTypes',
+            'productGallery',
+            'attributes',
+            'selectedVariantIds',
+            'variantData'
+        ));
     }
 
     // cập nhất sản phẩm
@@ -301,12 +332,25 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
+
+            'variant_prices.*.price' => 'required|numeric|min:0',
+            'variant_prices.*.sale_price' => 'nullable|numeric|min:0|lt:variant_prices.*.price',
+            'variant_prices.*.sale_price_start_at' => 'required_with:variant_prices.*.sale_price',
+            'variant_prices.*.sale_price_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_price_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
+
+            'variant_prices.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
+            'variant_prices.*.price.numeric' => 'Giá bán phải là số',
+            'variant_prices.*.price.min' => 'Giá bán phải lớn hơn 0',
+            'variant_prices.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
+            'variant_prices.*.sale_price_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variant_prices.*.sale_price_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variant_prices.*.sale_price_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -453,11 +497,15 @@ class ProductController extends Controller
                             $query->where('attribute_value_id', $valueId);
                         })->first();
 
+                    $variantPriceData = $request->input("variant_prices.{$valueId}", []);
+
                     if (!$variant) {
                         $variant = ProductVariant::create([
                             'product_id' => $product->id,
-                            'sale_price_start_at' => $request->sale_price_start_at,
-                            'sale_price_end_at' => $request->sale_price_end_at,
+                            'price' => $variantPriceData['price'] ?? null,
+                            'sale_price' => $variantPriceData['sale_price'] ?? null,
+                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? null,
+                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? null,
                         ]);
 
                         AttributeValueProductVariant::create([
@@ -469,7 +517,16 @@ class ProductController extends Controller
                             'product_id' => $product->id,
                             'attribute_value_id' => $valueId,
                         ]);
+                    } else {
+                        // Update existing variant prices and dates
+                        $variant->update([
+                            'price' => $variantPriceData['price'] ?? $variant->price,
+                            'sale_price' => $variantPriceData['sale_price'] ?? $variant->sale_price,
+                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? $variant->sale_price_start_at,
+                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? $variant->sale_price_end_at,
+                        ]);
                     }
+
                     $variantIds[] = $variant->id;
                 }
             }
@@ -769,51 +826,72 @@ class ProductController extends Controller
     // biến thể
     public function attributesList(Request $request)
     {
-        $attributes = Attribute::with('values')->get();
-        return view('admin.products.attributes', compact('attributes'));
+        $attributes = Attribute::with(['values' => function ($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->get();
+        $groupedAttributes = $attributes->groupBy('name')->map(function ($group) {
+            $firstAttribute = $group->first();
+            return [
+                'count' => $group->first()->values->count(),
+                'firstAttribute' => $firstAttribute,
+                'items' => $group
+            ];
+        });
+
+        return view('admin.products.attributes', compact('groupedAttributes'));
     }
 
-    public function attributesStore(Request $request)
+    public function storeAttribute(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'is_variant' => 'boolean',
-            'is_active' => 'boolean',
+            'slug' => 'required|string|max:255|unique:attributes',
+            'is_active' => 'required|boolean',
         ]);
 
-        $existingAttribute = Attribute::where('name', $request->name)
-            ->where('slug', $request->slug)
-            ->first();
+        $attribute = Attribute::create([
+            'name' => $request->name,
+            'slug' => $request->slug,
+            'is_variant' => true,
+            'is_active' => $request->is_active,
+        ]);
 
-        if ($existingAttribute) {
+        return redirect()->back()->with('success', 'Thêm loại biến thể thành công!');
+    }
 
-            $existingValue = AttributeValue::where('attribute_id', $existingAttribute->id)
-                ->where('value', $request->value)
-                ->first();
+    public function storeAttributeValue(Request $request)
+    {
+        $request->validate([
+            'attribute_id' => 'required|exists:attributes,id',
+            'variant_type' => 'required|string|in:Hình thù,Khối lượng',
+            'unit' => 'required|string',
+            'amount' => 'required_if:variant_type,Khối lượng|nullable|numeric|min:1',
+            'is_active' => 'required|boolean',
+        ]);
 
-            if ($existingValue) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', "Thuộc tính '$request->name' với slug '$request->slug' và giá trị '$request->value' đã tồn tại!");
-            }
+        $attribute = Attribute::find($request->attribute_id);
+        if ($request->variant_type === 'Hình thù') {
+            $value = $request->unit;
+        } else {
+            $value = $request->amount . ' ' . $request->unit;
+        }
+        $exists = AttributeValue::where('attribute_id', $request->attribute_id)
+            ->where('value', $value)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Giá trị biến thể này đã tồn tại cho thuộc tính này!');
         }
 
+        AttributeValue::create([
+            'attribute_id' => $request->attribute_id,
+            'value' => $value,
+            'is_active' => $request->is_active,
+        ]);
 
-        $attribute = new Attribute();
-        $attribute->name = $request->name;
-        $attribute->slug = $request->slug;
-        $attribute->is_variant = 1;
-        $attribute->is_active = $request->has('is_active') ? $request->is_active : 1;
-        $attribute->save();
-
-        $attributeValue = new AttributeValue();
-        $attributeValue->attribute_id = $attribute->id;
-        $attributeValue->value = $request->value;
-        $attributeValue->is_active = 1;
-        $attributeValue->save();
-
-        return redirect()->route('attributes.list')->with('success', 'Thuộc tính đã được thêm!');
+        return redirect()->back()->with('success', 'Thêm giá trị biến thể thành công!');
     }
 
     public function toggleStatus(Request $request, Attribute $attribute)

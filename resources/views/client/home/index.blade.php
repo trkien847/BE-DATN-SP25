@@ -224,7 +224,7 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="https://i.makeagif.com/media/1-10-2021/gwZO0J.gif">
+                            data-bs-bg="http://127.0.0.1:8000/upload/1744296326.gif">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
@@ -966,7 +966,7 @@
                         let variantsHtml = '<div class="variant-buttons">';
                         variantsHtml += response.variants.map((variant, index) => {
                             let attributesHtml = variant.attributes.map(attr =>
-                                `${attr.attribute.name}: ${attr.value}`
+                                `${attr.attribute.name}: ${attr.attribute.slug}${attr.value}`
                             ).join('<br>');
 
                             return `

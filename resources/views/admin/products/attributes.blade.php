@@ -1,5 +1,7 @@
 @extends('admin.layouts.layout')
 @section('content')
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <div class="container">
     <h2>Danh sách Thuộc tính</h2>
     <a href="javascript:void(0)" class="btn btn-primary" id="add-attribute-btn2">Thêm Thuộc tính</a>
@@ -12,48 +14,45 @@
             </tr>
         </thead>
         <tbody>
-            @php
-                $groupedAttributes = $attributes->groupBy('name');
-            @endphp
-            @foreach ($groupedAttributes as $name => $group)
-                <tr class="group-header" data-name="{{ $name }}">
-                    <td>{{ $name }}</td>
-                    <td>{{ $group->count() }}</td>
-                    <td>
-                        <a href="javascript:void(0)" 
-                        class="btn btn-primary btn-sm ms-2 add-variant-btn" 
-                        data-name="{{ $name }}">
-                            <i class="fas fa-plus"></i> Thêm dữ liệu vào biến thể
-                        </a>
-                    </td>
-                </tr>
-                <tr class="group-details" style="display: none;">
-                    <td colspan="5">
-                        <ul class="list-group">
-                            @foreach ($group as $attribute)
-                                <li class="list-group-item">
-                                    {{ $attribute->name }} 
-                                    @foreach ($attribute->values as $value)
-                                        <span class="badge bg-primary">{{ $attribute->slug }} {{ $value->value }}</span>
-                                    @endforeach
-                                    
-                                    <div class="form-check form-switch d-inline-block ms-2">
-                                        <input type="checkbox" 
-                                            class="form-check-input status-toggle" 
-                                            id="status-{{ $attribute->id }}"
-                                            data-id="{{ $attribute->id }}"
-                                            {{ $attribute->is_active ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="status-{{ $attribute->id }}">
-                                            <span class="status-text">{{ $attribute->is_active ? 'Hiển thị' : 'Ẩn' }}</span>
-                                        </label>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <p class="text-muted mt-2">Tổng số biến thể: {{ $group->count() }}</p>
-                    </td>
-                </tr>
-            @endforeach
+        @foreach ($groupedAttributes as $name => $group)
+            <tr class="group-header" data-name="{{ $name }}">
+                <td>{{ $name }}</td>
+                <td>{{ $group['count'] }}</td>
+                <td>
+                <a href="javascript:void(0)" 
+                class="btn btn-primary btn-sm ms-2 add-variant-btn" 
+                data-name="{{ $name }}"
+                data-id="{{ $group['firstAttribute']->id }}">
+                    <i class="fas fa-plus"></i> Thêm dữ liệu vào biến thể
+                </a>
+                </td>
+            </tr>
+            
+            <tr class="group-details" style="display: none;">
+                <td colspan="5">
+                    <ul class="list-group">
+                        @foreach ($group['firstAttribute']->values as $value)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-primary">{{ $value->value }}</span>
+                                </div>
+                                <div class="form-check form-switch d-inline-block">
+                                    <input type="checkbox" 
+                                        class="form-check-input status-toggle" 
+                                        id="status-value-{{ $value->id }}"
+                                        data-id="{{ $value->id }}"
+                                        {{ $value->is_active ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="status-value-{{ $value->id }}">
+                                        <span class="status-text">{{ $value->is_active ? 'Hiển thị' : 'Ẩn' }}</span>
+                                    </label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <p class="text-muted mt-2">Tổng số giá trị: {{ $group['count'] }}</p>
+                </td>
+            </tr>
+        @endforeach
         </tbody>
     </table>
 </div>
@@ -62,43 +61,65 @@
 <div id="attribute-overlay" class="attribute-overlay">
     <div class="overlay-content">
         <h4 id="overlay-title"></h4>
-        <button type="button" id="close-overlay" class="btn-close" style="position: absolute; top: 10px; right: 10px;"></button>
+        <button type="button" id="close-overlay" class="btn-close-custom">
+            <i class="fas fa-times"></i>
+        </button>
         <form id="attribute-form" method="POST">
             @csrf
-            <input type="hidden" name="attribute_id" id="attribute-id">
             <div class="mb-3">
-                <label class="form-label">Tên Thuộc Tính</label>
-                <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required>
-                @error('name')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Chọn loại biến thể</label>
-                <select name="value" id="value" class="form-control">
-                    <option value="viên" {{ old('value') == 'viên' ? 'selected' : '' }}>Viên</option>
-                    <option value="ml" {{ old('value') == 'ml' ? 'selected' : '' }}>ml</option>
-                    <option value="g" {{ old('value') == 'g' ? 'selected' : '' }}>g</option>
+                <label class="form-label">Tên loại biến thể</label>
+                <select name="name" id="name" class="form-control" required>
+                    <option value="">-- Chọn loại biến thể --</option>
+                    <option value="Hình thù">Hình thù</option>
+                    <option value="Khối lượng">Khối lượng</option>
                 </select>
-                @error('value')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
             </div>
             <div class="mb-3">
-                <label class="form-label">Số lượng/thuộc tính (30 viên/hộp hoặc 150ml/lọ)</label>
-                <input type="number" name="slug" id="slug" class="form-control" value="{{ old('slug') }}" required>
-                @error('slug')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+                <label class="form-label">Mã biến thể</label>
+                <input type="text" name="slug" id="slug" class="form-control" readonly>
+                <small class="text-muted">Mã sẽ tự động được tạo</small>
             </div>
             <div class="mb-3">
-                <label for="is_active" class="form-label">Trạng Thái</label>
+                <label for="is_active" class="form-label">Trạng thái</label>
                 <select name="is_active" id="is_active" class="form-control">
-                    <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>Hiển thị</option>
-                    <option value="0" {{ old('is_active', '1') == '0' ? 'selected' : '' }}>Ẩn</option>
+                    <option value="1">Hiển thị</option>
+                    <option value="0">Ẩn</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-success" id="submit-btn">Thêm</button>
+            <input type="hidden" name="is_variant" value="1">
+            <button type="submit" class="btn btn-success" id="submit-btn">Thêm loại biến thể</button>
+        </form>
+    </div>
+</div>
+
+<!-- Form thêm giá trị biến thể  group-header-->
+<div id="variant-value-overlay" class="attribute-overlay">
+    <div class="overlay-content">
+        <h4 id="variant-overlay-title"></h4>
+        <button type="button" id="close-variant-overlay" class="btn-close-custom">
+            <i class="fas fa-times"></i>
+        </button>
+        <form id="variant-value-form" method="POST">
+            @csrf
+            <input type="hidden" name="attribute_id" id="variant-attribute-id">
+            <input type="hidden" name="variant_type" id="variant-type">
+            <div class="mb-3">
+                <label class="form-label">Giá trị</label>
+                <div class="input-group">
+                    <input type="number" name="amount" id="amount" class="form-control" required>
+                    <select name="unit" id="unit" class="form-control">
+                        <!-- Options will be dynamically populated -->
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="value_is_active" class="form-label">Trạng thái</label>
+                <select name="is_active" id="value_is_active" class="form-control">
+                    <option value="1">Hiển thị</option>
+                    <option value="0">Ẩn</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Thêm giá trị</button>
         </form>
     </div>
 </div>
@@ -111,12 +132,13 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
-        display: flex;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
         justify-content: center;
         align-items: center;
+        z-index: 1050;
     }
+
     .overlay-content {
         background: #fff;
         padding: 20px;
@@ -125,33 +147,169 @@
         width: 90%;
         max-height: 80vh;
         overflow-y: auto;
+        position: relative;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         transform: scale(0.8);
         opacity: 0;
         transition: transform 0.3s ease, opacity 0.3s ease;
     }
+
     .overlay-content.active {
         transform: scale(1);
         opacity: 1;
     }
-    body.overlay-active {
-        overflow: hidden;
-    }
+
     .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
         background: none;
         border: none;
         font-size: 1.5rem;
         cursor: pointer;
+        z-index: 1;
+    }
+
+    body.overlay-active {
+        overflow: hidden;
+    }
+    .btn-close-custom {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+
+    .btn-close-custom:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-close-custom i {
+        font-size: 20px;
+        color: #666;
+    }
+
+    .btn-close-custom:hover i {
+        color: #333;
+    }
+    .input-group input[type="number"] {
+        transition: all 0.3s ease;
+    }
+
+    select.form-control.rounded {
+        border-top-left-radius: 0.375rem !important;
+        border-bottom-left-radius: 0.375rem !important;
     }
     .group-header {
         cursor: pointer;
         background-color: #f8f9fa;
+        position: relative;
+        transition: all 0.3s ease;
     }
+
     .group-header:hover {
         background-color: #e9ecef;
+        transform: translateX(5px);
     }
+
+    /* Add expand/collapse indicator */
+    .group-header td:first-child {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .group-header td:first-child:before {
+        content: '\f0da'; /* FontAwesome right arrow */
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: transform 0.3s ease;
+        color: #6c757d;
+    }
+
+    .group-header.expanded td:first-child:before {
+        transform: translateY(-50%) rotate(90deg);
+    }
+
+    /* Add subtle border and shadow */
+    .group-header {
+        border-left: 3px solid transparent;
+    }
+
+    .group-header:hover {
+        border-left-color: #0d6efd;
+    }
+
+    /* Animation for details panel */
     .group-details {
         background-color: #fff;
+        transition: all 0.3s ease;
+        display: none; /* Thêm display: none mặc định */
+    }
+
+    .group-details.show {
+        display: table-row;
+        opacity: 1;
+    }
+
+    /* Bỏ max-height và overflow để tránh conflict */
+    .group-details {
+        background-color: #fff;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+    }
+
+    /* Add helper text */
+    .click-helper {
+        position: absolute;
+        right: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #6c757d;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    .group-header:hover .click-helper {
+        opacity: 1;
+        right: calc(100% + 10px);
+    }
+
+    /* Add pulse effect to new items */
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+        }
+    }
+
+    .list-group-item {
+        animation: pulse 2s infinite;
     }
     .list-group-item {
         display: flex;
@@ -230,6 +388,7 @@
     }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -274,59 +433,210 @@ $(document).ready(function() {
         });
     @endif
 
-    $('#add-attribute-btn2').on('click', function() {
-        $('#overlay-title').text('Thêm Thuộc Tính');
-        $('#attribute-form').attr('action', '{{ route('attributes.store') }}');
-        $('#attribute-id').val('');
-        $('#name').val('');
-        $('#value').val('viên');
-        $('#slug').val('');
-        $('#is_active').val('1');
-        $('#submit-btn').text('Thêm');
-        $('#attribute-form input[name="_method"]').remove();
-        $('#attribute-overlay').fadeIn(300).find('.overlay-content').addClass('active');
+    const shapeUnits = [
+        { value: 'hộp', text: 'Hộp' },
+        { value: 'vỉ', text: 'Vỉ' },
+        { value: 'lọ', text: 'Lọ' },
+        { value: 'tuýp', text: 'Tuýp' },
+        { value: 'gói', text: 'Gói' }
+    ];
+
+    const weightUnits = [
+        { value: 'viên', text: 'Viên' },
+        { value: 'ml', text: 'ml' },
+        { value: 'g', text: 'g' }
+    ];
+
+    function showOverlay(overlayId) {
+        $(overlayId)
+            .css('display', 'flex')
+            .find('.overlay-content')
+            .addClass('active');
         $('body').addClass('overlay-active');
+    }
+
+    function hideOverlay(overlay) {
+        $(overlay)
+            .find('.overlay-content')
+            .removeClass('active');
+        setTimeout(() => {
+            $(overlay).hide();
+            $('body').removeClass('overlay-active');
+        }, 300);
+    }
+
+    function canAddMoreAttributes() {
+        return $('#name option:not(:disabled):not(:first)').length > 0;
+    }
+
+    function showMaxAttributesWarning() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Không thể thêm',
+            text: 'Đã tạo đủ các loại biến thể cho phép (Hình thù và Khối lượng)',
+            confirmButtonText: 'Đóng'
+        });
+    }
+
+    function populateUnitOptions(type) {
+        const unitSelect = $('#unit');
+        const amountInput = $('#amount');
+        
+        unitSelect.empty();
+        
+        if (type === 'Hình thù') {
+            amountInput.hide().prop('required', false);
+            unitSelect.removeClass('rounded-0 rounded-end').addClass('rounded');
+            shapeUnits.forEach(unit => unitSelect.append(new Option(unit.text, unit.value)));
+        } else {
+            amountInput.show().prop('required', true);
+            unitSelect.removeClass('rounded').addClass('rounded-0 rounded-end');
+            weightUnits.forEach(unit => unitSelect.append(new Option(unit.text, unit.value)));
+        }
+    }
+
+    $('.group-header').off('click').on('click', function(e) {
+        if (!$(e.target).closest('.add-variant-btn').length) {
+            const $header = $(this);
+            const $details = $header.next('.group-details');
+            
+            if (!$details.hasClass('show')) {
+                $('.group-details.show').removeClass('show').hide();
+                $('.group-header.expanded').removeClass('expanded');
+                
+                $header.addClass('expanded');
+                $details.show().addClass('show');
+            } else {
+                $header.removeClass('expanded');
+                $details.removeClass('show').hide();
+            }
+        }
     });
 
-
-    $('.add-variant-btn').on('click', function(e) {
+    $(document).on('click', '#add-attribute-btn2', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        const attributeName = $(this).data('name');
-        $('#overlay-title').text('Thêm Biến Thể Mới');
-        $('#attribute-form').attr('action', '{{ route('attributes.store') }}');
-        $('#attribute-id').val('');
-        $('#name').val(attributeName).prop('readonly', true);
-        $('#value').val('viên');
-        $('#slug').val('');
+        
+        if (!canAddMoreAttributes()) {
+            showMaxAttributesWarning();
+            return;
+        }
+
+        $('#overlay-title').text('Thêm Loại Biến Thể Mới');
+        $('#attribute-form')
+            .attr('action', '{{ route('attributes.store') }}')
+            .trigger('reset');
         $('#is_active').val('1');
-        $('#submit-btn').text('Thêm');
-        $('#attribute-form input[name="_method"]').remove();
-        $('#attribute-overlay').fadeIn(300).find('.overlay-content').addClass('active');
-        $('body').addClass('overlay-active');
+        showOverlay('#attribute-overlay');
     });
 
-   
-    $('#close-overlay').on('click', function() {
-        $('#attribute-overlay').find('.overlay-content').removeClass('active');
-        setTimeout(function() {
-            $('#attribute-overlay').fadeOut(300);
-            $('#attribute-form input[name="_method"]').remove();
+    $(document).on('click', '.add-variant-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const attributeName = $(this).data('name');
+        const attributeId = $(this).data('id');
+        
+        $('#variant-overlay-title').text(`Thêm giá trị cho ${attributeName} ( Designed by TG )`);
+        $('#variant-value-form')
+            .attr('action', '{{ route('attribute-values.store') }}')
+            .trigger('reset');
+        $('#variant-attribute-id').val(attributeId);
+        $('#variant-type').val(attributeName);
+        $('#value_is_active').val('1');
+        
+        populateUnitOptions(attributeName);
+        showOverlay('#variant-value-overlay');
+    });
+
+    $(document).on('click', '.btn-close-custom, .btn-close, .attribute-overlay', function(e) {
+        if (e.target === this) {
+            hideOverlay($(this).closest('.attribute-overlay'));
+        }
+    });
+
+    $('.overlay-content').on('click', function(e) {
+        e.stopPropagation();
+    });
+
+    function init() {
+        setupAlertMessages();
+        setupHelperText();
+        checkExistingAttributes();
+        setupEventHandlers();
+    }
+
+    function setupAlertMessages() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'OK'
+            });
+        @endif
+    }
+
+    function checkExistingAttributes() {
+        const existingAttributes = $('.group-header').map(function() {
+            return $(this).data('name');
+        }).get();
+
+        $('#name option').each(function() {
+            if (existingAttributes.includes($(this).val()) && $(this).val()) {
+                $(this).prop('disabled', true);
+            }
+        });
+    }
+
+    function setupHelperText() {
+        $('.group-header').each(function() {
+            $(this).find('td:first').append('<span class="click-helper">Click để xem chi tiết</span>');
+        });
+    }
+
+    function setupEventHandlers() {
+        $('#name').on('change', function() {
+            const name = $(this).val();
+            const slug = name.toLowerCase()
+                .replace(/đ/g, 'd')
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            $('#slug').val(slug);
+        });
+    }
+
+     $('#close-overlay, #close-variant-overlay').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $overlay = $(this).closest('.attribute-overlay');
+        
+        $overlay.find('.overlay-content').removeClass('active');
+        setTimeout(() => {
+            $overlay.hide();
             $('body').removeClass('overlay-active');
         }, 300);
     });
 
-    
-    $('#attribute-overlay').on('click', function(e) {
+    $('.attribute-overlay').on('click', function(e) {
         if (e.target === this) {
-            $('#attribute-overlay').find('.overlay-content').removeClass('active');
-            setTimeout(function() {
-                $('#attribute-overlay').fadeOut(300);
-                $('#attribute-form input[name="_method"]').remove();
+            const $overlay = $(this);
+            $overlay.find('.overlay-content').removeClass('active');
+            setTimeout(() => {
+                $overlay.hide();
                 $('body').removeClass('overlay-active');
             }, 300);
         }
     });
+
+    $('.overlay-content').on('click', function(e) {
+        e.stopPropagation();
+    });
+
+    init();
 });
+
 
 document.querySelectorAll('.status-toggle').forEach(toggle => {
     toggle.addEventListener('change', async function() {

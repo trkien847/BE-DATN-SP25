@@ -55,6 +55,37 @@
     z-index: 0;
 }
 
+.pagination {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pagination button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination button.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
 .nav-link.clicked::after {
     width: 100px; 
     height: 100px;
@@ -98,6 +129,7 @@
     white-space: nowrap;
 }
 </style>
+
 <div class="container">
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
@@ -164,7 +196,7 @@
                         <th scope="col" class="checkbox-column" style="display: none;"><input type="checkbox" id="selectAll"></th>
                         <th scope="col">Mã đơn hàng</th>
                         <th scope="col">Tên khách hàng</th>
-                        <th scope="col">Mã giảm giá</th>
+                        <th scope="col">Ngày mua</th>
                         <th scope="col">Trạng thái</th>
                         <th scope="col">Tổng hóa đơn</th>
                         <th scope="col">Người xử lý</th>
@@ -177,7 +209,7 @@
                         <td class="checkbox-column" style="display: none;"><input type="checkbox" class="orderCheckbox" value="{{ $order->id }}"></td>
                         <td>{{ $order->code }}</td>
                         <td>{{ $order->fullname }}</td>
-                        <td>{{ $order->coupon_code ?? 'Không có' }}</td>
+                        <td>{{ $order->created_at }}</td>
                         <td class="status-cancelled">
                             <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
                                 @php
@@ -210,6 +242,13 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        <!-- Add this pagination container -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="pagination-info">
+                Hiển thị <span id="showing">0-0</span> trong tổng số <span id="total">0</span> đơn hàng
+            </div>
+            <div id="pagination" class="pagination"></div>
         </div>
         
         
@@ -248,7 +287,7 @@
                     <div class="col-md-4">
                         <h6>Thông tin khách hàng</h6>
                         <ul class="list-unstyled">
-                            <li><strong>Tên:</strong> <span id="customerName"></span></li>
+                            <li><strong>Tên:</strong> <span id="customerNameo"></span></li>
                             <li><strong>Địa chỉ:</strong> <span id="customerAddress"></span></li>
                             <li><strong>Số điện thoại:</strong> <span id="customerPhone"></span></li>
                             <li><strong>Email:</strong> <span id="customerEmail"></span></li>
@@ -328,7 +367,7 @@ function attachDetailEvents() {
                 document.getElementById('orderCode').textContent = data.order.code;
                 document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
                 document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
-                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerNameo').textContent = data.order.fullname;
                 document.getElementById('customerAddress').textContent = data.order.address;
                 document.getElementById('customerPhone').textContent = data.order.phone_number;
                 document.getElementById('customerEmail').textContent = data.order.email;
@@ -573,7 +612,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
                 document.getElementById('orderCode').textContent = data.order.code;
                 document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
                 document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
-                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerNameo').textContent = data.order.fullname;
                 document.getElementById('customerAddress').textContent = data.order.address;
                 document.getElementById('customerPhone').textContent = data.order.phone_number;
                 document.getElementById('customerEmail').textContent = data.order.email;
@@ -731,6 +770,96 @@ document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
 
         filterOrders(status, startDate, endDate, customerName);
     });
+});
+
+// Add this to your existing script section
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    const rowsPerPage = 5;
+    const tableBody = document.getElementById('orderBody');
+    const paginationContainer = document.getElementById('pagination');
+    
+    function initializePagination() {
+        const rows = Array.from(tableBody.getElementsByTagName('tr'));
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+        
+        // Update showing text
+        updateShowingText(rows.length);
+        
+        // Create pagination buttons
+        createPaginationButtons(totalPages);
+        
+        // Show first page
+        showPage(1);
+    }
+    
+    function showPage(page) {
+        const rows = Array.from(tableBody.getElementsByTagName('tr'));
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach(row => row.style.display = 'none');
+        
+        rows.slice(start, end).forEach(row => row.style.display = '');
+        
+        currentPage = page;
+        
+        updateShowingText(rows.length, start + 1, Math.min(end, rows.length));
+        
+        updatePaginationButtons();
+    }
+    
+    function createPaginationButtons(totalPages) {
+        paginationContainer.innerHTML = '';
+        
+        const prevButton = createButton('«', () => {
+            if (currentPage > 1) showPage(currentPage - 1);
+        });
+        prevButton.classList.add('btn-prev');
+        paginationContainer.appendChild(prevButton);
+        
+        for (let i = 1; i <= totalPages; i++) {
+            const button = createButton(i.toString(), () => showPage(i));
+            button.dataset.page = i;
+            paginationContainer.appendChild(button);
+        }
+        
+        const nextButton = createButton('»', () => {
+            if (currentPage < totalPages) showPage(currentPage + 1);
+        });
+        nextButton.classList.add('btn-next');
+        paginationContainer.appendChild(nextButton);
+    }
+    
+    function createButton(text, onClick) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = 'btn btn-outline-primary btn-sm mx-1';
+        button.addEventListener('click', onClick);
+        return button;
+    }
+    
+    function updatePaginationButtons() {
+        paginationContainer.querySelectorAll('button').forEach(button => {
+            if (button.dataset.page) {
+                button.classList.toggle('active', parseInt(button.dataset.page) === currentPage);
+            }
+        });
+        
+        const prevButton = paginationContainer.querySelector('.btn-prev');
+        const nextButton = paginationContainer.querySelector('.btn-next');
+        const totalPages = Math.ceil(tableBody.getElementsByTagName('tr').length / rowsPerPage);
+        
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+    }
+    
+    function updateShowingText(total, start = 0, end = 0) {
+        document.getElementById('showing').textContent = start && end ? `${start}-${end}` : '0-0';
+        document.getElementById('total').textContent = total;
+    }
+    
+    initializePagination();
+    window.reinitializePagination = initializePagination;
 });
 </script>
 @endsection

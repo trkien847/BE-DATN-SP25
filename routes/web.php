@@ -131,7 +131,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     return back();
   })->name('notifications.read');
 
-  // Quản lý đánh giá
+  // Quản lý đánh giá /admin/attributes
   Route::get('/admin/reviews', [ReviewsController::class, 'index'])->name('reviews.list');
   Route::get('/admin/edit_reviews/{reviews}', [ReviewsController::class, 'listedit'])->name('list.edit');
   Route::delete('/admin/destroyReviews/{reviews}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
@@ -193,9 +193,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
   // Quản lý thuộc tính sản phẩm 
   Route::post('/admin/attributes/{attribute}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.attributes.toggle-status');
+  
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
+  Route::post('/attributes', [ProductController::class, 'storeAttribute'])->name('attributes.store');
+  Route::post('/attribute-values', [ProductController::class, 'storeAttributeValue'])->name('attribute-values.store');
+
   Route::get('/admin/attributes/add', [ProductController::class, 'attributesCreate'])->name('attributes.add');
-  Route::post('/admin/attributes/create', [ProductController::class, 'attributesStore'])->name('attributes.store');
   Route::get('/attributes/{id}/edit', [ProductController::class, 'attributesEdit'])->name('attributes.edit');
   Route::put('/admin/attributes/{id}', [ProductController::class, 'attributesUpdate'])->name('attributes.update');
   Route::get('/products/pending-updates', [ProductController::class, 'pendingUpdates'])->name('products.pending-updates');
