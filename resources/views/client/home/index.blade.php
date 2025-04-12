@@ -687,8 +687,8 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h6 class="section-subtitle ltn__secondary-color">Đánh giá từ khách hàng</h6>
-                        <h1 class="section-title">Phản hồi của khách hàng<span>.</span></h1>
+                        <h6 class="section-subtitle ltn__secondary-color">Các Thông Tin Bài ViếtViết</h6>
+                        <h1 class="section-title">Bài Viết Nổi Bật<span>.</span></h1>
                     </div>
                 </div>
             </div>
