@@ -244,64 +244,112 @@
                     </div>
 
                     <div class="form4" style="display: none;">
-                        <div class="space-y-6">
-                            <div class="w-full">
-                                <h4 class="text-lg font-semibold mb-4">Chọn Biến Thể</h4>
-                                <div id="variant-container" class="grid grid-cols-3 gap-4">
-                                    @php
-                                        $groupedAttributes = $attributes->groupBy('name');
-                                    @endphp
-                                    @foreach ($groupedAttributes as $name => $group)
-                                        <div class="variant-group border p-4 rounded hover:shadow-lg transition-all">
-                                            <strong class="variant-name block mb-2" data-name="{{ $name }}" style="cursor: pointer;">
-                                                <i class="fas fa-chevron-right mr-2 transform transition-transform"></i>
-                                                {{ $name }}
-                                            </strong>
-                                            <div class="variant-options hidden mt-3 pl-2 border-l-2 border-teal-500">
-                                                @foreach ($group as $attribute)
-                                                    @foreach ($attribute->values as $value)
-                                                        <div class="variant-item mb-3 hover:bg-gray-50 p-2 rounded">
-                                                            <div class="variant-checkbox flex items-center">
-                                                            <input type="checkbox" 
-                                                                name="variants[{{ $attribute->id }}][]" 
-                                                                value="{{ $value->id }}" 
-                                                                data-variant-name="{{ $attribute->slug }} {{ $value->value }}"
-                                                                id="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                                class="variant-checkbox-input w-4 h-4"
-                                                                @if(isset($selectedVariantIds) && in_array($value->id, $selectedVariantIds)) 
-                                                                    checked 
-                                                                    data-has-data="true"
-                                                                    data-price="{{ $variantData[$value->id]['price'] ?? '' }}"
-                                                                    data-sale-price="{{ $variantData[$value->id]['sale_price'] ?? '' }}"
-                                                                    data-sale-start="{{ $variantData[$value->id]['sale_price_start_at'] ? date('Y-m-d\TH:i', strtotime($variantData[$value->id]['sale_price_start_at'])) : '' }}"
-                                                                    data-sale-end="{{ $variantData[$value->id]['sale_price_end_at'] ? date('Y-m-d\TH:i', strtotime($variantData[$value->id]['sale_price_end_at'])) : '' }}"
-                                                                @endif>
-                                                                <label for="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                                    class="ml-2 text-sm cursor-pointer">
-                                                                    {{ $attribute->slug }} {{ $value->value }}
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
+    <div class="space-y-6">
+        <div class="w-full bg-white p-6 rounded-lg shadow-sm">
+            <h4 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-tags mr-2"></i>Quản Lý Biến Thể Sản Phẩm
+            </h4>
 
-                            <!-- Bottom panel - Selected variants details -->
-                            <div class="w-full mt-8 border-t pt-8">
-                                <h4 class="text-lg font-semibold mb-4">Biến Thể Đã Chọn</h4>
-                                <div id="selected-variants-container" class="grid grid-cols-2 gap-6">
-                                    <!-- Selected variants will be dynamically added here -->
+            <!-- Phần chọn hình thù -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                @php
+                    $shapeGroup = $attributes->where('name', 'Hình thù')->first();
+                @endphp
+                
+                @if($shapeGroup && $shapeGroup->values->isNotEmpty())
+                    @foreach ($shapeGroup->values as $value)
+                        <div class="variant-item bg-white border rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                            <label class="flex items-center cursor-pointer w-full">
+                                <input type="checkbox" 
+                                    name="variants[shape][]" 
+                                    value="{{ $value->id }}" 
+                                    data-variant-name="{{ $value->value }}"
+                                    data-group="Hình thù"
+                                    id="variant-{{ $value->id }}"
+                                    class="variant-checkbox-input w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                                    {{ in_array($value->id, array_column($selectedVariants, 'shape_id')) ? 'checked' : '' }}>
+                                <span class="ml-3 text-gray-700 text-lg font-medium">
+                                    {{ $value->value }}
+                                </span>
+                            </label>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+
+            <!-- Phần chọn khối lượng -->
+            <div id="weight-selections-container">
+                <!-- Weight selection areas will be createWeightSelectionArea -->
+            </div>
+
+            <!-- Phần hiển thị tất cả biến thể  -->
+            <div class="mt-8">
+                <h5 class="text-lg font-medium mb-4 text-gray-800">
+                    <i class="fas fa-list-check mr-2"></i>Danh Sách Biến Thể
+                </h5>
+                <div id="selected-variants-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Existing variants -->
+                    @foreach($variantData as $variantId => $variant)
+                        <div class="variant-card bg-white p-4 rounded-lg shadow-sm border" data-variant-id="{{ $variantId }}">
+                            <div class="flex justify-between items-center mb-3">
+                                <h6 class="font-medium text-gray-800">
+                                    {{ $variant['shape_name'] }} {{ $variant['weight_name'] }}
+                                </h6>
+                                <button type="button" 
+                                    onclick="deleteVariant({{ $variantId }})"
+                                    class="text-gray-400 hover:text-red-500 transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-sm text-gray-600">Giá bán <span class="text-red-500">*</span></label>
+                                        <input type="number" 
+                                            name="existing_variants[{{ $variantId }}][price]" 
+                                            value="{{ $variant['price'] }}"
+                                            class="form-control w-full mt-1" 
+                                            required 
+                                            min="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm text-gray-600">Giá khuyến mãi</label>
+                                        <input type="number" 
+                                            name="existing_variants[{{ $variantId }}][sale_price]" 
+                                            value="{{ $variant['sale_price'] }}"
+                                            class="form-control w-full mt-1" 
+                                            min="0">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-sm text-gray-600">Bắt đầu khuyến mãi</label>
+                                        <input type="datetime-local" 
+                                            name="existing_variants[{{ $variantId }}][sale_start_at]" 
+                                            value="{{ $variant['sale_price_start_at'] }}"
+                                            class="form-control w-full mt-1">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm text-gray-600">Kết thúc khuyến mãi</label>
+                                        <input type="datetime-local" 
+                                            name="existing_variants[{{ $variantId }}][sale_end_at]" 
+                                            value="{{ $variant['sale_end_at'] }}"
+                                            class="form-control w-full mt-1">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn text-white bg-teal-500 w-full mt-6 py-3 rounded-lg hover:bg-teal-600 transition-colors">
-                            Lưu Sản Phẩm
-                        </button>
-                    </div>
+                    @endforeach
+                    <!-- New variants will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn text-white bg-teal-500 w-full mt-6 py-3 rounded-lg hover:bg-teal-600 transition-colors">
+        Lưu Thay Đổi
+    </button>
+</div>
 
                 </form>
             </div>
@@ -322,185 +370,424 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-    const variantData = new Map();
+            const existingVariants = @json($variantData);
+            let selectedShapes = []; // Store selected shapes
+            let variantCombinations = []; // Store final shape-weight combinations
 
-    // Toggle variant options when clicking on variant name
-    document.querySelectorAll('.variant-name').forEach(item => {
-        item.addEventListener('click', function() {
-            this.classList.toggle('active');
-            const icon = this.querySelector('i');
-            icon.style.transform = this.classList.contains('active') ? 'rotate(90deg)' : '';
-            const options = this.nextElementSibling;
-            options.classList.toggle('hidden');
-        });
-    });
+            // Handle shape selection
+            document.querySelectorAll('.variant-checkbox-input:checked').forEach(checkbox => {
+                const shapeId = checkbox.value;
+                const shapeName = checkbox.dataset.variantName;
+                
+                // Create weight selection area first
+                createWeightSelectionArea(shapeId, shapeName);
+                
+                // Then mark existing combinations
+                Object.values(existingVariants).forEach(variant => {
+                    if (variant.shape_id == shapeId) {
+                        const weightCheckbox = document.getElementById(`weight-${shapeId}-${variant.weight_id}`);
+                        if (weightCheckbox) {
+                            weightCheckbox.checked = true;
+                            // Trigger change event to create variant card
+                            const event = new Event('change');
+                            weightCheckbox.dispatchEvent(event);
+                        }
+                    }
+                });
+            });
 
-    // Handle checkbox changes
-    document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const variantId = this.value;
-            const variantName = this.dataset.variantName;
+            // Handle checkbox changes for variant selection
+            document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const variantGroup = this.dataset.group;
+                    const variantId = this.value;
+                    const variantName = this.closest('label').querySelector('span').textContent.trim();
 
-            if (this.checked) {
-                const card = createVariantCard(variantId, variantName);
-                document.getElementById('selected-variants-container').appendChild(card);
-                addInputValidation(card, variantId);
-            } else {
-                removeVariantCard(variantId);
-                variantData.delete(variantId);
+                    if (this.checked) {
+                        if (variantGroup === 'Hình thù') {
+                            createWeightSelectionArea(variantId, variantName);
+                            
+                            // Check for existing combinations for this shape
+                            Object.values(existingVariants).forEach(variant => {
+                                if (variant.shape_id == variantId) {
+                                    const weightCheckbox = document.getElementById(`weight-${variantId}-${variant.weight_id}`);
+                                    if (weightCheckbox) {
+                                        weightCheckbox.checked = true;
+                                        // Trigger change event to create variant card
+                                        const event = new Event('change');
+                                        weightCheckbox.dispatchEvent(event);
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        if (variantGroup === 'Hình thù') {
+                            removeWeightSelectionArea(variantId);
+                            removeVariantCards(variantId);
+                        }
+                    }
+                });
+            });
+
+            function createWeightSelectionArea(shapeId, shapeName) {
+                const container = document.getElementById('weight-selections-container');
+                const weightArea = document.createElement('div');
+                weightArea.className = 'weight-selection-area bg-white p-4 rounded-lg shadow-sm border mb-4 fade-in';
+                weightArea.dataset.shapeId = shapeId;
+
+                weightArea.innerHTML = `
+                    <h6 class="font-medium text-gray-800 mb-3">
+                        Chọn khối lượng cho <span class="text-teal-600 font-bold">${shapeName}</span>
+                    </h6>
+                    
+                    <!-- Filter buttons -->
+                    <div class="flex gap-2 mb-4">
+                        <button type="button" class="filter-btn active px-4 py-2 rounded-md text-sm font-medium bg-teal-500 text-white hover:bg-teal-600 transition-colors" data-filter="all">
+                            Tất cả
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="viên">
+                            Viên
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="ml">
+                            ml
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="g">
+                            g
+                        </button>
+                    </div>
+
+                    <!-- Weight options container -->
+                    <div class="weight-options flex flex-wrap gap-4">
+                    </div>
+                `;
+
+                const weightOptions = weightArea.querySelector('.weight-options');
+                const weightValues = @json($weightValues);
+
+                // Lấy tất cả các khối lượng đã được sử dụng trong biến thể hiện tại
+                const usedWeights = new Set();
+                Object.values(existingVariants).forEach(variant => {
+                    if (variant.shape_id == shapeId) {
+                        usedWeights.add(variant.weight_id.toString());
+                    }
+                });
+
+                // Tạo các option khối lượng, loại bỏ những cái đã được sử dụng
+                weightValues.forEach(value => {
+                    // Bỏ qua nếu khối lượng này đã được sử dụng trong biến thể hiện tại
+                    if (!usedWeights.has(value.id.toString())) {
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
+                        optionDiv.dataset.unit = value.unit;
+
+                        optionDiv.innerHTML = `
+                            <input type="checkbox" 
+                                id="weight-${shapeId}-${value.id}"
+                                value="${value.id}"
+                                data-weight-name="${value.value}"
+                                class="weight-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                            <label class="ml-2 text-sm text-gray-700 cursor-pointer select-none">
+                                ${value.value}
+                            </label>
+                        `;
+                        
+                        weightOptions.appendChild(optionDiv);
+                    }
+                });
+
+                // Thêm filter functionality
+                const filterButtons = weightArea.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterButtons.forEach(b => {
+                            b.classList.remove('bg-teal-500', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-gray-700');
+                        });
+                        this.classList.remove('bg-gray-100', 'text-gray-700');
+                        this.classList.add('bg-teal-500', 'text-white');
+
+                        const filter = this.dataset.filter;
+                        const options = weightOptions.querySelectorAll('.weight-option');
+
+                        options.forEach(option => {
+                            if (filter === 'all' || option.dataset.unit === filter) {
+                                option.style.display = 'flex';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+
+                container.appendChild(weightArea);
+
+                // Add event listeners for weight checkboxes
+                weightArea.querySelectorAll('.weight-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const weightId = this.value;
+                        const weightName = this.dataset.weightName;
+                        const combinationId = `${shapeId}-${weightId}`;
+                        const combinationName = `${shapeName} ${weightName}`;
+
+                        if (this.checked) {
+                            createOrUpdateVariantCard(combinationId, combinationName);
+                            // Ẩn option này ở các weight selection area khác
+                            document.querySelectorAll(`.weight-option input[value="${weightId}"]`).forEach(input => {
+                                if (input !== this) {
+                                    input.closest('.weight-option').style.display = 'none';
+                                }
+                            });
+                        } else {
+                            removeVariantCard(combinationId);
+                            // Hiển thị lại option này ở các weight selection area khác
+                            document.querySelectorAll(`.weight-option input[value="${weightId}"]`).forEach(input => {
+                                input.closest('.weight-option').style.display = 'flex';
+                            });
+                        }
+                    });
+                });
             }
-        });
-    });
 
-    // Handle pre-selected variants for edit mode
-    document.querySelectorAll('.variant-checkbox-input[data-has-data="true"]').forEach(checkbox => {
-        if (checkbox.checked) {
-            const variantId = checkbox.value;
-            const variantName = checkbox.dataset.variantName;
-            const price = checkbox.dataset.price;
-            const salePrice = checkbox.dataset.salePrice;
-            const saleStart = checkbox.dataset.saleStart;
-            const saleEnd = checkbox.dataset.saleEnd;
+            function createOrUpdateVariantCard(combinationId, combinationName) {
+                const container = document.getElementById('selected-variants-container');
+                let card = document.getElementById(`variant-card-${combinationId}`);
+                const [shapeId, weightId] = combinationId.split('-');
 
-            const card = createVariantCard(variantId, variantName);
-            document.getElementById('selected-variants-container').appendChild(card);
+                // Check if this is an existing variant
+                const existingVariant = Object.values(existingVariants).find(v => 
+                    v.shape_id == shapeId && v.weight_id == weightId
+                );
 
-            // Set existing values
-            const cardElement = document.getElementById(`variant-card-${variantId}`);
-            if (cardElement) {
-                cardElement.querySelector('input[name$="[price]"]').value = price;
-                cardElement.querySelector('input[name$="[sale_price]"]').value = salePrice;
-                cardElement.querySelector('input[name$="[sale_price_start_at]"]').value = saleStart;
-                cardElement.querySelector('input[name$="[sale_price_end_at]"]').value = saleEnd;
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `variant-card-${combinationId}`;
+                    card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm border fade-in';
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-3">
+                            <h6 class="font-medium text-gray-800">${combinationName}</h6>
+                            <button type="button" onclick="removeVariant('${combinationId}')"
+                                    class="text-gray-400 hover:text-red-500 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <input type="hidden" name="variants[${shapeId}][]" value="${weightId}">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm text-gray-600">Giá bán <span class="text-red-500">*</span></label>
+                                    <input type="number" 
+                                        name="variant_prices[${shapeId}-${weightId}][price]" 
+                                        value="${existingVariant ? existingVariant.price : ''}"
+                                        class="form-control w-full mt-1" 
+                                        required 
+                                        min="0">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-gray-600">Giá khuyến mãi</label>
+                                    <input type="number" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_price]" 
+                                        value="${existingVariant ? existingVariant.sale_price : ''}"
+                                        class="form-control w-full mt-1" 
+                                        min="0">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm text-gray-600">Bắt đầu khuyến mãi</label>
+                                    <input type="datetime-local" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_start_at]" 
+                                        value="${existingVariant ? existingVariant.sale_price_start_at : ''}"
+                                        class="form-control w-full mt-1">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-gray-600">Kết thúc khuyến mãi</label>
+                                    <input type="datetime-local" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_end_at]" 
+                                        value="${existingVariant ? existingVariant.sale_end_at : ''}"
+                                        class="form-control w-full mt-1">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+
+                    // Add validation event listeners
+                    const priceInput = card.querySelector('input[name$="[price]"]');
+                    const salePriceInput = card.querySelector('input[name$="[sale_price]"]');
+                    const startDateInput = card.querySelector('input[name$="[sale_start_at]"]');
+                    const endDateInput = card.querySelector('input[name$="[sale_end_at]"]');
+
+                    priceInput.addEventListener('change', validatePrice);
+                    salePriceInput.addEventListener('change', validateSalePrice);
+                    startDateInput.addEventListener('change', validateDates);
+                    endDateInput.addEventListener('change', validateDates);
+                }
             }
-        }
-    });
 
-    function createVariantCard(variantId, variantName) {
-        const card = document.createElement('div');
-        card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm mb-4';
-        card.id = `variant-card-${variantId}`;
-        
-        card.innerHTML = `
-            <div class="flex justify-between items-center mb-3">
-                <h5 class="font-medium text-teal-600">${variantName}</h5>
-                <button type="button" 
-                        onclick="removeVariant('${variantId}')"
-                        class="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-medium">Giá bán:</label>
-                        <input type="number" 
-                            name="variant_prices[${variantId}][price]" 
-                            class="form-control w-full price-input" 
-                            placeholder="Nhập giá bán"
-                            required>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium">Giá khuyến mãi:</label>
-                        <input type="number" 
-                            name="variant_prices[${variantId}][sale_price]" 
-                            class="form-control w-full sale-price-input" 
-                            placeholder="Nhập giá khuyến mãi">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-medium">Bắt đầu khuyến mãi:</label>
-                        <input type="datetime-local" 
-                            name="variant_prices[${variantId}][sale_price_start_at]" 
-                            class="form-control w-full sale-start-input">
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium">Kết thúc khuyến mãi:</label>
-                        <input type="datetime-local" 
-                            name="variant_prices[${variantId}][sale_price_end_at]" 
-                            class="form-control w-full sale-end-input">
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        return card;
-    }
-
-    function removeVariantCard(variantId) {
-        const card = document.getElementById(`variant-card-${variantId}`);
-        if (card) {
-            card.remove();
-        }
-        const checkbox = document.querySelector(`input[value="${variantId}"]`);
-        if (checkbox) {
-            checkbox.checked = false;
-        }
-    }
-
-    // Add to global scope for onclick access
-    window.removeVariant = function(variantId) {
-        Swal.fire({
-            title: 'Xác nhận xóa',
-            text: 'Bạn có chắc muốn xóa biến thể này?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Xóa',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                removeVariantCard(variantId);
-                variantData.delete(variantId);
+            function removeWeightSelectionArea(shapeId) {
+                const area = document.querySelector(`.weight-selection-area[data-shape-id="${shapeId}"]`);
+                if (area) {
+                    area.classList.add('fade-out');
+                    setTimeout(() => area.remove(), 300);
+                }
             }
-        });
-    };
 
-    // Form validation before submit
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const selectedVariants = document.querySelectorAll('.variant-card');
-        let hasError = false;
+            function removeVariantCard(combinationId) {
+                const card = document.getElementById(`variant-card-${combinationId}`);
+                if (card) {
+                    card.classList.add('fade-out');
+                    setTimeout(() => card.remove(), 300);
+                }
+            }
 
-        selectedVariants.forEach(card => {
-            const price = card.querySelector('.price-input').value;
-            const salePrice = card.querySelector('.sale-price-input').value;
-            const saleStart = card.querySelector('.sale-start-input').value;
-            const saleEnd = card.querySelector('.sale-end-input').value;
+            function removeVariantCards(shapeId) {
+                document.querySelectorAll(`[id^="variant-card-${shapeId}-"]`).forEach(card => {
+                    card.classList.add('fade-out');
+                    setTimeout(() => card.remove(), 300);
+                });
+            }
 
-            if (!price) {
-                hasError = true;
-                alert('Vui lòng nhập giá bán cho tất cả biến thể');
+            // Thêm các hàm validate
+            function validatePrice(e) {
+                const input = e.target;
+                if (input.value <= 0) {
+                    input.setCustomValidity('Giá bán phải lớn hơn 0');
+                } else {
+                    input.setCustomValidity('');
+                }
+            }
+
+            function validateSalePrice(e) {
+                const input = e.target;
+                const card = input.closest('.variant-card');
+                const priceInput = card.querySelector('input[name$="[price]"]');
+                
+                if (input.value && parseFloat(input.value) >= parseFloat(priceInput.value)) {
+                    input.setCustomValidity('Giá khuyến mãi phải nhỏ hơn giá bán');
+                } else {
+                    input.setCustomValidity('');
+                }
+            }
+
+            function validateDates(e) {
+                const input = e.target;
+                const card = input.closest('.variant-card');
+                const startInput = card.querySelector('input[name$="[sale_start_at]"]');
+                const endInput = card.querySelector('input[name$="[sale_end_at]"]');
+                
+                if (startInput.value && endInput.value) {
+                    if (new Date(endInput.value) <= new Date(startInput.value)) {
+                        endInput.setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu');
+                    } else {
+                        endInput.setCustomValidity('');
+                    }
+                }
+            }
+
+           // Thêm vào đầu file script của bạn
+            window.deleteVariant = function(variantId) {
+                Swal.fire({
+                    title: 'Xác nhận xóa?',
+                    text: "Bạn không thể hoàn tác sau khi xóa!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tìm card biến thể cần xóa
+                        const card = document.querySelector(`.variant-card[data-variant-id="${variantId}"]`);
+                        
+                        if (card) {
+                            // Thêm input hidden để track các biến thể bị xóa
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'deleted_variants[]';
+                            input.value = variantId;
+                            document.getElementById('myForm').appendChild(input);
+
+                            // Thêm animation fade-out trước khi xóa
+                            card.classList.add('fade-out');
+                            setTimeout(() => {
+                                card.remove();
+                            }, 300);
+
+                            Swal.fire(
+                                'Đã xóa!',
+                                'Biến thể sẽ bị xóa sau khi lưu.',
+                                'success'
+                            );
+                        }
+                    }
+                });
+            };
+
+            // Modify the form submission handler
+            document.getElementById('myForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                return;
-            }
+                
+                const variants = document.querySelectorAll('.variant-card');
+                let hasError = false;
 
-            if (salePrice) {
-                if (parseFloat(salePrice) >= parseFloat(price)) {
-                    hasError = true;
-                    alert('Giá khuyến mãi phải nhỏ hơn giá bán');
-                    e.preventDefault();
+                variants.forEach(variant => {
+                    const price = variant.querySelector('input[name$="[price]"]');
+                    const salePrice = variant.querySelector('input[name$="[sale_price]"]');
+                    const startDate = variant.querySelector('input[name$="[sale_start_at]"]');
+                    const endDate = variant.querySelector('input[name$="[sale_end_at]"]');
+
+                    if (!price.value) {
+                        price.classList.add('error-input');
+                        hasError = true;
+                    }
+
+                    if (salePrice.value) {
+                        if (!startDate.value || !endDate.value) {
+                            startDate.classList.add('error-input');
+                            endDate.classList.add('error-input');
+                            hasError = true;
+                        }
+                    }
+                });
+
+                if (hasError) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Vui lòng kiểm tra lại các trường bắt buộc'
+                    });
                     return;
                 }
 
-                if (!saleStart || !saleEnd) {
-                    hasError = true;
-                    alert('Vui lòng nhập đầy đủ thời gian khuyến mãi');
-                    e.preventDefault();
-                    return;
-                }
+                Swal.fire({
+                    title: 'Xác nhận cập nhật?',
+                    text: "Bạn có chắc chắn muốn cập nhật các biến thể?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Cập nhật',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            });
 
-                if (new Date(saleEnd) <= new Date(saleStart)) {
-                    hasError = true;
-                    alert('Thời gian kết thúc phải sau thời gian bắt đầu khuyến mãi');
-                    e.preventDefault();
-                    return;
+            // Global function for removing variants
+            window.removeVariant = function(combinationId) {
+                const [shapeId, weightId] = combinationId.split('-');
+                const weightCheckbox = document.getElementById(`weight-${shapeId}-${weightId}`);
+                if (weightCheckbox) {
+                    weightCheckbox.checked = false;
                 }
-            }
+                removeVariantCard(combinationId);
+            };
         });
-    });
-});
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
