@@ -1631,7 +1631,26 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Đã xảy ra lỗi',
+                'error' => [
+                    'code' => 500,
+                    'type' => class_basename($e),
+                    'details' => $e->getMessage(),
+                    'time' => now()->format('Y-m-d H:i:s'),
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine(),
+                ],
+                'suggestions' => [
+                    'Vui lòng kiểm tra lại dữ liệu nhập vào',
+                    'Đảm bảo tất cả các trường bắt buộc đã được điền đầy đủ',
+                    'Thử làm mới trang và thực hiện lại',
+                    'Liên hệ quản trị viên nếu lỗi vẫn tiếp tục xảy ra'
+                ],
+                'support' => [
+                    'contact' => 'admin@example.com',
+                    'phone' => '1900xxxx',
+                    'docs' => 'https://docs.example.com/errors'
+                ]
             ], 500);
         }
     }
