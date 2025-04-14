@@ -1,7 +1,32 @@
 @extends('admin.layouts.layout')
 @section('content')
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/w.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="container">
     <h2>Danh sách Thuộc tính</h2>
     <a href="javascript:void(0)" class="btn btn-primary" id="add-attribute-btn2">Thêm Thuộc tính</a>
@@ -34,7 +59,7 @@
                         @foreach ($group['firstAttribute']->values as $value)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="badge bg-primary">{{ $value->value }}</span>
+                                    <span class="badge bg-primary">{{ $value->value }} {{ $value->id }}</span>
                                 </div>
                                 <div class="form-check form-switch d-inline-block">
                                     <input type="checkbox" 
@@ -673,6 +698,7 @@ document.querySelectorAll('.status-toggle').forEach(toggle => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({ is_active: newStatus })

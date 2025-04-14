@@ -5,7 +5,69 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Champions 2023.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
     <style>
+
+.audio-wave {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 20px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .audio-wave .bar {
+            width: 3px;
+            height: 100%;
+            background-color: #10B981;
+            border-radius: 3px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .audio-wave .bar:nth-child(2) { animation-delay: 0.1s; }
+        .audio-wave .bar:nth-child(3) { animation-delay: 0.2s; }
+        .audio-wave .bar:nth-child(4) { animation-delay: 0.3s; }
+        .audio-wave .bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        .playing .bar {
+            animation-play-state: running;
+        }
+
+        .paused .bar {
+            animation-play-state: paused;
+        }
+
         .variant-row {
             margin-bottom: 15px;
             padding: 10px;
@@ -156,6 +218,13 @@
 </script>
 @endif
 <body class="bg-gray-100">
+    <div class="audio-wave playing">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
     <div class="flex">
         <div class="w-1/4 bg-white shadow-md">
             <div class="p-4">
@@ -337,66 +406,72 @@
                     <div class="form4" style="display: none;">
                         <div class="space-y-6">
 
-                            <div class="w-full bg-white p-6 rounded-lg shadow-sm">
-                                <h4 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
-                                    <i class="fas fa-tags mr-2"></i>Chọn Biến Thể Sản Phẩm
-                                </h4>
 
-                                <div id="variant-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    @php
-                                        $groupedAttributes = $attributes->groupBy('name');
-                                    @endphp
-                                    
-                                    @foreach ($groupedAttributes as $name => $group)
-                                        <div class="variant-group bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
-                                            <!-- Variant Group Header -->
-                                            <div class="variant-header bg-gray-50 p-4 cursor-pointer select-none"
-                                                data-name="{{ $name }}">
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center space-x-2">
-                                                        <i class="fas fa-chevron-right transform transition-transform duration-300"></i>
-                                                        <span class="font-medium text-gray-700">{{ $name }}</span>
-                                                    </div>
-                                                    <span class="text-sm text-gray-500 variant-counter">0 đã chọn</span>
-                                                </div>
-                                            </div>
+                                <div class="w-full bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+                                        <i class="fas fa-tags mr-2"></i>Chọn Hình Thù Sản Phẩm
+                                    </h4>
 
-                                            <!-- Variant Options -->
-                                            <div class="variant-options hidden">
-                                                <div class="p-4 space-y-3 border-t">
-                                                    @foreach ($group as $attribute)
-                                                        <div class="variant-group-items">
-                                                            @foreach ($attribute->values as $value)
-                                                                <div class="variant-item hover:bg-gray-50 rounded-md transition-colors duration-200">
-                                                                    <label class="flex items-center p-2 cursor-pointer">
-                                                                        <input type="checkbox" 
-                                                                            name="variants[{{ $attribute->id }}][]" 
-                                                                            value="{{ $value->id }}" 
-                                                                            data-variant-name="{{ $attribute->name }} {{ $value->value }}"
-                                                                            data-group="{{ $name }}"
-                                                                            id="variant-{{ $attribute->id }}-{{ $value->id }}"
-                                                                            class="variant-checkbox-input w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                                                                        <span class="ml-3 text-sm text-gray-700">
-                                                                            {{ $value->value }}
-                                                                        </span>
-                                                                    </label>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endforeach
-                                                </div>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        @php
+                                            $shapeGroup = $attributes->where('name', 'Hình thù')->first();
+                                            $weightGroup = $attributes->where('name', 'Khối lượng')->first();
+                                            $weightValues = $weightGroup ? $weightGroup->values->map(function ($value) {
+                                                $parts = explode(' ', $value->value);
+                                                $unit = end($parts);
+                                                $number = implode(' ', array_slice($parts, 0, -1));
+                                                return [
+                                                    'id' => $value->id,
+                                                    'value' => $value->value,
+                                                    'unit' => $unit,
+                                                    'number' => $number,
+                                                ];
+                                            })->toArray() : [];
+                                        @endphp
+                                        
+                                        @if($shapeGroup)
+                                        @foreach ($shapeGroup->values as $value)
+                                            <div class="variant-item bg-white border rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                                                <label class="flex items-center cursor-pointer w-full">
+                                                <input type="checkbox" 
+                                                name="variants[shape][]" 
+                                                value="{{ $value->id }}" 
+                                                data-variant-name="{{ $value->value }}"
+                                                data-group="Hình thù"
+                                                id="variant-{{ $value->id }}"
+                                                class="variant-checkbox-input w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                                                    <span class="ml-3 text-gray-700 text-lg font-medium">
+                                                        {{ $value->value }}
+                                                    </span>
+                                                </label>
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @endforeach
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="mt-6 border-t pt-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h5 class="text-lg font-medium text-gray-800">
+                                            <i class="fas fa-weight mr-2"></i>Chọn khối lượng
+                                        </h5>
+                                        <div class="shape-filters flex gap-2">
+                                            
+                                        </div>
+                                    </div>
+                                    <div id="weight-selections-container" class="bg-white p-4 rounded-lg shadow-sm border">
+                                        <div class="weight-options flex flex-wrap gap-4">
+                                            
+                                        </div>
+                                    </div>
+                                </div>
 
                             <div class="mt-8 border-t pt-6">
                                 <h5 class="text-lg font-medium mb-4 text-gray-800">
                                     <i class="fas fa-list-check mr-2"></i>Biến Thể Đã Chọn
                                 </h5>
                                 <div id="selected-variants-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <!-- Selected variants will be added here dynamically -->
+                                    
                                 </div>
                             </div>
                         </div>
@@ -423,106 +498,663 @@
             });
         });
 
+        window.removeVariant = function(combinationId) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: "Bạn không thể hoàn tác sau khi xóa!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const [shapeId, weightId] = combinationId.split('-');
+                    
+                    if (window.currentShapeFilter === 'all') {
+                        window.allSelectedWeights.delete(weightId);
+                        window.selectedShapes.forEach((_, sid) => {
+                            const shapeWeightSet = window.shapeWeights.get(sid);
+                            if (shapeWeightSet) {
+                                shapeWeightSet.delete(weightId);
+                                window.selectedWeights.delete(weightId);
+                            }
+                        });
+                    } else {
+                        const shapeWeightSet = window.shapeWeights.get(shapeId);
+                        if (shapeWeightSet) {
+                            shapeWeightSet.delete(weightId);
+                            window.selectedWeights.delete(weightId);
+                        }
+                    }
+
+                    const checkbox = document.querySelector(`#weight-${weightId}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+
+                    const card = document.getElementById(`variant-card-${combinationId}`);
+                    if (card) {
+                        card.classList.add('fade-out');
+                        setTimeout(() => {
+                            card.remove();
+                        }, 300);
+                    }
+
+                    Swal.fire(
+                        'Đã xóa!',
+                        'Biến thể đã được xóa thành công.',
+                        'success'
+                    );
+
+                    updateWeightSelectionArea();
+                }
+            });
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
-        // Variant group toggle
-        document.querySelectorAll('.variant-header').forEach(header => {
-            header.addEventListener('click', function() {
-                const options = this.parentElement.querySelector('.variant-options');
-                const icon = this.querySelector('.fas.fa-chevron-right');
-                
-                // Toggle options visibility
-                options.classList.toggle('hidden');
-                
-                // Rotate icon
-                if (options.classList.contains('hidden')) {
-                    icon.style.transform = 'rotate(0deg)';
-                } else {
-                    icon.style.transform = 'rotate(90deg)';
-                }
+            window.currentShapeFilter = 'all';
+            window.selectedShapes = new Map(); 
+            window.selectedWeights = new Set(); 
+            window.allSelectedWeights = new Set(); 
+            window.shapeWeights = new Map();
+
+            document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const shapeId = this.value;
+                    const shapeName = this.dataset.variantName;
+
+                    if (this.checked) {
+                        selectedShapes.set(shapeId, shapeName);
+                        if (!shapeWeights.has(shapeId)) {
+                            shapeWeights.set(shapeId, new Set());
+                        }
+
+                        if (allSelectedWeights.size > 0) {
+                            allSelectedWeights.forEach(weightId => {
+                                const weightElement = document.querySelector(`#weight-${weightId}`);
+                                if (weightElement) {
+                                    const weightName = weightElement.dataset.weightName;
+                                    shapeWeights.get(shapeId).add(weightId);
+                                    createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
+                                }
+                            });
+                        }
+                    } else {
+                        selectedShapes.delete(shapeId);
+                        shapeWeights.delete(shapeId);
+                        removeVariantsByShape(shapeId);
+                    }
+                    
+                    updateShapeFilterButtons();
+                    updateWeightSelectionArea();
+                });
             });
-        });
 
-        // Update counter when checkbox changes
-        document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateVariantCounter(this);
-                handleVariantSelection(this);
-            });
-        });
+            function updateShapeFilterButtons() {
+                const filterContainer = document.querySelector('.shape-filters');
+                if (!filterContainer) return;
 
-        function updateVariantCounter(checkbox) {
-            const group = checkbox.closest('.variant-group');
-            const counter = group.querySelector('.variant-counter');
-            const checkedCount = group.querySelectorAll('.variant-checkbox-input:checked').length;
-            counter.textContent = `${checkedCount} đã chọn`;
-        }
-
-        function handleVariantSelection(checkbox) {
-            const variantId = checkbox.value;
-            const variantName = checkbox.dataset.variantName;
-            const selectedContainer = document.getElementById('selected-variants-container');
-
-            if (checkbox.checked) {
-                // Add variant card
-                const card = createVariantCard(variantId, variantName);
-                selectedContainer.appendChild(card);
-            } else {
-                // Remove variant card
-                const existingCard = document.getElementById(`variant-card-${variantId}`);
-                if (existingCard) {
-                    existingCard.classList.add('fade-out');
-                    setTimeout(() => existingCard.remove(), 300);
-                }
-            }
-        }
-
-        function createVariantCard(variantId, variantName) {
-            const card = document.createElement('div');
-            card.id = `variant-card-${variantId}`;
-            card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm border fade-in';
-            
-            card.innerHTML = `
-                <div class="flex justify-between items-center mb-3">
-                    <h6 class="font-medium text-gray-800">${variantName}</h6>
-                    <button type="button" onclick="removeVariant('${variantId}')"
-                            class="text-gray-400 hover:text-red-500 transition-colors">
-                        <i class="fas fa-times"></i>
+                filterContainer.innerHTML = `
+                    <button type="button" 
+                        class="filter-btn ${currentShapeFilter === 'all' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700'} px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors" 
+                        data-filter="all">
+                        Tất cả
                     </button>
-                </div>
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-sm text-gray-600">Giá bán</label>
-                            <input type="number" name="variant_prices[${variantId}][price]" 
-                                class="form-control w-full mt-1" required>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-600">Giá khuyến mãi</label>
-                            <input type="number" name="variant_prices[${variantId}][sale_price]" 
-                                class="form-control w-full mt-1">
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
+                `;
 
-        // Global function to remove variant
-        window.removeVariant = function(variantId) {
-            const checkbox = document.querySelector(`input[value="${variantId}"]`);
-            if (checkbox) {
-                checkbox.checked = false;
-                updateVariantCounter(checkbox);
+                selectedShapes.forEach((shapeName, shapeId) => {
+                    filterContainer.innerHTML += `
+                        <button type="button"
+                            class="filter-btn ${currentShapeFilter === shapeId ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700'} px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors"
+                            data-shape-id="${shapeId}"
+                            data-shape-name="${shapeName}">
+                            ${shapeName}
+                        </button>
+                    `;
+                });
+
+                addFilterButtonHandlers();
             }
-            
-            const card = document.getElementById(`variant-card-${variantId}`);
-            if (card) {
-                card.classList.add('fade-out');
-                setTimeout(() => card.remove(), 300);
+
+            function updateWeightSelectionArea() {
+                const container = document.querySelector('.weight-options');
+                if (!container || selectedShapes.size === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                const filterBar = document.createElement('div');
+                filterBar.className = 'weight-filters flex gap-2 mb-4';
+                filterBar.innerHTML = `
+                    <button type="button" 
+                        class="unit-filter active px-4 py-2 rounded-md text-sm font-medium bg-teal-500 text-white hover:bg-teal-600 transition-colors" 
+                        data-unit="all">
+                        Tất cả
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="viên">
+                        Viên
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="ml">
+                        ML
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="g">
+                        G
+                    </button>
+                `;
+                container.appendChild(filterBar);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'gird grid grid-cols-4 ';
+                container.appendChild(optionsContainer);
+
+                const weightValues = @json($weightValues);
+
+                weightValues.forEach(value => {
+                    const unit = value.value.toLowerCase().endsWith('ml') ? 'ml' : 
+                                value.value.toLowerCase().endsWith('g') ? 'g' : 'viên';
+
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
+                    optionDiv.dataset.unit = unit;
+
+                    let isChecked = false;
+                    if (currentShapeFilter === 'all') {
+                        isChecked = allSelectedWeights.has(value.id.toString());
+                    } else {
+                        const shapeWeightSet = shapeWeights.get(currentShapeFilter);
+                        isChecked = shapeWeightSet ? shapeWeightSet.has(value.id.toString()) : false;
+                    }
+
+                    optionDiv.innerHTML = `
+                        <input type="checkbox" 
+                            id="weight-${value.id}"
+                            value="${value.id}"
+                            data-weight-name="${value.value}"
+                            class="weight-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                            ${isChecked ? 'checked' : ''}>
+                        <label class="ml-2 text-sm text-gray-700 cursor-pointer select-none">
+                            ${value.value}
+                        </label>
+                    `;
+
+                    optionsContainer.appendChild(optionDiv);
+
+                    const checkbox = optionDiv.querySelector('.weight-checkbox');
+                    checkbox.addEventListener('change', handleWeightSelection);
+                });
+
+                filterBar.querySelectorAll('.unit-filter').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterBar.querySelectorAll('.unit-filter').forEach(b => {
+                            b.classList.remove('bg-teal-500', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-gray-700');
+                        });
+                        this.classList.remove('bg-gray-100', 'text-gray-700');
+                        this.classList.add('bg-teal-500', 'text-white');
+
+                        const selectedUnit = this.dataset.unit;
+                        const options = optionsContainer.querySelectorAll('.weight-option');
+                        
+                        options.forEach(option => {
+                            if (selectedUnit === 'all' || option.dataset.unit === selectedUnit) {
+                                option.style.display = 'flex';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                    });
+                });
             }
-        }
-    });
+
+            function handleWeightSelection(e) {
+                const checkbox = e.target;
+                const weightId = checkbox.value;
+                const weightName = checkbox.dataset.weightName;
+
+                if (window.currentShapeFilter === 'all') {
+                    if (checkbox.checked) {
+                        window.allSelectedWeights.add(weightId);
+                        window.selectedWeights.add(weightId);
+                        window.selectedShapes.forEach((shapeName, shapeId) => {
+                            const shapeWeightSet = window.shapeWeights.get(shapeId) || new Set();
+                            shapeWeightSet.add(weightId);
+                            window.shapeWeights.set(shapeId, shapeWeightSet);
+                            createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
+                        });
+                    } else {
+                        window.allSelectedWeights.delete(weightId);
+                        window.selectedWeights.delete(weightId); 
+                        window.selectedShapes.forEach((_, shapeId) => {
+                            const shapeWeightSet = window.shapeWeights.get(shapeId);
+                            if (shapeWeightSet) {
+                                shapeWeightSet.delete(weightId);
+                                removeVariantCard(`${shapeId}-${weightId}`);
+                            }
+                        });
+                    }
+                } else {
+                    const shapeWeightSet = window.shapeWeights.get(window.currentShapeFilter) || new Set();
+                    if (checkbox.checked) {
+                        shapeWeightSet.add(weightId);
+                        window.selectedWeights.add(weightId); 
+                        window.shapeWeights.set(window.currentShapeFilter, shapeWeightSet);
+                        createOrUpdateVariantCard(
+                            `${window.currentShapeFilter}-${weightId}`,
+                            `${window.selectedShapes.get(window.currentShapeFilter)} ${weightName}`
+                        );
+                    } else {
+                        shapeWeightSet.delete(weightId);
+                        window.selectedWeights.delete(weightId); 
+                        removeVariantCard(`${window.currentShapeFilter}-${weightId}`);
+                    }
+                }
+                updateWeightSelectionArea();
+            }
+
+            function updateAllVariants() {
+                window.selectedWeights.forEach(weightId => {
+                    window.selectedShapes.forEach((shapeName, shapeId) => {
+                        const weightElement = document.querySelector(`#weight-${weightId}`);
+                        if (weightElement) {
+                            const weightName = weightElement.dataset.weightName;
+                            createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
+                        }
+                    });
+                });
+            }
+
+            function removeVariantsByShape(shapeId) {
+                document.querySelectorAll(`.variant-card`).forEach(card => {
+                    if (card.id.includes(`variant-card-${shapeId}-`)) {
+                        card.classList.add('fade-out');
+                        setTimeout(() => card.remove(), 300);
+                    }
+                });
+            }
+
+
+            function addFilterButtonHandlers() {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const shapeId = this.dataset.shapeId || 'all';
+                        filterWeightOptions(shapeId);
+                    });
+                });
+            }
+
+            function filterWeightOptions(shapeId) {
+                currentShapeFilter = shapeId;
+                updateShapeFilterButtons();
+                updateWeightSelectionArea();
+            }
+
+            document.querySelectorAll('.shape-filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.shape-filter-btn, #all-shapes-btn').forEach(b => {
+                        b.classList.remove('bg-teal-500', 'text-white');
+                        b.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    this.classList.remove('bg-gray-100', 'text-gray-700');
+                    this.classList.add('bg-teal-500', 'text-white');
+
+                    currentShapeFilter = this.dataset.shapeId;
+                    updateWeightCheckboxes();
+                });
+            });
+
+            document.getElementById('all-shapes-btn').addEventListener('click', function() {
+                document.querySelectorAll('.shape-filter-btn, #all-shapes-btn').forEach(b => {
+                    b.classList.remove('bg-teal-500', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                this.classList.remove('bg-gray-100', 'text-gray-700');
+                this.classList.add('bg-teal-500', 'text-white');
+
+                currentShapeFilter = 'all';
+                updateWeightCheckboxes();
+            });
+
+            function updateWeightOptions() {
+                const container = document.querySelector('.weight-options');
+                container.innerHTML = '';
+
+                if (selectedShapes.size === 0) return;
+
+                const weightValues = @json($weightValues);
+                
+                weightValues.forEach(value => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
+                    optionDiv.dataset.unit = value.unit;
+
+                    optionDiv.innerHTML = `
+                        <input type="checkbox" 
+                            id="weight-${value.id}"
+                            value="${value.id}"
+                            data-weight-name="${value.value}"
+                            class="weight-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                        <label class="ml-2 text-sm text-gray-700 cursor-pointer select-none">
+                            ${value.value}
+                        </label>
+                    `;
+
+                    container.appendChild(optionDiv);
+
+                    const checkbox = optionDiv.querySelector('.weight-checkbox');
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            if (currentShapeFilter === 'all') {
+                                selectedShapes.forEach(shape => {
+                                    createOrUpdateVariantCard(
+                                        `${shape.id}-${value.id}`,
+                                        `${shape.name} ${value.value}`
+                                    );
+                                });
+                            } else {
+                                const shape = Array.from(selectedShapes)
+                                    .find(s => s.id === currentShapeFilter);
+                                if (shape) {
+                                    createOrUpdateVariantCard(
+                                        `${shape.id}-${value.id}`,
+                                        `${shape.name} ${value.value}`
+                                    );
+                                }
+                            }
+                        } else {
+                            if (currentShapeFilter === 'all') {
+                                selectedShapes.forEach(shape => {
+                                    removeVariantCard(`${shape.id}-${value.id}`);
+                                });
+                            } else {
+                                removeVariantCard(`${currentShapeFilter}-${value.id}`);
+                            }
+                        }
+                    });
+                });
+            }
+
+            function createWeightSelectionArea(shapeId, shapeName) {
+                const container = document.getElementById('weight-selections-container');
+                const weightArea = document.createElement('div');
+                weightArea.className = 'weight-selection-area bg-white p-4 rounded-lg shadow-sm border mb-4 fade-in';
+                weightArea.dataset.shapeId = shapeId;
+
+                weightArea.innerHTML = `
+                    <h6 class="font-medium text-gray-800 mb-3">
+                        Chọn khối lượng cho <span class="text-teal-600 font-bold">${shapeName}</span>
+                    </h6>
+                    
+                    <!-- Filter buttons -->
+                    <div class="flex gap-2 mb-4">
+                        <button type="button" class="filter-btn active px-4 py-2 rounded-md text-sm font-medium bg-teal-500 text-white hover:bg-teal-600 transition-colors" data-filter="all">
+                            Tất cả
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="viên">
+                            Viên
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="ml">
+                            ml
+                        </button>
+                        <button type="button" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-filter="g">
+                            g
+                        </button>
+                    </div>
+
+                    <!-- Weight options container -->
+                    <div class="weight-options flex flex-wrap gap-4">
+                    </div>
+                `;
+
+                const weightOptions = weightArea.querySelector('.weight-options');
+                const weightValues = @json($weightValues);
+                console.log('Weight Values:', weightValues);
+
+                weightValues.forEach(value => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
+                    
+                    console.log('Creating option with ID:', value.id);
+                    optionDiv.dataset.unit = value.unit; 
+
+                    optionDiv.innerHTML = `
+                        <input type="checkbox" 
+                            id="weight-${shapeId}-${value.id}"
+                            value="${value.id}"
+                            data-weight-name="${value.value}"
+                            class="weight-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                        <label class="ml-2 text-sm text-gray-700 cursor-pointer select-none">
+                            ${value.value}
+                        </label>
+                    `;
+                    
+                    weightOptions.appendChild(optionDiv);
+                });
+
+                
+                const filterButtons = weightArea.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterButtons.forEach(b => {
+                            b.classList.remove('bg-teal-500', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-gray-700');
+                        });
+                        this.classList.remove('bg-gray-100', 'text-gray-700');
+                        this.classList.add('bg-teal-500', 'text-white');
+
+                        const filter = this.dataset.filter;
+                        const options = weightOptions.querySelectorAll('.weight-option');
+
+                        options.forEach(option => {
+                            if (filter === 'all' || option.dataset.unit === filter) {
+                                option.style.display = 'flex';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+
+                container.appendChild(weightArea);
+
+                weightArea.querySelectorAll('.weight-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const weightId = this.value;
+                        const weightName = this.dataset.weightName;
+                        const combinationId = `${shapeId}-${weightId}`;
+                        const combinationName = `${shapeName} ${weightName}`;
+
+                        if (this.checked) {
+                            createOrUpdateVariantCard(combinationId, combinationName);
+                        } else {
+                            removeVariantCard(combinationId);
+                        }
+                    });
+                });
+            }
+
+            function createOrUpdateVariantCard(combinationId, combinationName) {
+                const container = document.getElementById('selected-variants-container');
+                let card = document.getElementById(`variant-card-${combinationId}`);
+                const [shapeId, weightId] = combinationId.split('-');
+
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `variant-card-${combinationId}`;
+                    card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm border fade-in';
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-3">
+                            <h6 class="font-medium text-gray-800">${combinationName}</h6>
+                            <button type="button" 
+                                onclick="removeVariant('${combinationId}')"
+                                class="text-gray-400 hover:text-red-500 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <input type="hidden" name="variants[${shapeId}][]" value="${weightId}">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm text-gray-600">Giá bán <span class="text-red-500">*</span></label>
+                                    <input type="number" 
+                                        name="variant_prices[${shapeId}-${weightId}][price]" 
+                                        class="form-control w-full mt-1" 
+                                        required 
+                                        min="0">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-gray-600">Giá khuyến mãi</label>
+                                    <input type="number" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_price]" 
+                                        class="form-control w-full mt-1" 
+                                        min="0">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm text-gray-600">Bắt đầu khuyến mãi</label>
+                                    <input type="datetime-local" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_start_at]" 
+                                        class="form-control w-full mt-1">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-gray-600">Kết thúc khuyến mãi</label>
+                                    <input type="datetime-local" 
+                                        name="variant_prices[${shapeId}-${weightId}][sale_end_at]" 
+                                        class="form-control w-full mt-1">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+
+                    const priceInput = card.querySelector('input[name$="[price]"]');
+                    const salePriceInput = card.querySelector('input[name$="[sale_price]"]');
+                    const startDateInput = card.querySelector('input[name$="[sale_start_at]"]');
+                    const endDateInput = card.querySelector('input[name$="[sale_end_at]"]');
+
+                    priceInput.addEventListener('change', validatePrice);
+                    salePriceInput.addEventListener('change', validateSalePrice);
+                    startDateInput.addEventListener('change', validateDates);
+                    endDateInput.addEventListener('change', validateDates);
+                }
+            }
+
+            function removeWeightSelectionArea(shapeId) {
+                const area = document.querySelector(`.weight-selection-area[data-shape-id="${shapeId}"]`);
+                if (area) {
+                    area.classList.add('fade-out');
+                    setTimeout(() => area.remove(), 300);
+                }
+            }
+
+            function removeVariantCard(combinationId) {
+                const card = document.getElementById(`variant-card-${combinationId}`);
+                if (card) {
+                    card.classList.add('fade-out');
+                    setTimeout(() => card.remove(), 300);
+                }
+            }
+
+            function removeVariantCards(shapeId) {
+                document.querySelectorAll(`[id^="variant-card-${shapeId}-"]`).forEach(card => {
+                    card.classList.add('fade-out');
+                    setTimeout(() => card.remove(), 300);
+                });
+            }
+
+
+            function validatePrice(e) {
+                const input = e.target;
+                if (input.value <= 0) {
+                    input.setCustomValidity('Giá bán phải lớn hơn 0');
+                } else {
+                    input.setCustomValidity('');
+                }
+            }
+
+            function validateSalePrice(e) {
+                const input = e.target;
+                const card = input.closest('.variant-card');
+                const priceInput = card.querySelector('input[name$="[price]"]');
+                
+                if (input.value && parseFloat(input.value) >= parseFloat(priceInput.value)) {
+                    input.setCustomValidity('Giá khuyến mãi phải nhỏ hơn giá bán');
+                } else {
+                    input.setCustomValidity('');
+                }
+            }
+
+            function validateDates(e) {
+                const input = e.target;
+                const card = input.closest('.variant-card');
+                const startInput = card.querySelector('input[name$="[sale_start_at]"]');
+                const endInput = card.querySelector('input[name$="[sale_end_at]"]');
+                
+                if (startInput.value && endInput.value) {
+                    if (new Date(endInput.value) <= new Date(startInput.value)) {
+                        endInput.setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu');
+                    } else {
+                        endInput.setCustomValidity('');
+                    }
+                }
+            }
+
+            document.getElementById('myForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const variants = document.querySelectorAll('.variant-card');
+                let hasError = false;
+
+               
+                if (variants.length === 0) {
+                    alert('Vui lòng chọn ít nhất một biến thể (Hình thù và Khối lượng).');
+                    return;
+                }
+
+                variants.forEach(variant => {
+                    const price = variant.querySelector('input[name$="[price]"]');
+                    const salePrice = variant.querySelector('input[name$="[sale_price]"]');
+                    const startDate = variant.querySelector('input[name$="[sale_start_at]"]');
+                    const endDate = variant.querySelector('input[name$="[sale_end_at]"]');
+
+                    if (!price.value) {
+                        price.classList.add('error-input');
+                        hasError = true;
+                    }
+
+                    if (salePrice.value) {
+                        if (!startDate.value || !endDate.value) {
+                            startDate.classList.add('error-input');
+                            endDate.classList.add('error-input');
+                            hasError = true;
+                        }
+                    }
+                });
+
+                if (hasError) {
+                    alert('Vui lòng kiểm tra lại các trường bắt buộc');
+                    return;
+                }
+
+                this.submit();
+            });
+
+
+        });
+
+      
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

@@ -36,7 +36,7 @@
                                 <thead>
                                     <th><input type="checkbox" id="select-all"></th>
                                     <th class="cart-product-remove">Xóa</th>
-                                    <th class="cart-product-image">Ảnh sản phẩm</th>
+                                    <th class="cart-product-image">Ảnh</th>
                                     <th class="cart-product-info">Tên sản phẩm</th>
                                     <th class="cart-product-price">Giá</th>
                                     <th class="cart-product-quantity">Số lượng</th>
@@ -50,13 +50,15 @@
                                                     data-product-id="{{ $cart->product->id }}"></td>
                                             <td class="cart-product-remove"><i class="fas fa-trash-alt"></td>
                                             <td class="cart-product-image">
-                                                <a href="product-details.html"><img
+                                                <a href="{{ route('products.productct', $cart->product->id) }}">
+                                                    <img
                                                         src="{{ asset('upload/' . $cart->product->thumbnail) }}"
-                                                        alt="#"></a>
+                                                        alt="#">
+                                                </a>
                                             </td>
                                             <td class="cart-product-info">
                                                 <h4><a
-                                                        href="product-details.html">{{ \Illuminate\Support\Str::limit($cart->product->name, 10, '...') }}</a>
+                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name, 10, '...') }}</a>
                                                 </h4>
                                             </td>
                                             <td class="cart-product-price">

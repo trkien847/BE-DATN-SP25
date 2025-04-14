@@ -22,6 +22,8 @@ use App\Models\ImportProduct;
 use App\Models\ImportProductVariant;
 use App\Models\Notification;
 use App\Models\OrderImport;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use Illuminate\Support\Str;
@@ -101,10 +103,11 @@ class ProductController extends Controller
             'brand_id' => 'required',
             'thumbnail' => 'nullable',
 
+            'variant_prices' => 'required|array',
             'variant_prices.*.price' => 'required|numeric|min:0',
-            'variant_prices.*.sale_price' => 'nullable|numeric|min:0|lt:variant_prices.*.price',
-            'variant_prices.*.sale_price_start_at' => 'required_with:variant_prices.*.sale_price',
-            'variant_prices.*.sale_price_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_price_start_at',
+            'variant_prices.*.sale_price' => 'nullable|numeric|min:0',
+            'variant_prices.*.sale_start_at' => 'required_with:variant_prices.*.sale_price',
+            'variant_prices.*.sale_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -112,13 +115,14 @@ class ProductController extends Controller
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
 
-            'variant_prices.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
-            'variant_prices.*.price.numeric' => 'Giá bán phải là số',
-            'variant_prices.*.price.min' => 'Giá bán phải lớn hơn 0',
-            'variant_prices.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
-            'variant_prices.*.sale_price_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
+            'variants.required' => 'Vui lòng chọn ít nhất một biến thể',
+            'variants.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
+            'variants.*.price.numeric' => 'Giá bán phải là số',
+            'variants.*.price.min' => 'Giá bán phải lớn hơn 0',
+            'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
+            'variants.*.sale_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -240,27 +244,72 @@ class ProductController extends Controller
         }
 
         if ($request->has('variants')) {
-            foreach ($request->variants as $attributeId => $variantValues) {
-                foreach ($variantValues as $valueId) {
-                    $variantPriceData = $request->input("variant_prices.{$valueId}", []);
+            $existingAttributes = [];
+
+            foreach ($request->variants as $shapeId => $weights) {
+                $shapeAttribute = AttributeValue::where('id', $shapeId)
+                    ->where('attribute_id', 12)
+                    ->first();
+
+                if (!$shapeAttribute) {
+                    \Log::warning("shapeId không hợp lệ: {$shapeId}");
+                    continue;
+                }
+
+                foreach ($weights as $weightId) {
+                    $weightAttribute = AttributeValue::where('id', $weightId)
+                        ->where('attribute_id', 14)
+                        ->first();
+
+                    if (!$weightAttribute) {
+                        \Log::warning("weightId không hợp lệ: {$weightId}");
+                        continue;
+                    }
 
                     $productVariant = ProductVariant::create([
                         'product_id' => $product->id,
-                        'price' => $variantPriceData['price'] ?? null,
-                        'sale_price' => $variantPriceData['sale_price'] ?? null,
-                        'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? null,
-                        'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? null,
+                        'price' => $request->input("variant_prices.{$shapeId}-{$weightId}.price"),
+                        'sale_price' => $request->input("variant_prices.{$shapeId}-{$weightId}.sale_price"),
+                        'sale_price_start_at' => $request->input("variant_prices.{$shapeId}-{$weightId}.sale_start_at"),
+                        'sale_price_end_at' => $request->input("variant_prices.{$shapeId}-{$weightId}.sale_end_at"),
+                        'stock' => 0,
                     ]);
 
                     AttributeValueProductVariant::create([
                         'product_variant_id' => $productVariant->id,
-                        'attribute_value_id' => $valueId,
+                        'attribute_value_id' => $shapeId,
                     ]);
 
-                    AttributeValueProduct::create([
-                        'product_id' => $product->id,
-                        'attribute_value_id' => $valueId,
+                    AttributeValueProductVariant::create([
+                        'product_variant_id' => $productVariant->id,
+                        'attribute_value_id' => $weightId,
                     ]);
+
+                    if (!in_array($shapeId, $existingAttributes)) {
+                        $shapeExists = AttributeValue::where('id', $shapeId)->exists();
+                        if ($shapeExists) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $shapeId,
+                            ]);
+                            $existingAttributes[] = $shapeId;
+                        } else {
+                            \Log::warning("shapeId không tồn tại trong attribute_value: {$shapeId}");
+                        }
+                    }
+
+                    if (!in_array($weightId, $existingAttributes)) {
+                        $weightExists = AttributeValue::where('id', $weightId)->exists();
+                        if ($weightExists) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $weightId,
+                            ]);
+                            $existingAttributes[] = $weightId;
+                        } else {
+                            \Log::warning("weightId không tồn tại trong attribute_value: {$weightId}");
+                        }
+                    }
                 }
             }
         }
@@ -271,56 +320,103 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $product = Product::query()
-            ->with([
-                'brand',
-                'categories',
-                'categoryTypes',
-                'variants.attributeValues.attribute',
-                'attributeValues.attribute',
-                'variants' => function ($query) {
-                    $query->with(['attributeValues' => function ($q) {
-                        $q->select('attribute_values.*')
-                            ->selectRaw('product_variants.price as variant_price')
-                            ->selectRaw('product_variants.sale_price as variant_sale_price')
-                            ->selectRaw('product_variants.sale_price_start_at as variant_sale_start')
-                            ->selectRaw('product_variants.sale_price_end_at as variant_sale_end')
-                            ->join('product_variants', 'attribute_value_product_variant.product_variant_id', '=', 'product_variants.id');
-                    }]);
-                }
-            ])
-            ->where('id', $id)->firstOrFail();
+        try {
+            $product = Product::query()
+                ->with([
+                    'brand',
+                    'categories',
+                    'categoryTypes',
+                    'variants.attributeValues.attribute',
+                    'attributeValues.attribute',
+                    'variants' => function ($query) {
+                        $query->with(['attributeValues' => function ($q) {
+                            $q->select('attribute_values.*');
+                        }]);
+                    }
+                ])
+                ->findOrFail($id);
 
-        $attributes = Attribute::with('values')->get();
-        $brands = Brand::all();
-        $categories = Category::with('categoryTypes')->get();
-        $productGallery = ProductGalleries::where('product_id', $id)->get();
-        $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
+            $attributes = Attribute::with(['values' => function ($query) {
+                $query->where('is_active', 1);
+            }])->get();
 
-        $variantData = [];
-        foreach ($product->variants as $variant) {
-            foreach ($variant->attributeValues as $value) {
-                $variantData[$value->id] = [
-                    'price' => $variant->price,
-                    'sale_price' => $variant->sale_price,
-                    'sale_price_start_at' => $variant->sale_price_start_at,
-                    'sale_price_end_at' => $variant->sale_price_end_at
-                ];
+            $brands = Brand::all();
+            $categories = Category::with('categoryTypes')->get();
+            $productGallery = ProductGalleries::where('product_id', $id)->get();
+            $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
+            $weightAttribute = Attribute::where('name', 'Khối lượng')->first();
+            $variantData = [];
+            $selectedVariants = [];
+            $weightValues = [];
+
+            if ($weightAttribute) {
+                $weightValues = $weightAttribute->values->map(function ($value) {
+                    $parts = explode(' ', $value->value);
+                    $unit = end($parts);
+                    $number = implode(' ', array_slice($parts, 0, -1));
+                    return [
+                        'id' => $value->id,
+                        'value' => $value->value,
+                        'unit' => $unit,
+                        'number' => $number,
+                    ];
+                })->toArray();
             }
+
+            foreach ($product->variants as $variant) {
+                $attributeValues = $variant->attributeValues->groupBy('attribute.id');
+
+                $shape = $attributeValues->get(12)?->first();
+                $weight = $attributeValues->get(14)?->first();
+
+                if ($shape && $weight) {
+                    $variantData[$variant->id] = [
+                        'shape_id' => $shape->id,
+                        'shape_name' => $shape->value,
+                        'weight_id' => $weight->id,
+                        'weight_name' => $weight->value,
+                        'price' => $variant->price,
+                        'sale_price' => $variant->sale_price,
+                        'sale_price_start_at' => $variant->sale_price_start_at ?
+                            Carbon::parse($variant->sale_price_start_at)->format('Y-m-d\TH:i') : null,
+                        'sale_end_at' => $variant->sale_price_end_at ?
+                            Carbon::parse($variant->sale_price_end_at)->format('Y-m-d\TH:i') : null,
+                        'variant_id' => $variant->id
+                    ];
+
+                    $selectedVariants[] = [
+                        'shape_id' => $shape->id,
+                        'weight_id' => $weight->id,
+                    ];
+                }
+            }
+
+            \Log::debug('Variant Data:', [
+                'variantData' => $variantData,
+                'selectedVariants' => $selectedVariants
+            ]);
+
+            return view('admin.products.productUpdateForm', compact(
+                'product',
+                'categories',
+                'brands',
+                'categoryTypes',
+                'productGallery',
+                'attributes',
+                'variantData',
+                'selectedVariants',
+                'weightValues'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Error in edit product:', [
+                'product_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->route('products.list')
+                ->with('error', 'Có lỗi xảy ra khi tải thông tin sản phẩm: ' . $e->getMessage());
         }
-
-        $selectedVariantIds = $product->variants->pluck('attributeValues.*.id')->flatten()->toArray();
-
-        return view('admin.products.productUpdateForm', compact(
-            'product',
-            'categories',
-            'brands',
-            'categoryTypes',
-            'productGallery',
-            'attributes',
-            'selectedVariantIds',
-            'variantData'
-        ));
     }
 
     // cập nhất sản phẩm
@@ -332,11 +428,13 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
+            'thumbnail' => 'nullable',
 
+            'variant_prices' => 'required|array',
             'variant_prices.*.price' => 'required|numeric|min:0',
-            'variant_prices.*.sale_price' => 'nullable|numeric|min:0|lt:variant_prices.*.price',
-            'variant_prices.*.sale_price_start_at' => 'required_with:variant_prices.*.sale_price',
-            'variant_prices.*.sale_price_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_price_start_at',
+            'variant_prices.*.sale_price' => 'nullable|numeric|min:0',
+            'variant_prices.*.sale_start_at' => 'required_with:variant_prices.*.sale_price',
+            'variant_prices.*.sale_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -344,13 +442,14 @@ class ProductController extends Controller
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
 
-            'variant_prices.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
-            'variant_prices.*.price.numeric' => 'Giá bán phải là số',
-            'variant_prices.*.price.min' => 'Giá bán phải lớn hơn 0',
-            'variant_prices.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
-            'variant_prices.*.sale_price_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
+            'variants.required' => 'Vui lòng chọn ít nhất một biến thể',
+            'variants.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
+            'variants.*.price.numeric' => 'Giá bán phải là số',
+            'variants.*.price.min' => 'Giá bán phải lớn hơn 0',
+            'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
+            'variants.*.sale_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -490,40 +589,80 @@ class ProductController extends Controller
 
         $variantIds = [];
         if ($request->has('variants')) {
-            foreach ($request->variants as $attributeId => $valueIds) {
-                foreach ($valueIds as $valueId) {
-                    $variant = ProductVariant::where('product_id', $product->id)
-                        ->whereHas('attributeValues', function ($query) use ($valueId) {
-                            $query->where('attribute_value_id', $valueId);
-                        })->first();
+            $existingAttributes = [];
 
-                    $variantPriceData = $request->input("variant_prices.{$valueId}", []);
+            foreach ($request->variants as $shapeId => $weights) {
+                $shapeAttribute = AttributeValue::where('id', $shapeId)
+                    ->where('attribute_id', 12)
+                    ->first();
+
+                if (!$shapeAttribute) {
+                    \Log::warning("Invalid shapeId: {$shapeId}");
+                    continue;
+                }
+
+                foreach ($weights as $weightId) {
+                    $weightAttribute = AttributeValue::where('id', $weightId)
+                        ->where('attribute_id', 14)
+                        ->first();
+
+                    if (!$weightAttribute) {
+                        \Log::warning("Invalid weightId: {$weightId}");
+                        continue;
+                    }
+
+                    $variant = ProductVariant::where('product_id', $product->id)
+                        ->whereHas('attributeValues', function ($q) use ($shapeId) {
+                            $q->where('attribute_value_id', $shapeId);
+                        })
+                        ->whereHas('attributeValues', function ($q) use ($weightId) {
+                            $q->where('attribute_value_id', $weightId);
+                        })
+                        ->first();
+
+                    $variantPriceData = $request->input("variant_prices.{$shapeId}-{$weightId}");
 
                     if (!$variant) {
                         $variant = ProductVariant::create([
                             'product_id' => $product->id,
                             'price' => $variantPriceData['price'] ?? null,
                             'sale_price' => $variantPriceData['sale_price'] ?? null,
-                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? null,
-                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? null,
+                            'sale_price_start_at' => $variantPriceData['sale_start_at'] ?? null,
+                            'sale_price_end_at' => $variantPriceData['sale_end_at'] ?? null,
+                            'stock' => 0,
                         ]);
 
                         AttributeValueProductVariant::create([
                             'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $valueId,
+                            'attribute_value_id' => $shapeId,
                         ]);
 
-                        AttributeValueProduct::create([
-                            'product_id' => $product->id,
-                            'attribute_value_id' => $valueId,
+                        AttributeValueProductVariant::create([
+                            'product_variant_id' => $variant->id,
+                            'attribute_value_id' => $weightId,
                         ]);
+
+                        if (!in_array($shapeId, $existingAttributes)) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $shapeId,
+                            ]);
+                            $existingAttributes[] = $shapeId;
+                        }
+
+                        if (!in_array($weightId, $existingAttributes)) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $weightId,
+                            ]);
+                            $existingAttributes[] = $weightId;
+                        }
                     } else {
-                        // Update existing variant prices and dates
                         $variant->update([
                             'price' => $variantPriceData['price'] ?? $variant->price,
                             'sale_price' => $variantPriceData['sale_price'] ?? $variant->sale_price,
-                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? $variant->sale_price_start_at,
-                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? $variant->sale_price_end_at,
+                            'sale_price_start_at' => $variantPriceData['sale_start_at'] ?? $variant->sale_price_start_at,
+                            'sale_price_end_at' => $variantPriceData['sale_end_at'] ?? $variant->sale_price_end_at,
                         ]);
                     }
 
@@ -894,23 +1033,21 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Thêm giá trị biến thể thành công!');
     }
 
-    public function toggleStatus(Request $request, Attribute $attribute)
+    public function toggleStatus(Request $request, $id)
     {
         try {
-            $attribute->update([
-                'is_active' => $request->is_active
-            ]);
+            $attribute = AttributeValue::findOrFail($id);
+            $attribute->is_active = $request->is_active;
+            $attribute->save();
 
             return response()->json([
                 'success' => true,
-                'message' => $request->is_active ?
-                    'Thuộc tính đã được hiển thị' :
-                    'Thuộc tính đã được ẩn'
+                'message' => 'Cập nhật trạng thái thành công'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái'
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -971,8 +1108,6 @@ class ProductController extends Controller
             'min_variant_price'
         ));
     }
-
-
 
 
     // nhập 
@@ -1164,29 +1299,20 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Đã từ chối đơn nhập hàng thành công!');
     }
 
-    public function confirmImport(Request $request, $id)
-    {
-        $import = ProductImport::findOrFail($id);
-
-        if (auth()->user()->role_id != 3) {
-            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn nhập hàng.');
-        }
-
-        $import->update(['is_active' => 1]);
-        $notificationId = $request->input('notification_id');
-        $notification = Notification::find($notificationId);
-        $notification->is_read = 1;
-        $notification->save();
-        return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
-    }
-
 
 
     // nhập v2 
     public function createImport()
     {
         $products = Product::where('is_active', 1)
-            ->with(['variants.attributeValues.attribute', 'attributeValues.attribute'])
+            ->with([
+                'variants' => function ($query) {
+                    $query->with(['attributeValues' => function ($q) {
+                        $q->with('attribute')->orderBy('attribute_id');
+                    }]);
+                },
+                'attributeValues.attribute'
+            ])
             ->get();
         $suppliers = Supplier::all();
         $orderImport = OrderImport::where(function ($query) {
@@ -1226,9 +1352,12 @@ class ProductController extends Controller
                 'supplier_id' => 'required|exists:suppliers,id',
                 'products' => 'required|json',
                 'proof_files' => 'required|array',
-                'proof_files.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'proof_files.*' => 'required|file|mimes:jpeg,png,jpg,pdf',
                 'order_import_id' => 'required|exists:order_imports,id'
             ]);
+
+            $user = auth()->user();
+            $isAdmin = $user->role_id === 3;
 
             $orderImport = OrderImport::findOrFail($request->order_import_id);
             $products = json_decode($request->products, true);
@@ -1251,7 +1380,7 @@ class ProductController extends Controller
                 'import_date' => $request->import_date,
                 'user_id' => auth()->id(),
                 'supplier_id' => $request->supplier_id,
-                'is_confirmed' => false,
+                'is_confirmed' => $isAdmin,
                 'total_quantity' => 0,
                 'total_price' => 0,
                 'proof_image' => json_encode($fileNames)
@@ -1264,6 +1393,7 @@ class ProductController extends Controller
                 if (!isset($productData['variants']) || !is_array($productData['variants'])) {
                     throw new \Exception('Dữ liệu biến thể không hợp lệ');
                 }
+
                 $product = Product::findOrFail($productId);
 
                 $firstVariant = reset($productData['variants']);
@@ -1299,6 +1429,17 @@ class ProductController extends Controller
                         'total_price' => $totalPrice
                     ]);
 
+                    if ($isAdmin) {
+                        $variant->update([
+                            'import_price' => $price,
+                            'stock' => DB::raw("stock + $quantity"),
+                            'price' => $variantData['sell_price'] ?? $variant->price,
+                            'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
+                            'sale_price_start_at' => $variantData['sale_start_date'] ?? $variant->sale_price_start_at,
+                            'sale_price_end_at' => $variantData['sale_end_date'] ?? $variant->sale_price_end_at,
+                        ]);
+                    }
+
                     $productTotalQuantity += $quantity;
                     $productTotalPrice += $totalPrice;
                 }
@@ -1317,11 +1458,32 @@ class ProductController extends Controller
                 'total_price' => $totalImportPrice
             ]);
 
+            if (!$isAdmin) {
+                $admins = User::where('role_id', 3)->get();
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Nhân viên {$user->fullname} đang yêu cầu xác nhận lô {$import->import_code}",
+                        'content' => "Tổng số lượng: {$totalImportQuantity}, Tổng giá trị: " . number_format($totalImportPrice, 0, ',', '.') . " VNĐ",
+                        'type' => 'import_confirmation',
+                        'data' => [
+                            'import_id' => $import->id,
+                            'actions' => [
+                                'view_details' => route('imports.show', $import->id),
+                                'confirm' => route('imports.confirm', $import->id),
+                                'cancel' => route('imports.cancel', $import->id)
+                            ]
+                        ],
+                        'is_read' => false
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Import created successfully',
+                'message' => $isAdmin ? 'Nhập hàng thành công' : 'Yêu cầu nhập hàng đã được gửi đi',
                 'data' => $import
             ]);
         } catch (\Exception $e) {
@@ -1341,15 +1503,245 @@ class ProductController extends Controller
         }
     }
 
+    public function showImport(Import $import)
+    {
+        $import->load([
+            'user',
+            'supplier',
+            'importProducts.variants',
+            'importProducts.product'
+        ]);
+
+        return view('admin.imports.show', compact('import'));
+    }
+
+    public function confirmImport($id)
+    {
+        $import = Import::with('user')->findOrFail($id);
+        $adminUser = auth()->user();
+
+        if (!$import->is_confirmed) {
+            DB::beginTransaction();
+            try {
+                $import->update(['is_confirmed' => true]);
+                foreach ($import->importProducts as $importProduct) {
+                    foreach ($importProduct->variants as $variant) {
+                        $productVariant = ProductVariant::find($variant->product_variant_id);
+                        if ($productVariant) {
+                            $productVariant->update([
+                                'import_price' => $variant->import_price,
+                                'stock' => DB::raw("stock + {$variant->quantity}"),
+                            ]);
+                        }
+                    }
+                }
+
+                Notification::where('type', 'import_confirmation')
+                    ->where('data->import_id', $import->id)
+                    ->update(['is_read' => true]);
+
+                Notification::create([
+                    'user_id' => $import->user_id,
+                    'title' => "Yêu cầu nhập hàng đã được chấp nhận",
+                    'content' => "Lô hàng #{$import->import_code} đã được xác nhận bởi {$adminUser->fullname}",
+                    'type' => 'import_response',
+                    'data' => [
+                        'import_id' => $import->id,
+                        'status' => 'confirmed',
+                        'actions' => [
+                            'view_details' => route('imports.show', $import->id),
+                            'acknowledge' => route('notifications.acknowledge', ['type' => 'import_response', 'id' => $import->id])
+                        ]
+                    ],
+                    'is_read' => false
+                ]);
+
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đơn nhập hàng đã được xác nhận',
+                    'data' => [
+                        'import_code' => $import->import_code,
+                        'confirmed_by' => $adminUser->fullname,
+                        'confirmed_at' => now()->format('H:i:s d/m/Y'),
+                    ],
+                    'notification' => [
+                        'title' => 'Thành công!',
+                        'icon' => 'success',
+                        'text' => "Đơn nhập hàng #{$import->import_code} đã được xác nhận thành công",
+                        'confirmButtonText' => 'Đồng ý',
+                        'timer' => 3000
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra',
+                    'error' => [
+                        'type' => class_basename($e),
+                        'message' => $e->getMessage(),
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine()
+                    ],
+                    'notification' => [
+                        'title' => 'Lỗi!',
+                        'icon' => 'error',
+                        'text' => 'Không thể xác nhận đơn hàng. Vui lòng thử lại sau.',
+                        'confirmButtonText' => 'Đóng',
+                        'showCancelButton' => false
+                    ]
+                ], 500);
+            }
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Đơn hàng đã được xử lý trước đó',
+            'notification' => [
+                'title' => 'Thông báo!',
+                'icon' => 'warning',
+                'text' => 'Đơn hàng này đã được xử lý trước đó',
+                'confirmButtonText' => 'Đóng'
+            ]
+        ], 400);
+    }
+
+    public function cancelImport($id)
+    {
+        $import = Import::with('user')->findOrFail($id);
+        $adminUser = auth()->user();
+
+        if (!$import->is_confirmed) {
+            DB::beginTransaction();
+            try {
+                Notification::where('type', 'import_confirmation')
+                    ->where('data->import_id', $import->id)
+                    ->update(['is_read' => true]);
+
+                Notification::create([
+                    'user_id' => $import->user_id,
+                    'title' => "Yêu cầu nhập hàng đã bị từ chối",
+                    'content' => "Lô hàng #{$import->import_code} đã bị từ chối bởi {$adminUser->fullname}",
+                    'type' => 'import_response',
+                    'data' => [
+                        'import_id' => $import->id,
+                        'status' => 'cancelled',
+                        'actions' => [
+                            'view_details' => route('imports.show', $import->id),
+                            'acknowledge' => route('notifications.acknowledge', ['type' => 'import_response', 'id' => $import->id])
+                        ]
+                    ],
+                    'is_read' => false
+                ]);
+
+                $import->delete();
+
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đơn nhập hàng đã bị hủy',
+                    'data' => [
+                        'import_code' => $import->import_code,
+                        'cancelled_by' => $adminUser->fullname,
+                        'cancelled_at' => now()->format('H:i:s d/m/Y'),
+                    ],
+                    'notification' => [
+                        'title' => 'Đã hủy!',
+                        'icon' => 'success',
+                        'text' => "Đơn nhập hàng #{$import->import_code} đã được hủy thành công (Được thiết kế bởi TG VN)",
+                        'confirmButtonText' => 'Đồng ý',
+                        'timer' => 3000
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra',
+                    'error' => [
+                        'type' => class_basename($e),
+                        'message' => $e->getMessage(),
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine()
+                    ],
+                    'notification' => [
+                        'title' => 'Lỗi!',
+                        'icon' => 'error',
+                        'text' => 'Không thể hủy đơn hàng. Vui lòng thử lại sau.',
+                        'confirmButtonText' => 'Đóng',
+                        'showCancelButton' => false
+                    ]
+                ], 500);
+            }
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Đơn hàng đã được xử lý trước đó',
+            'notification' => [
+                'title' => 'Thông báo!',
+                'icon' => 'warning',
+                'text' => 'Đơn hàng này đã được xử lý trước đó',
+                'confirmButtonText' => 'Đóng'
+            ]
+        ], 400);
+    }
+
+    public function acknowledgeNotification(Request $request, $type, $id)
+    {
+        try {
+            Notification::where('user_id', auth()->id())
+                ->where('type', $type)
+                ->where('data->import_id', $id)
+                ->update(['is_read' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xác nhận thông báo',
+                'notification' => [
+                    'title' => 'Thành công!',
+                    'icon' => 'success',
+                    'text' => 'Thông báo đã được đánh dấu là đã đọc (Được thiết kế bởi TG VN)',
+                    'confirmButtonText' => 'Đồng ý',
+                    'timer' => 2000
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra',
+                'error' => [
+                    'type' => class_basename($e),
+                    'message' => $e->getMessage(),
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine()
+                ],
+                'notification' => [
+                    'title' => 'Lỗi!',
+                    'icon' => 'error',
+                    'text' => 'Không thể cập nhật trạng thái thông báo',
+                    'confirmButtonText' => 'Đóng'
+                ]
+            ], 500);
+        }
+    }
+
     private function getVariantName($variant)
     {
         return $variant->attributeValues()
             ->with('attribute')
             ->get()
-            ->map(function ($value) {
-                return $value->attribute->name . ': ' . $value->attribute->slug . $value->value;
+            ->filter(function ($value) {
+                return in_array($value->attribute->name, ['Hình thù', 'Khối lượng']);
             })
-            ->join(', ');
+            ->sortBy(function ($value) {
+                return $value->attribute->name === 'Hình thù' ? 0 : 1;
+            })
+            ->map(function ($value) {
+                return $value->value;
+            })
+            ->join(' ');
     }
 
     public function indexImport()
