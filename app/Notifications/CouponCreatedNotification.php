@@ -22,12 +22,26 @@ class CouponCreatedNotification extends Notification
         return ['database']; // Gửi thông báo vào database
     }
 
-    public function toArray($notifiable)
-    { 
+    // public function toArray($notifiable)
+    // { 
+    //     return [
+    //         'title' => 'Thông báo mã giảm giá mới',
+    //         'message' => 'Một mã giảm giá mới đã được tạo: ' . $this->coupon->code,
+    //         'coupon_id' => $this->coupon->id,
+    //         'status' => $this->coupon->status
+    //     ];
+    // }
+    public function toDatabase($notifiable)
+    {
         return [
-            'message' => 'Một mã giảm giá mới đã được tạo: ' . $this->coupon->code,
-            'coupon_id' => $this->coupon->id,
-            'status' => $this->coupon->status
+            'title' => 'Thông báo mã giảm giá mới',
+            'content' => 'Một mã giảm giá mới đã được tạo: ' . $this->coupon->code,
+            'type' => 'coupon_created', // hoặc bất kỳ chuỗi định danh nào bạn muốn
+            'data' => [ // bạn có thể dùng thêm nếu muốn
+                'message' => 'Một mã giảm giá mới đã được tạo: ' . $this->coupon->code,
+                'coupon_id' => $this->coupon->id,
+                'status' => $this->coupon->status,
+            ],
         ];
     }
 }
