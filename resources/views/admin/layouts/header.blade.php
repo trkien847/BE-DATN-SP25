@@ -172,6 +172,34 @@
         from { opacity: 0; }
         to { opacity: 1; }
     }
+
+    .custom-swal-popup {
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.custom-swal-title {
+    color: #2d3748;
+    font-size: 1.5rem;
+}
+
+.custom-swal-confirm {
+    background-color: #48bb78 !important;
+    border-radius: 8px !important;
+}
+
+.custom-swal-cancel {
+    background-color: #f56565 !important;
+    border-radius: 8px !important;
+}
+
+.custom-swal-content {
+    color: #4a5568;
+}
+
+.custom-swal-icon {
+    border-color: #48bb78;
+}
 </style>
 <header class="topbar">
     <div class="container-fluid">
@@ -577,7 +605,105 @@
                         });
                 </script>
 
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelector('#notification-list').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const form = e.target;
+                        
+                        try {
+                            const response = await fetch(form.action, {
+                                method: form.method,
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                            });
 
+                            const data = await response.json();
+
+                            if (data.notification) {
+                                await Swal.fire({
+                                    title: data.notification.title,
+                                    text: data.notification.text,
+                                    icon: data.notification.icon,
+                                    confirmButtonText: data.notification.confirmButtonText,
+                                    timer: data.notification.timer,
+                                    showConfirmButton: !data.notification.timer,
+                                    timerProgressBar: true,
+                                    customClass: {
+                                        popup: 'custom-swal-popup',
+                                        title: 'custom-swal-title',
+                                        confirmButton: 'custom-swal-confirm'
+                                    }
+                                });
+
+                                if (data.success) {
+                                    fetchNotifications();
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Lỗi!',
+                                text: 'Có lỗi xảy ra khi xử lý yêu cầu',
+                                icon: 'error',
+                                confirmButtonText: 'Đóng'
+                            });
+                        }
+                    });
+
+                    async function fetchNotifications() {
+                        try {
+                            const response = await fetch('/api/notifications', {
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                }
+                            });
+                            const data = await response.json();
+                            updateNotificationUI(data);
+                        } catch (error) {
+                            console.error('Error fetching notifications:', error);
+                        }
+                    }
+
+                    function updateNotificationUI(data) {
+                        const notificationList = document.getElementById('notification-list');
+                        const notificationCount = document.getElementById('notification-count');
+                        const countSpan = notificationCount.querySelector('.count');
+
+                        countSpan.textContent = data.count;
+                        notificationCount.style.display = data.count > 0 ? 'block' : 'none';
+                        
+                        if (data.count === 0) {
+                            notificationList.innerHTML = `
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
+                                    <p>Không có thông báo nào</p>
+                                </div>
+                            `;
+                        } else {
+                            notificationList.innerHTML = data.notifications.map(notification => `
+                                <div class="notification-item p-3 border-bottom ${notification.is_read ? 'bg-light' : ''} animate-fade-in">
+                                    <h6 class="mb-1">${notification.title}</h6>
+                                    <p class="mb-2 fs-13">${notification.content}</p>
+                                    <div class="d-flex gap-2">
+                                        ${getActionButtons(notification)}
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
+                    }
+
+                    fetchNotifications();
+                    
+                    
+                    setInterval(fetchNotifications, 30000); 
+                });
+                </script>
 
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"

@@ -1523,10 +1523,7 @@ class ProductController extends Controller
         if (!$import->is_confirmed) {
             DB::beginTransaction();
             try {
-                // Update import status
                 $import->update(['is_confirmed' => true]);
-
-                // Update product variants
                 foreach ($import->importProducts as $importProduct) {
                     foreach ($importProduct->variants as $variant) {
                         $productVariant = ProductVariant::find($variant->product_variant_id);
@@ -1539,12 +1536,10 @@ class ProductController extends Controller
                     }
                 }
 
-                // Update admin notification status
                 Notification::where('type', 'import_confirmation')
                     ->where('data->import_id', $import->id)
                     ->update(['is_read' => true]);
 
-                // Create notification for staff
                 Notification::create([
                     'user_id' => $import->user_id,
                     'title' => "Yêu cầu nhập hàng đã được chấp nhận",
@@ -1562,14 +1557,54 @@ class ProductController extends Controller
                 ]);
 
                 DB::commit();
-                return response()->json(['success' => true, 'message' => 'Đơn nhập hàng đã được xác nhận']);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đơn nhập hàng đã được xác nhận',
+                    'data' => [
+                        'import_code' => $import->import_code,
+                        'confirmed_by' => $adminUser->fullname,
+                        'confirmed_at' => now()->format('H:i:s d/m/Y'),
+                    ],
+                    'notification' => [
+                        'title' => 'Thành công!',
+                        'icon' => 'success',
+                        'text' => "Đơn nhập hàng #{$import->import_code} đã được xác nhận thành công",
+                        'confirmButtonText' => 'Đồng ý',
+                        'timer' => 3000
+                    ]
+                ]);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra',
+                    'error' => [
+                        'type' => class_basename($e),
+                        'message' => $e->getMessage(),
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine()
+                    ],
+                    'notification' => [
+                        'title' => 'Lỗi!',
+                        'icon' => 'error',
+                        'text' => 'Không thể xác nhận đơn hàng. Vui lòng thử lại sau.',
+                        'confirmButtonText' => 'Đóng',
+                        'showCancelButton' => false
+                    ]
+                ], 500);
             }
         }
 
-        return response()->json(['success' => false, 'message' => 'Đơn hàng đã được xử lý trước đó'], 400);
+        return response()->json([
+            'success' => false,
+            'message' => 'Đơn hàng đã được xử lý trước đó',
+            'notification' => [
+                'title' => 'Thông báo!',
+                'icon' => 'warning',
+                'text' => 'Đơn hàng này đã được xử lý trước đó',
+                'confirmButtonText' => 'Đóng'
+            ]
+        ], 400);
     }
 
     public function cancelImport($id)
@@ -1580,12 +1615,10 @@ class ProductController extends Controller
         if (!$import->is_confirmed) {
             DB::beginTransaction();
             try {
-                // Update admin notification status
                 Notification::where('type', 'import_confirmation')
                     ->where('data->import_id', $import->id)
                     ->update(['is_read' => true]);
 
-                // Create notification for staff
                 Notification::create([
                     'user_id' => $import->user_id,
                     'title' => "Yêu cầu nhập hàng đã bị từ chối",
@@ -1605,17 +1638,56 @@ class ProductController extends Controller
                 $import->delete();
 
                 DB::commit();
-                return response()->json(['success' => true, 'message' => 'Đơn nhập hàng đã bị hủy']);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đơn nhập hàng đã bị hủy',
+                    'data' => [
+                        'import_code' => $import->import_code,
+                        'cancelled_by' => $adminUser->fullname,
+                        'cancelled_at' => now()->format('H:i:s d/m/Y'),
+                    ],
+                    'notification' => [
+                        'title' => 'Đã hủy!',
+                        'icon' => 'success',
+                        'text' => "Đơn nhập hàng #{$import->import_code} đã được hủy thành công (Được thiết kế bởi TG VN)",
+                        'confirmButtonText' => 'Đồng ý',
+                        'timer' => 3000
+                    ]
+                ]);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra',
+                    'error' => [
+                        'type' => class_basename($e),
+                        'message' => $e->getMessage(),
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine()
+                    ],
+                    'notification' => [
+                        'title' => 'Lỗi!',
+                        'icon' => 'error',
+                        'text' => 'Không thể hủy đơn hàng. Vui lòng thử lại sau.',
+                        'confirmButtonText' => 'Đóng',
+                        'showCancelButton' => false
+                    ]
+                ], 500);
             }
         }
 
-        return response()->json(['success' => false, 'message' => 'Đơn hàng đã được xử lý trước đó'], 400);
+        return response()->json([
+            'success' => false,
+            'message' => 'Đơn hàng đã được xử lý trước đó',
+            'notification' => [
+                'title' => 'Thông báo!',
+                'icon' => 'warning',
+                'text' => 'Đơn hàng này đã được xử lý trước đó',
+                'confirmButtonText' => 'Đóng'
+            ]
+        ], 400);
     }
 
-    // Add new method to handle notification acknowledgment
     public function acknowledgeNotification(Request $request, $type, $id)
     {
         try {
@@ -1626,30 +1698,30 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã xác nhận thông báo'
+                'message' => 'Đã xác nhận thông báo',
+                'notification' => [
+                    'title' => 'Thành công!',
+                    'icon' => 'success',
+                    'text' => 'Thông báo đã được đánh dấu là đã đọc (Được thiết kế bởi TG VN)',
+                    'confirmButtonText' => 'Đồng ý',
+                    'timer' => 2000
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi',
+                'message' => 'Có lỗi xảy ra',
                 'error' => [
-                    'code' => 500,
                     'type' => class_basename($e),
-                    'details' => $e->getMessage(),
-                    'time' => now()->format('Y-m-d H:i:s'),
+                    'message' => $e->getMessage(),
                     'file' => basename($e->getFile()),
-                    'line' => $e->getLine(),
+                    'line' => $e->getLine()
                 ],
-                'suggestions' => [
-                    'Vui lòng kiểm tra lại dữ liệu nhập vào',
-                    'Đảm bảo tất cả các trường bắt buộc đã được điền đầy đủ',
-                    'Thử làm mới trang và thực hiện lại',
-                    'Liên hệ quản trị viên nếu lỗi vẫn tiếp tục xảy ra'
-                ],
-                'support' => [
-                    'contact' => 'admin@example.com',
-                    'phone' => '1900xxxx',
-                    'docs' => 'https://docs.example.com/errors'
+                'notification' => [
+                    'title' => 'Lỗi!',
+                    'icon' => 'error',
+                    'text' => 'Không thể cập nhật trạng thái thông báo',
+                    'confirmButtonText' => 'Đóng'
                 ]
             ], 500);
         }
