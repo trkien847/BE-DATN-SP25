@@ -4,7 +4,30 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Champions 2022.mp3') }}" type="audio/mpeg">
+            </audio>
 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <style>
   .select2-container .select2-selection--single {
     height: 38px;

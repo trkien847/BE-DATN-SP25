@@ -5,7 +5,69 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Champions 2023.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
     <style>
+
+.audio-wave {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 20px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .audio-wave .bar {
+            width: 3px;
+            height: 100%;
+            background-color: #10B981;
+            border-radius: 3px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .audio-wave .bar:nth-child(2) { animation-delay: 0.1s; }
+        .audio-wave .bar:nth-child(3) { animation-delay: 0.2s; }
+        .audio-wave .bar:nth-child(4) { animation-delay: 0.3s; }
+        .audio-wave .bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        .playing .bar {
+            animation-play-state: running;
+        }
+
+        .paused .bar {
+            animation-play-state: paused;
+        }
+
         .variant-row {
             margin-bottom: 15px;
             padding: 10px;
@@ -156,6 +218,13 @@
 </script>
 @endif
 <body class="bg-gray-100">
+    <div class="audio-wave playing">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
     <div class="flex">
         <div class="w-1/4 bg-white shadow-md">
             <div class="p-4">
@@ -387,12 +456,12 @@
                                             <i class="fas fa-weight mr-2"></i>Chọn khối lượng
                                         </h5>
                                         <div class="shape-filters flex gap-2">
-                                            <!-- Filter buttons will be added here dynamically -->
+                                            
                                         </div>
                                     </div>
                                     <div id="weight-selections-container" class="bg-white p-4 rounded-lg shadow-sm border">
                                         <div class="weight-options flex flex-wrap gap-4">
-                                            <!-- Weight options will be added here dynamically -->
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -402,7 +471,7 @@
                                     <i class="fas fa-list-check mr-2"></i>Biến Thể Đã Chọn
                                 </h5>
                                 <div id="selected-variants-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <!-- Selected variants will be added here dynamically -->
+                                    
                                 </div>
                             </div>
                         </div>
@@ -429,12 +498,68 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            let selectedShapes = new Map(); // Store selected shapes with their names
-            let selectedWeights = new Set(); // Store selected weights across all shapes
-            let currentShapeFilter = 'all'; // Track current shape filter
+        window.removeVariant = function(combinationId) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: "Bạn không thể hoàn tác sau khi xóa!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const [shapeId, weightId] = combinationId.split('-');
+                    
+                    if (window.currentShapeFilter === 'all') {
+                        window.allSelectedWeights.delete(weightId);
+                        window.selectedShapes.forEach((_, sid) => {
+                            const shapeWeightSet = window.shapeWeights.get(sid);
+                            if (shapeWeightSet) {
+                                shapeWeightSet.delete(weightId);
+                                window.selectedWeights.delete(weightId);
+                            }
+                        });
+                    } else {
+                        const shapeWeightSet = window.shapeWeights.get(shapeId);
+                        if (shapeWeightSet) {
+                            shapeWeightSet.delete(weightId);
+                            window.selectedWeights.delete(weightId);
+                        }
+                    }
 
-            // Handle shape selection updateShapeFilterButtons
+                    const checkbox = document.querySelector(`#weight-${weightId}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+
+                    const card = document.getElementById(`variant-card-${combinationId}`);
+                    if (card) {
+                        card.classList.add('fade-out');
+                        setTimeout(() => {
+                            card.remove();
+                        }, 300);
+                    }
+
+                    Swal.fire(
+                        'Đã xóa!',
+                        'Biến thể đã được xóa thành công.',
+                        'success'
+                    );
+
+                    updateWeightSelectionArea();
+                }
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            window.currentShapeFilter = 'all';
+            window.selectedShapes = new Map(); 
+            window.selectedWeights = new Set(); 
+            window.allSelectedWeights = new Set(); 
+            window.shapeWeights = new Map();
+
             document.querySelectorAll('.variant-checkbox-input').forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const shapeId = this.value;
@@ -442,14 +567,24 @@
 
                     if (this.checked) {
                         selectedShapes.set(shapeId, shapeName);
+                        if (!shapeWeights.has(shapeId)) {
+                            shapeWeights.set(shapeId, new Set());
+                        }
+
+                        if (allSelectedWeights.size > 0) {
+                            allSelectedWeights.forEach(weightId => {
+                                const weightElement = document.querySelector(`#weight-${weightId}`);
+                                if (weightElement) {
+                                    const weightName = weightElement.dataset.weightName;
+                                    shapeWeights.get(shapeId).add(weightId);
+                                    createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
+                                }
+                            });
+                        }
                     } else {
                         selectedShapes.delete(shapeId);
-                        // Remove variants for this shape updateShapeFilterButtons
+                        shapeWeights.delete(shapeId);
                         removeVariantsByShape(shapeId);
-                        // Remove corresponding weight selections
-                        document.querySelectorAll(`.weight-checkbox[data-shape-id="${shapeId}"]`).forEach(cb => {
-                            cb.checked = false;
-                        });
                     }
                     
                     updateShapeFilterButtons();
@@ -463,7 +598,7 @@
 
                 filterContainer.innerHTML = `
                     <button type="button" 
-                        class="filter-btn active px-4 py-2 rounded-md text-sm font-medium bg-teal-500 text-white hover:bg-teal-600 transition-colors" 
+                        class="filter-btn ${currentShapeFilter === 'all' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700'} px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors" 
                         data-filter="all">
                         Tất cả
                     </button>
@@ -472,7 +607,7 @@
                 selectedShapes.forEach((shapeName, shapeId) => {
                     filterContainer.innerHTML += `
                         <button type="button"
-                            class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                            class="filter-btn ${currentShapeFilter === shapeId ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700'} px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors"
                             data-shape-id="${shapeId}"
                             data-shape-name="${shapeName}">
                             ${shapeName}
@@ -485,26 +620,60 @@
 
             function updateWeightSelectionArea() {
                 const container = document.querySelector('.weight-options');
-                if (!container) return;
-
-                // Clear container if no shapes are selected
-                if (selectedShapes.size === 0) {
+                if (!container || selectedShapes.size === 0) {
                     container.innerHTML = '';
                     return;
                 }
 
-                const weightValues = @json($weightValues);
                 container.innerHTML = '';
 
+                const filterBar = document.createElement('div');
+                filterBar.className = 'weight-filters flex gap-2 mb-4';
+                filterBar.innerHTML = `
+                    <button type="button" 
+                        class="unit-filter active px-4 py-2 rounded-md text-sm font-medium bg-teal-500 text-white hover:bg-teal-600 transition-colors" 
+                        data-unit="all">
+                        Tất cả
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="viên">
+                        Viên
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="ml">
+                        ML
+                    </button>
+                    <button type="button"
+                        class="unit-filter px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        data-unit="g">
+                        G
+                    </button>
+                `;
+                container.appendChild(filterBar);
+
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'gird grid grid-cols-4 ';
+                container.appendChild(optionsContainer);
+
+                const weightValues = @json($weightValues);
+
                 weightValues.forEach(value => {
+                    const unit = value.value.toLowerCase().endsWith('ml') ? 'ml' : 
+                                value.value.toLowerCase().endsWith('g') ? 'g' : 'viên';
+
                     const optionDiv = document.createElement('div');
                     optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
-                    optionDiv.dataset.unit = value.unit;
+                    optionDiv.dataset.unit = unit;
 
-                    const isChecked = Array.from(document.querySelectorAll('.variant-card')).some(card => {
-                        const [_, weightId] = card.id.split('-').pop().split('-');
-                        return weightId === value.id.toString();
-                    });
+                    let isChecked = false;
+                    if (currentShapeFilter === 'all') {
+                        isChecked = allSelectedWeights.has(value.id.toString());
+                    } else {
+                        const shapeWeightSet = shapeWeights.get(currentShapeFilter);
+                        isChecked = shapeWeightSet ? shapeWeightSet.has(value.id.toString()) : false;
+                    }
 
                     optionDiv.innerHTML = `
                         <input type="checkbox" 
@@ -518,10 +687,32 @@
                         </label>
                     `;
 
-                    container.appendChild(optionDiv);
+                    optionsContainer.appendChild(optionDiv);
 
                     const checkbox = optionDiv.querySelector('.weight-checkbox');
                     checkbox.addEventListener('change', handleWeightSelection);
+                });
+
+                filterBar.querySelectorAll('.unit-filter').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterBar.querySelectorAll('.unit-filter').forEach(b => {
+                            b.classList.remove('bg-teal-500', 'text-white');
+                            b.classList.add('bg-gray-100', 'text-gray-700');
+                        });
+                        this.classList.remove('bg-gray-100', 'text-gray-700');
+                        this.classList.add('bg-teal-500', 'text-white');
+
+                        const selectedUnit = this.dataset.unit;
+                        const options = optionsContainer.querySelectorAll('.weight-option');
+                        
+                        options.forEach(option => {
+                            if (selectedUnit === 'all' || option.dataset.unit === selectedUnit) {
+                                option.style.display = 'flex';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                    });
                 });
             }
 
@@ -530,30 +721,56 @@
                 const weightId = checkbox.value;
                 const weightName = checkbox.dataset.weightName;
 
-                if (checkbox.checked) {
-                    if (currentShapeFilter === 'all') {
-                        selectedShapes.forEach((shapeName, shapeId) => {
+                if (window.currentShapeFilter === 'all') {
+                    if (checkbox.checked) {
+                        window.allSelectedWeights.add(weightId);
+                        window.selectedWeights.add(weightId);
+                        window.selectedShapes.forEach((shapeName, shapeId) => {
+                            const shapeWeightSet = window.shapeWeights.get(shapeId) || new Set();
+                            shapeWeightSet.add(weightId);
+                            window.shapeWeights.set(shapeId, shapeWeightSet);
                             createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
                         });
                     } else {
-                        const selectedShape = Array.from(selectedShapes.entries())
-                            .find(([id, _]) => id === currentShapeFilter);
-                        if (selectedShape) {
-                            createOrUpdateVariantCard(
-                                `${selectedShape[0]}-${weightId}`, 
-                                `${selectedShape[1]} ${weightName}`
-                            );
-                        }
+                        window.allSelectedWeights.delete(weightId);
+                        window.selectedWeights.delete(weightId); 
+                        window.selectedShapes.forEach((_, shapeId) => {
+                            const shapeWeightSet = window.shapeWeights.get(shapeId);
+                            if (shapeWeightSet) {
+                                shapeWeightSet.delete(weightId);
+                                removeVariantCard(`${shapeId}-${weightId}`);
+                            }
+                        });
                     }
                 } else {
-                    if (currentShapeFilter === 'all') {
-                        selectedShapes.forEach((_, shapeId) => {
-                            removeVariantCard(`${shapeId}-${weightId}`);
-                        });
+                    const shapeWeightSet = window.shapeWeights.get(window.currentShapeFilter) || new Set();
+                    if (checkbox.checked) {
+                        shapeWeightSet.add(weightId);
+                        window.selectedWeights.add(weightId); 
+                        window.shapeWeights.set(window.currentShapeFilter, shapeWeightSet);
+                        createOrUpdateVariantCard(
+                            `${window.currentShapeFilter}-${weightId}`,
+                            `${window.selectedShapes.get(window.currentShapeFilter)} ${weightName}`
+                        );
                     } else {
-                        removeVariantCard(`${currentShapeFilter}-${weightId}`);
+                        shapeWeightSet.delete(weightId);
+                        window.selectedWeights.delete(weightId); 
+                        removeVariantCard(`${window.currentShapeFilter}-${weightId}`);
                     }
                 }
+                updateWeightSelectionArea();
+            }
+
+            function updateAllVariants() {
+                window.selectedWeights.forEach(weightId => {
+                    window.selectedShapes.forEach((shapeName, shapeId) => {
+                        const weightElement = document.querySelector(`#weight-${weightId}`);
+                        if (weightElement) {
+                            const weightName = weightElement.dataset.weightName;
+                            createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
+                        }
+                    });
+                });
             }
 
             function removeVariantsByShape(shapeId) {
@@ -565,26 +782,10 @@
                 });
             }
 
-            function updateAllVariants() {
-                // Recreate all variants based on current removeVariantCard
-                selectedWeights.forEach(weightId => {
-                    selectedShapes.forEach((shapeName, shapeId) => {
-                        const weightName = document.querySelector(`#weight-${weightId}`).dataset.weightName;
-                        createOrUpdateVariantCard(`${shapeId}-${weightId}`, `${shapeName} ${weightName}`);
-                    });
-                });
-            }
 
             function addFilterButtonHandlers() {
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        document.querySelectorAll('.filter-btn').forEach(b => {
-                            b.classList.remove('bg-teal-500', 'text-white');
-                            b.classList.add('bg-gray-100', 'text-gray-700');
-                        });
-                        this.classList.remove('bg-gray-100', 'text-gray-700');
-                        this.classList.add('bg-teal-500', 'text-white');
-
                         const shapeId = this.dataset.shapeId || 'all';
                         filterWeightOptions(shapeId);
                     });
@@ -593,33 +794,12 @@
 
             function filterWeightOptions(shapeId) {
                 currentShapeFilter = shapeId;
-                const options = document.querySelectorAll('.weight-option');
-                
-                if (shapeId === 'all') {
-                    options.forEach(option => {
-                        option.style.display = 'flex';
-                    });
-                } else {
-                    // Show only weights that aren't used by other shapes
-                    const usedWeights = new Set();
-                    document.querySelectorAll('.variant-card').forEach(card => {
-                        if (!card.id.startsWith(`variant-card-${shapeId}`)) {
-                            const [_, weightId] = card.id.split('-').pop().split('-');
-                            usedWeights.add(weightId);
-                        }
-                    });
-
-                    options.forEach(option => {
-                        const weightId = option.querySelector('input').value;
-                        option.style.display = !usedWeights.has(weightId) ? 'flex' : 'none';
-                    });
-                }
+                updateShapeFilterButtons();
+                updateWeightSelectionArea();
             }
 
-            // Handle checkbox changes for variant selection removeVariantsByShape
             document.querySelectorAll('.shape-filter-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Update button styles
                     document.querySelectorAll('.shape-filter-btn, #all-shapes-btn').forEach(b => {
                         b.classList.remove('bg-teal-500', 'text-white');
                         b.classList.add('bg-gray-100', 'text-gray-700');
@@ -632,7 +812,6 @@
                 });
             });
 
-            // Handle "All" button 
             document.getElementById('all-shapes-btn').addEventListener('click', function() {
                 document.querySelectorAll('.shape-filter-btn, #all-shapes-btn').forEach(b => {
                     b.classList.remove('bg-teal-500', 'text-white');
@@ -671,12 +850,10 @@
 
                     container.appendChild(optionDiv);
 
-                    // Add change event listener
                     const checkbox = optionDiv.querySelector('.weight-checkbox');
                     checkbox.addEventListener('change', function() {
                         if (this.checked) {
                             if (currentShapeFilter === 'all') {
-                                // Create variants for all selected shapes
                                 selectedShapes.forEach(shape => {
                                     createOrUpdateVariantCard(
                                         `${shape.id}-${value.id}`,
@@ -684,7 +861,6 @@
                                     );
                                 });
                             } else {
-                                // Create variant only for selected shape
                                 const shape = Array.from(selectedShapes)
                                     .find(s => s.id === currentShapeFilter);
                                 if (shape) {
@@ -740,18 +916,15 @@
                 `;
 
                 const weightOptions = weightArea.querySelector('.weight-options');
-                
-                // Get weight values from PHP
                 const weightValues = @json($weightValues);
                 console.log('Weight Values:', weightValues);
 
-                // Create weight options
                 weightValues.forEach(value => {
                     const optionDiv = document.createElement('div');
                     optionDiv.className = 'weight-option flex items-center bg-gray-50 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors';
                     
                     console.log('Creating option with ID:', value.id);
-                    optionDiv.dataset.unit = value.unit; // Sử dụng unit từ dữ liệu
+                    optionDiv.dataset.unit = value.unit; 
 
                     optionDiv.innerHTML = `
                         <input type="checkbox" 
@@ -767,7 +940,7 @@
                     weightOptions.appendChild(optionDiv);
                 });
 
-                // Add filter functionality
+                
                 const filterButtons = weightArea.querySelectorAll('.filter-btn');
                 filterButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -822,8 +995,9 @@
                     card.innerHTML = `
                         <div class="flex justify-between items-center mb-3">
                             <h6 class="font-medium text-gray-800">${combinationName}</h6>
-                            <button type="button" onclick="removeVariant('${combinationId}')"
-                                    class="text-gray-400 hover:text-red-500 transition-colors">
+                            <button type="button" 
+                                onclick="removeVariant('${combinationId}')"
+                                class="text-gray-400 hover:text-red-500 transition-colors">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -865,7 +1039,6 @@
                     
                     container.appendChild(card);
 
-                    // Add validation event listeners
                     const priceInput = card.querySelector('input[name$="[price]"]');
                     const salePriceInput = card.querySelector('input[name$="[sale_price]"]');
                     const startDateInput = card.querySelector('input[name$="[sale_start_at]"]');
@@ -893,7 +1066,7 @@
                     setTimeout(() => card.remove(), 300);
                 }
             }
-//addFilterButtonHandlers
+
             function removeVariantCards(shapeId) {
                 document.querySelectorAll(`[id^="variant-card-${shapeId}-"]`).forEach(card => {
                     card.classList.add('fade-out');
@@ -901,7 +1074,7 @@
                 });
             }
 
-            // Thêm các hàm validate
+
             function validatePrice(e) {
                 const input = e.target;
                 if (input.value <= 0) {
@@ -938,20 +1111,18 @@
                 }
             }
 
-            // Thêm validation khi submit form
             document.getElementById('myForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
                 const variants = document.querySelectorAll('.variant-card');
                 let hasError = false;
 
-                // Kiểm tra xem có biến thể nào không
+               
                 if (variants.length === 0) {
                     alert('Vui lòng chọn ít nhất một biến thể (Hình thù và Khối lượng).');
                     return;
                 }
 
-                // Kiểm tra các trường bắt buộc trong từng biến thể
                 variants.forEach(variant => {
                     const price = variant.querySelector('input[name$="[price]"]');
                     const salePrice = variant.querySelector('input[name$="[sale_price]"]');
@@ -980,15 +1151,7 @@
                 this.submit();
             });
 
-            // Global function for removing variants
-            window.removeVariant = function(combinationId) {
-                const [shapeId, weightId] = combinationId.split('-');
-                const weightCheckbox = document.getElementById(`weight-${shapeId}-${weightId}`);
-                if (weightCheckbox) {
-                    weightCheckbox.checked = false;
-                }
-                removeVariantCard(combinationId);
-            };
+
         });
 
       

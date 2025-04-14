@@ -147,7 +147,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
   
 
-  // nhập
+  // nhập /admin/attributes/
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
@@ -179,7 +179,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //hoàn hàng
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
-  // thông kê
+  // thông kê /imports/create
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
   //nhập  search 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');

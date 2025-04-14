@@ -247,28 +247,25 @@ class ProductController extends Controller
             $existingAttributes = [];
 
             foreach ($request->variants as $shapeId => $weights) {
-                // Kiểm tra tính hợp lệ của shapeId
                 $shapeAttribute = AttributeValue::where('id', $shapeId)
-                    ->where('attribute_id', 12) // Hình thù
+                    ->where('attribute_id', 12)
                     ->first();
 
                 if (!$shapeAttribute) {
                     \Log::warning("shapeId không hợp lệ: {$shapeId}");
-                    continue; // Bỏ qua nếu shapeId không hợp lệ
+                    continue;
                 }
 
                 foreach ($weights as $weightId) {
-                    // Kiểm tra tính hợp lệ của weightId
                     $weightAttribute = AttributeValue::where('id', $weightId)
-                        ->where('attribute_id', 14) // Khối lượng
+                        ->where('attribute_id', 14)
                         ->first();
 
                     if (!$weightAttribute) {
                         \Log::warning("weightId không hợp lệ: {$weightId}");
-                        continue; // Bỏ qua nếu weightId không hợp lệ
+                        continue;
                     }
 
-                    // 2.1 Tạo product variant
                     $productVariant = ProductVariant::create([
                         'product_id' => $product->id,
                         'price' => $request->input("variant_prices.{$shapeId}-{$weightId}.price"),
@@ -278,22 +275,17 @@ class ProductController extends Controller
                         'stock' => 0,
                     ]);
 
-                    // 2.2 Liên kết variant với giá trị thuộc tính (Hình thù)
                     AttributeValueProductVariant::create([
                         'product_variant_id' => $productVariant->id,
                         'attribute_value_id' => $shapeId,
                     ]);
 
-                    // 2.3 Liên kết variant với giá trị thuộc tính (Khối lượng)
                     AttributeValueProductVariant::create([
                         'product_variant_id' => $productVariant->id,
                         'attribute_value_id' => $weightId,
                     ]);
 
-                    // 2.4 Liên kết sản phẩm với giá trị thuộc tính (tránh trùng lặp)
-                    // Chỉ thêm vào attribute_value_product nếu shapeId và weightId đã được sử dụng để tạo biến thể
                     if (!in_array($shapeId, $existingAttributes)) {
-                        // Kiểm tra lại tính hợp lệ trước khi thêm
                         $shapeExists = AttributeValue::where('id', $shapeId)->exists();
                         if ($shapeExists) {
                             AttributeValueProduct::create([
@@ -307,7 +299,6 @@ class ProductController extends Controller
                     }
 
                     if (!in_array($weightId, $existingAttributes)) {
-                        // Kiểm tra lại tính hợp lệ trước khi thêm
                         $weightExists = AttributeValue::where('id', $weightId)->exists();
                         if ($weightExists) {
                             AttributeValueProduct::create([
@@ -330,7 +321,6 @@ class ProductController extends Controller
     public function edit($id)
     {
         try {
-            // Fetch product with necessary relationships
             $product = Product::query()
                 ->with([
                     'brand',
@@ -346,18 +336,15 @@ class ProductController extends Controller
                 ])
                 ->findOrFail($id);
 
-            // Get all active attributes with their values
             $attributes = Attribute::with(['values' => function ($query) {
                 $query->where('is_active', 1);
             }])->get();
 
-            // Get all required data
             $brands = Brand::all();
             $categories = Category::with('categoryTypes')->get();
             $productGallery = ProductGalleries::where('product_id', $id)->get();
             $categoryTypes = CategoryType::whereIn('category_id', $product->categories->pluck('id'))->get();
             $weightAttribute = Attribute::where('name', 'Khối lượng')->first();
-            // Initialize arrays for variant data
             $variantData = [];
             $selectedVariants = [];
             $weightValues = [];
@@ -376,15 +363,12 @@ class ProductController extends Controller
                 })->toArray();
             }
 
-            // Process each variant
             foreach ($product->variants as $variant) {
-                // Get shape and weight attributes for this variant
                 $attributeValues = $variant->attributeValues->groupBy('attribute.id');
 
-                $shape = $attributeValues->get(12)?->first(); // 12 is shape attribute ID
-                $weight = $attributeValues->get(14)?->first(); // 14 is weight attribute ID
+                $shape = $attributeValues->get(12)?->first();
+                $weight = $attributeValues->get(14)?->first();
 
-                // Only add if both shape and weight exist
                 if ($shape && $weight) {
                     $variantData[$variant->id] = [
                         'shape_id' => $shape->id,
@@ -400,7 +384,6 @@ class ProductController extends Controller
                         'variant_id' => $variant->id
                     ];
 
-                    // Store selected combinations
                     $selectedVariants[] = [
                         'shape_id' => $shape->id,
                         'weight_id' => $weight->id,
@@ -408,7 +391,6 @@ class ProductController extends Controller
                 }
             }
 
-            // Log data for debugging if needed
             \Log::debug('Variant Data:', [
                 'variantData' => $variantData,
                 'selectedVariants' => $selectedVariants
@@ -423,7 +405,7 @@ class ProductController extends Controller
                 'attributes',
                 'variantData',
                 'selectedVariants',
-                'weightValues' 
+                'weightValues'
             ));
         } catch (\Exception $e) {
             \Log::error('Error in edit product:', [
@@ -446,11 +428,13 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
+            'thumbnail' => 'nullable',
 
+            'variant_prices' => 'required|array',
             'variant_prices.*.price' => 'required|numeric|min:0',
-            'variant_prices.*.sale_price' => 'nullable|numeric|min:0|lt:variant_prices.*.price',
-            'variant_prices.*.sale_price_start_at' => 'required_with:variant_prices.*.sale_price',
-            'variant_prices.*.sale_price_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_price_start_at',
+            'variant_prices.*.sale_price' => 'nullable|numeric|min:0',
+            'variant_prices.*.sale_start_at' => 'required_with:variant_prices.*.sale_price',
+            'variant_prices.*.sale_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -458,13 +442,14 @@ class ProductController extends Controller
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
 
-            'variant_prices.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
-            'variant_prices.*.price.numeric' => 'Giá bán phải là số',
-            'variant_prices.*.price.min' => 'Giá bán phải lớn hơn 0',
-            'variant_prices.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
-            'variant_prices.*.sale_price_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variant_prices.*.sale_price_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
+            'variants.required' => 'Vui lòng chọn ít nhất một biến thể',
+            'variants.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
+            'variants.*.price.numeric' => 'Giá bán phải là số',
+            'variants.*.price.min' => 'Giá bán phải lớn hơn 0',
+            'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
+            'variants.*.sale_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
+            'variants.*.sale_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -604,40 +589,80 @@ class ProductController extends Controller
 
         $variantIds = [];
         if ($request->has('variants')) {
-            foreach ($request->variants as $attributeId => $valueIds) {
-                foreach ($valueIds as $valueId) {
-                    $variant = ProductVariant::where('product_id', $product->id)
-                        ->whereHas('attributeValues', function ($query) use ($valueId) {
-                            $query->where('attribute_value_id', $valueId);
-                        })->first();
+            $existingAttributes = [];
 
-                    $variantPriceData = $request->input("variant_prices.{$valueId}", []);
+            foreach ($request->variants as $shapeId => $weights) {
+                $shapeAttribute = AttributeValue::where('id', $shapeId)
+                    ->where('attribute_id', 12)
+                    ->first();
+
+                if (!$shapeAttribute) {
+                    \Log::warning("Invalid shapeId: {$shapeId}");
+                    continue;
+                }
+
+                foreach ($weights as $weightId) {
+                    $weightAttribute = AttributeValue::where('id', $weightId)
+                        ->where('attribute_id', 14)
+                        ->first();
+
+                    if (!$weightAttribute) {
+                        \Log::warning("Invalid weightId: {$weightId}");
+                        continue;
+                    }
+
+                    $variant = ProductVariant::where('product_id', $product->id)
+                        ->whereHas('attributeValues', function ($q) use ($shapeId) {
+                            $q->where('attribute_value_id', $shapeId);
+                        })
+                        ->whereHas('attributeValues', function ($q) use ($weightId) {
+                            $q->where('attribute_value_id', $weightId);
+                        })
+                        ->first();
+
+                    $variantPriceData = $request->input("variant_prices.{$shapeId}-{$weightId}");
 
                     if (!$variant) {
                         $variant = ProductVariant::create([
                             'product_id' => $product->id,
                             'price' => $variantPriceData['price'] ?? null,
                             'sale_price' => $variantPriceData['sale_price'] ?? null,
-                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? null,
-                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? null,
+                            'sale_price_start_at' => $variantPriceData['sale_start_at'] ?? null,
+                            'sale_price_end_at' => $variantPriceData['sale_end_at'] ?? null,
+                            'stock' => 0,
                         ]);
 
                         AttributeValueProductVariant::create([
                             'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $valueId,
+                            'attribute_value_id' => $shapeId,
                         ]);
 
-                        AttributeValueProduct::create([
-                            'product_id' => $product->id,
-                            'attribute_value_id' => $valueId,
+                        AttributeValueProductVariant::create([
+                            'product_variant_id' => $variant->id,
+                            'attribute_value_id' => $weightId,
                         ]);
+
+                        if (!in_array($shapeId, $existingAttributes)) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $shapeId,
+                            ]);
+                            $existingAttributes[] = $shapeId;
+                        }
+
+                        if (!in_array($weightId, $existingAttributes)) {
+                            AttributeValueProduct::create([
+                                'product_id' => $product->id,
+                                'attribute_value_id' => $weightId,
+                            ]);
+                            $existingAttributes[] = $weightId;
+                        }
                     } else {
-                        // Update existing variant prices and dates
                         $variant->update([
                             'price' => $variantPriceData['price'] ?? $variant->price,
                             'sale_price' => $variantPriceData['sale_price'] ?? $variant->sale_price,
-                            'sale_price_start_at' => $variantPriceData['sale_price_start_at'] ?? $variant->sale_price_start_at,
-                            'sale_price_end_at' => $variantPriceData['sale_price_end_at'] ?? $variant->sale_price_end_at,
+                            'sale_price_start_at' => $variantPriceData['sale_start_at'] ?? $variant->sale_price_start_at,
+                            'sale_price_end_at' => $variantPriceData['sale_end_at'] ?? $variant->sale_price_end_at,
                         ]);
                     }
 
@@ -1300,7 +1325,14 @@ class ProductController extends Controller
     public function createImport()
     {
         $products = Product::where('is_active', 1)
-            ->with(['variants.attributeValues.attribute', 'attributeValues.attribute'])
+            ->with([
+                'variants' => function ($query) {
+                    $query->with(['attributeValues' => function ($q) {
+                        $q->with('attribute')->orderBy('attribute_id');
+                    }]);
+                },
+                'attributeValues.attribute'
+            ])
             ->get();
         $suppliers = Supplier::all();
         $orderImport = OrderImport::where(function ($query) {
@@ -1340,7 +1372,7 @@ class ProductController extends Controller
                 'supplier_id' => 'required|exists:suppliers,id',
                 'products' => 'required|json',
                 'proof_files' => 'required|array',
-                'proof_files.*' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'proof_files.*' => 'required|file|mimes:jpeg,png,jpg,pdf',
                 'order_import_id' => 'required|exists:order_imports,id'
             ]);
 
@@ -1460,10 +1492,16 @@ class ProductController extends Controller
         return $variant->attributeValues()
             ->with('attribute')
             ->get()
-            ->map(function ($value) {
-                return $value->attribute->name . ': ' . $value->attribute->slug . $value->value;
+            ->filter(function ($value) {
+                return in_array($value->attribute->name, ['Hình thù', 'Khối lượng']);
             })
-            ->join(', ');
+            ->sortBy(function ($value) {
+                return $value->attribute->name === 'Hình thù' ? 0 : 1;
+            })
+            ->map(function ($value) {
+                return $value->value;
+            })
+            ->join(' ');
     }
 
     public function indexImport()

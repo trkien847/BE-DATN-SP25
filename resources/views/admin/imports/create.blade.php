@@ -1,5 +1,29 @@
 @extends('admin.layouts.layout')
 @section('content')
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Wake Me Up X After Hours.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
 <form id="importForm" method="POST" action="{{ route('admin.imports.store') }}" enctype="multipart/form-data">
 @csrf
@@ -51,17 +75,30 @@
                             </div>
                         </div>
                         <div class="variants-list">
-                            @foreach($product->variants as $variant)
+                        @foreach($product->variants as $variant)
+                                    @php
+                                        $shapeValue = $variant->attributeValues->first(function($av) {
+                                            return $av->attribute->name === 'Hình thù';
+                                        });
+                                        $weightValue = $variant->attributeValues->first(function($av) {
+                                            return $av->attribute->name === 'Khối lượng';
+                                        });
+                                    @endphp
                             <div class="variant-item">
-                                <input type="checkbox" id="variant-{{ $variant->id }}" 
+                                <input type="checkbox" 
+                                    id="variant-{{ $variant->id }}" 
                                     class="variant-checkbox"
                                     data-variant-id="{{ $variant->id }}"
-                                    data-variant-name="{{ $variant->name }}">
+                                    data-variant-name=" {{ $shapeValue->value }} {{ $weightValue->value }}">
                                 <label for="variant-{{ $variant->id }}">
-                                    @foreach($variant->attributeValues as $value)
-                                        {{ $value->attribute->name }}: {{ $value->attribute->slug }}{{ $value->value }}
-                                        @if(!$loop->last), @endif
-                                    @endforeach
+                                    @if($shapeValue && $weightValue)
+                                        {{ $shapeValue->value }} {{ $weightValue->value }}
+                                    @else
+                                        @foreach($variant->attributeValues->sortBy('attribute.name') as $value)
+                                            {{ $value->attribute->name }}: {{ $value->value }}
+                                            @if(!$loop->last), @endif
+                                        @endforeach
+                                    @endif
                                 </label>
                             </div>
                             @endforeach
