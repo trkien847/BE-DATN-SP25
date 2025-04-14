@@ -39,6 +39,139 @@
     position: relative;
     z-index: 1;
 }
+
+#notification-list {
+        max-height: 400px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #10B981 #F3F4F6;
+    }
+
+    #notification-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #notification-list::-webkit-scrollbar-track {
+        background: #F3F4F6;
+        border-radius: 10px;
+    }
+
+    #notification-list::-webkit-scrollbar-thumb {
+        background-color: #10B981;
+        border-radius: 10px;
+        border: 2px solid transparent;
+    }
+
+    /* Notification Item Animations */
+    .notification-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .notification-item:hover {
+        background-color: #F8FAFC;
+        border-left-color: #10B981;
+        transform: translateX(4px);
+    }
+
+    /* Button Animations */
+    .notification-item .btn {
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .notification-item .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .notification-item .btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+
+    .notification-item .btn:active::after {
+        animation: ripple 1s ease-out;
+    }
+
+    /* Unread Notification Indicator */
+    .notification-item:not(.bg-light)::before {
+        content: '';
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 8px;
+        height: 8px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    /* Animations */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 1;
+        }
+        20% {
+            transform: scale(25, 25);
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+            transform: scale(40, 40);
+        }
+    }
+
+    /* Empty State Animation */
+    .notification-empty {
+        animation: fadeIn 0.5s ease-out;
+        padding: 2rem;
+        text-align: center;
+        color: #6B7280;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 <header class="topbar">
     <div class="container-fluid">
@@ -103,7 +236,7 @@
                             </div>
                         </div>
                         </div>
-                        <div data-simplebar style="max-height: 280px;" id="notification-list">
+                        <div data-simplebar id="notification-list" class="notification-container">
                             @foreach(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', 0)->latest()->limit(10)->get() as $notification)
                             <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
                                 <h6 class="mb-1">{{ $notification->title }}</h6>
@@ -201,11 +334,52 @@
                                         <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                     </form>
                                 </div>
+                                @elseif($notification->type === 'import_confirmation')
+                                <div class="d-flex gap-2">
+                                    <a href="{{ $notification->data['actions']['view_details'] }}" 
+                                    class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                    </a>
+                                    <form action="{{ $notification->data['actions']['confirm'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('POST')
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i>Xác nhận
+                                        </button>
+                                    </form>
+                                    <form action="{{ $notification->data['actions']['cancel'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('POST')
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-times me-1"></i>Từ chối
+                                        </button>
+                                    </form>
+                                </div>
+                                @elseif($notification->type === 'import_response')
+                                <div class="d-flex gap-2">
+                                    <a href="{{ $notification->data['actions']['view_details'] }}" 
+                                    class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                    </a>
+                                    <form action="{{ $notification->data['actions']['acknowledge'] }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('POST')
+                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i>Đã xem
+                                        </button>
+                                    </form>
+                                </div>
                                 @endif
                             </div>
                             @endforeach
                             @if(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', false)->count() === 0)
-                            <div class="text-center p-3">Không có thông báo nào</div>
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
+                                    <p>Không có thông báo nào</p>
+                                </div>
                             @endif
                         </div>
                         <div class="text-center py-3 footer-bg">
@@ -305,6 +479,23 @@
                                             </form>
                                             <a href="${notification.data.actions.view_details}?notification_id=${notification.id}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                         `;
+                                    case 'import_response':
+                                        return `
+                                            <div class="d-flex gap-2">
+                                                <a href="${notification.data.actions.view_details}" 
+                                                class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                                <form action="${notification.data.actions.acknowledge}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Đã xem
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        `;
                                     case 'product_pending_create':
                                         return `
                                             <form action="${notification.data.actions.approve_request}" method="POST" style="display:inline;">
@@ -336,6 +527,31 @@
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
                                             <a href="${notification.data.actions.view_details}?notification_id=${notification.id}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                        `;
+                                    case 'import_confirmation':
+                                        return `
+                                            <div class="d-flex gap-2">
+                                                <a href="${notification.data.actions.view_details}" 
+                                                class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                                <form action="${notification.data.actions.confirm}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Xác nhận
+                                                    </button>
+                                                </form>
+                                                <form action="${notification.data.actions.cancel}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times me-1"></i>Từ chối
+                                                    </button>
+                                                </form>
+                                            </div>
                                         `;
                                     case 'import_pending':
                                         return `

@@ -1033,23 +1033,21 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Thêm giá trị biến thể thành công!');
     }
 
-    public function toggleStatus(Request $request, Attribute $attribute)
+    public function toggleStatus(Request $request, $id)
     {
         try {
-            $attribute->update([
-                'is_active' => $request->is_active
-            ]);
+            $attribute = AttributeValue::findOrFail($id);
+            $attribute->is_active = $request->is_active;
+            $attribute->save();
 
             return response()->json([
                 'success' => true,
-                'message' => $request->is_active ?
-                    'Thuộc tính đã được hiển thị' :
-                    'Thuộc tính đã được ẩn'
+                'message' => 'Cập nhật trạng thái thành công'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái'
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -1110,8 +1108,6 @@ class ProductController extends Controller
             'min_variant_price'
         ));
     }
-
-
 
 
     // nhập 
@@ -1303,22 +1299,6 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Đã từ chối đơn nhập hàng thành công!');
     }
 
-    public function confirmImport(Request $request, $id)
-    {
-        $import = ProductImport::findOrFail($id);
-
-        if (auth()->user()->role_id != 3) {
-            return redirect()->back()->with('error', 'Bạn không có quyền xác nhận đơn nhập hàng.');
-        }
-
-        $import->update(['is_active' => 1]);
-        $notificationId = $request->input('notification_id');
-        $notification = Notification::find($notificationId);
-        $notification->is_read = 1;
-        $notification->save();
-        return redirect()->back()->with('success', 'Đã xác nhận đơn nhập hàng thành công!');
-    }
-
 
 
     // nhập v2 
@@ -1376,6 +1356,9 @@ class ProductController extends Controller
                 'order_import_id' => 'required|exists:order_imports,id'
             ]);
 
+            $user = auth()->user();
+            $isAdmin = $user->role_id === 3;
+
             $orderImport = OrderImport::findOrFail($request->order_import_id);
             $products = json_decode($request->products, true);
 
@@ -1397,7 +1380,7 @@ class ProductController extends Controller
                 'import_date' => $request->import_date,
                 'user_id' => auth()->id(),
                 'supplier_id' => $request->supplier_id,
-                'is_confirmed' => false,
+                'is_confirmed' => $isAdmin,
                 'total_quantity' => 0,
                 'total_price' => 0,
                 'proof_image' => json_encode($fileNames)
@@ -1410,6 +1393,7 @@ class ProductController extends Controller
                 if (!isset($productData['variants']) || !is_array($productData['variants'])) {
                     throw new \Exception('Dữ liệu biến thể không hợp lệ');
                 }
+
                 $product = Product::findOrFail($productId);
 
                 $firstVariant = reset($productData['variants']);
@@ -1445,6 +1429,17 @@ class ProductController extends Controller
                         'total_price' => $totalPrice
                     ]);
 
+                    if ($isAdmin) {
+                        $variant->update([
+                            'import_price' => $price,
+                            'stock' => DB::raw("stock + $quantity"),
+                            'price' => $variantData['sell_price'] ?? $variant->price,
+                            'sale_price' => $variantData['sale_price'] ?? $variant->sale_price,
+                            'sale_price_start_at' => $variantData['sale_start_date'] ?? $variant->sale_price_start_at,
+                            'sale_price_end_at' => $variantData['sale_end_date'] ?? $variant->sale_price_end_at,
+                        ]);
+                    }
+
                     $productTotalQuantity += $quantity;
                     $productTotalPrice += $totalPrice;
                 }
@@ -1463,11 +1458,32 @@ class ProductController extends Controller
                 'total_price' => $totalImportPrice
             ]);
 
+            if (!$isAdmin) {
+                $admins = User::where('role_id', 3)->get();
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => "Nhân viên {$user->fullname} đang yêu cầu xác nhận lô {$import->import_code}",
+                        'content' => "Tổng số lượng: {$totalImportQuantity}, Tổng giá trị: " . number_format($totalImportPrice, 0, ',', '.') . " VNĐ",
+                        'type' => 'import_confirmation',
+                        'data' => [
+                            'import_id' => $import->id,
+                            'actions' => [
+                                'view_details' => route('imports.show', $import->id),
+                                'confirm' => route('imports.confirm', $import->id),
+                                'cancel' => route('imports.cancel', $import->id)
+                            ]
+                        ],
+                        'is_read' => false
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Import created successfully',
+                'message' => $isAdmin ? 'Nhập hàng thành công' : 'Yêu cầu nhập hàng đã được gửi đi',
                 'data' => $import
             ]);
         } catch (\Exception $e) {
@@ -1483,6 +1499,139 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating import: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showImport(Import $import)
+    {
+        $import->load([
+            'user',
+            'supplier',
+            'importProducts.variants',
+            'importProducts.product'
+        ]);
+
+        return view('admin.imports.show', compact('import'));
+    }
+
+    public function confirmImport($id)
+    {
+        $import = Import::with('user')->findOrFail($id);
+        $adminUser = auth()->user();
+
+        if (!$import->is_confirmed) {
+            DB::beginTransaction();
+            try {
+                // Update import status
+                $import->update(['is_confirmed' => true]);
+
+                // Update product variants
+                foreach ($import->importProducts as $importProduct) {
+                    foreach ($importProduct->variants as $variant) {
+                        $productVariant = ProductVariant::find($variant->product_variant_id);
+                        if ($productVariant) {
+                            $productVariant->update([
+                                'import_price' => $variant->import_price,
+                                'stock' => DB::raw("stock + {$variant->quantity}"),
+                            ]);
+                        }
+                    }
+                }
+
+                // Update admin notification status
+                Notification::where('type', 'import_confirmation')
+                    ->where('data->import_id', $import->id)
+                    ->update(['is_read' => true]);
+
+                // Create notification for staff
+                Notification::create([
+                    'user_id' => $import->user_id,
+                    'title' => "Yêu cầu nhập hàng đã được chấp nhận",
+                    'content' => "Lô hàng #{$import->import_code} đã được xác nhận bởi {$adminUser->fullname}",
+                    'type' => 'import_response',
+                    'data' => [
+                        'import_id' => $import->id,
+                        'status' => 'confirmed',
+                        'actions' => [
+                            'view_details' => route('imports.show', $import->id),
+                            'acknowledge' => route('notifications.acknowledge', ['type' => 'import_response', 'id' => $import->id])
+                        ]
+                    ],
+                    'is_read' => false
+                ]);
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => 'Đơn nhập hàng đã được xác nhận']);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'Đơn hàng đã được xử lý trước đó'], 400);
+    }
+
+    public function cancelImport($id)
+    {
+        $import = Import::with('user')->findOrFail($id);
+        $adminUser = auth()->user();
+
+        if (!$import->is_confirmed) {
+            DB::beginTransaction();
+            try {
+                // Update admin notification status
+                Notification::where('type', 'import_confirmation')
+                    ->where('data->import_id', $import->id)
+                    ->update(['is_read' => true]);
+
+                // Create notification for staff
+                Notification::create([
+                    'user_id' => $import->user_id,
+                    'title' => "Yêu cầu nhập hàng đã bị từ chối",
+                    'content' => "Lô hàng #{$import->import_code} đã bị từ chối bởi {$adminUser->fullname}",
+                    'type' => 'import_response',
+                    'data' => [
+                        'import_id' => $import->id,
+                        'status' => 'cancelled',
+                        'actions' => [
+                            'view_details' => route('imports.show', $import->id),
+                            'acknowledge' => route('notifications.acknowledge', ['type' => 'import_response', 'id' => $import->id])
+                        ]
+                    ],
+                    'is_read' => false
+                ]);
+
+                $import->delete();
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => 'Đơn nhập hàng đã bị hủy']);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'Đơn hàng đã được xử lý trước đó'], 400);
+    }
+
+    // Add new method to handle notification acknowledgment
+    public function acknowledgeNotification(Request $request, $type, $id)
+    {
+        try {
+            Notification::where('user_id', auth()->id())
+                ->where('type', $type)
+                ->where('data->import_id', $id)
+                ->update(['is_read' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xác nhận thông báo'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

@@ -44,8 +44,8 @@ Route::middleware(['check.auth'])->group(function () {
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
-    ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
-    ->name('category.show');
+  ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
+  ->name('category.show');
 
 Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
@@ -145,15 +145,25 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
   Route::get('/products/hidden', [ProductController::class, 'hidden'])->name('products.hidden');
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
-  
 
-  // nhập /admin/attributes/
+
+  // nhập imports.show
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
   Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
   Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
   Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
+
+
+  Route::prefix('admin/imports')->name('imports.')->middleware(['auth'])->group(function () {
+    Route::get('/show/{import}', [ProductController::class, 'showImport'])->name('show');
+    Route::post('/confirm/{import}', [ProductController::class, 'confirmImport'])->name('confirm');
+    Route::post('/cancel/{import}', [ProductController::class, 'cancelImport'])->name('cancel');
+  });
+
+  Route::post('/notifications/acknowledge/{type}/{id}', [ProductController::class, 'acknowledgeNotification'])
+    ->name('notifications.acknowledge');
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
@@ -193,7 +203,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
   // Quản lý thuộc tính sản phẩm 
   Route::post('/admin/attributes/{attribute}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.attributes.toggle-status');
-  
+
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
   Route::post('/attributes', [ProductController::class, 'storeAttribute'])->name('attributes.store');
   Route::post('/attribute-values', [ProductController::class, 'storeAttributeValue'])->name('attribute-values.store');
@@ -241,6 +251,4 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     Route::put('/admin/roles/{id}', [UserManagementController::class, 'rolesUpdate'])->name('roles.update');
     Route::delete('/admin/roles/{id}', [UserManagementController::class, 'rolesDestroy'])->name('roles.destroy');
   });
-
 });
-
