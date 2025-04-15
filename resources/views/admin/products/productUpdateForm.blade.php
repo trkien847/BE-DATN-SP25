@@ -540,7 +540,7 @@
                 container.appendChild(filterBar);
 
                 const optionsContainer = document.createElement('div');
-                optionsContainer.className = 'weight-options-list flex flex-wrap gap-4';
+                optionsContainer.className = 'weight-options-list flex grid grid-cols-3';
                 container.appendChild(optionsContainer);
 
                 const weightValues = @json($weightValues);
@@ -1141,42 +1141,7 @@
                 const productImage = document.getElementById('productImage');
                 const categoryTypeSelect = document.getElementById('categoryTypeSelect');
                 let errorMessage = "";
-                if (categorySelect.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng chọn Danh Mục Cha.</li>";
-                }
-                if (productName.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Tên Sản Phẩm.</li>";
-                }
-                if (productPrice.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
-                }
-                if (doctorBioData === "") {
-                    errorMessage += "<li>Vui lòng nhập Mô tả sản phẩm.</li>";
-                }
-                if (productImage.files.length === 0) {
-                    errorMessage += "<li>Vui lòng chọn Ảnh.</li>";
-                }
-                
-                if (!categoryTypeSelect.disabled && categoryTypeSelect.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng chọn Danh mục con.</li>";
-                }
-                
-                if (errorMessage !== "") {
-                    const errorBox = document.createElement('div');
-                    errorBox.className = "error-box bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4";
-                    errorBox.innerHTML = `
-                        <strong class="font-bold">Má nó nhập còn thiếu!</strong>
-                        <ul class="mt-2">${errorMessage}</ul>
-                    `;
-                    const form1 = document.querySelector('.form1');
-                    form1.insertBefore(errorBox, form1.firstChild);
-                    
-                    setTimeout(() => {
-                        errorBox.remove();
-                    }, 5000);
-                    return; 
-                }
-                
+                               
                 console.log("btn-next clicked");
                 switchToForm2();
                 console.log("switchToForm2() has been called");
@@ -1214,38 +1179,6 @@
                 const timestampInput = document.getElementById('timestampInput');
                 const sale_price_end_at = document.getElementById('sale_price_end_at');
                 let errorMessage = "";
-                if (brandSelect.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng chọn Danh Mục Cha.</li>";
-                }
-                if (productCostPrice.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Tên Sản Phẩm.</li>";
-                }
-                if (productSalePrice.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
-                }
-                if (timestampInput.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
-                }
-                if (sale_price_end_at.value.trim() === "") {
-                    errorMessage += "<li>Vui lòng nhập Mã sản phẩm.</li>";
-                }
-               
-                
-                if (errorMessage !== "") {
-                    const errorBox = document.createElement('div');
-                    errorBox.className = "error-box bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4";
-                    errorBox.innerHTML = `
-                        <strong class="font-bold">Má nó nhập còn thiếu!</strong>
-                        <ul class="mt-2">${errorMessage}</ul>
-                    `;
-                    const form2 = document.querySelector('.form2');
-                    form2.insertBefore(errorBox, form2.firstChild);
-                    
-                    setTimeout(() => {
-                        errorBox.remove();
-                    }, 5000);
-                    return; 
-                }
                 
                 console.log("btn-next2 clicked");
                 switchToForm3();
