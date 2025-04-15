@@ -581,6 +581,24 @@
                                                 </form>
                                             </div>
                                         `;
+
+                                    case 'product_approval_response':
+                                        return `
+                                            <div class="d-flex gap-2">
+                                                <a href="${notification.data.actions.view_details}" 
+                                                class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                                <form action="${notification.data.actions.acknowledge}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Đã xem
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        `;
                                     case 'import_pending':
                                         return `
                                             <form action="${notification.data.actions.confirm_request}" method="POST" style="display:inline;">
@@ -607,102 +625,80 @@
 
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelector('#notification-list').addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        const form = e.target;
+    const notificationList = document.getElementById('notification-list');
+    
+    // Add form submission handler
+    notificationList.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const form = e.target;
+        
+        try {
+            const response = await fetch(form.action, {
+                method: form.method,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(new FormData(form)))
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Remove the notification item from UI
+                const notificationItem = form.closest('.notification-item');
+                if (notificationItem) {
+                    notificationItem.style.animation = 'fadeOut 0.3s ease-out';
+                    setTimeout(() => {
+                        notificationItem.remove();
                         
-                        try {
-                            const response = await fetch(form.action, {
-                                method: form.method,
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(Object.fromEntries(new FormData(form)))
-                            });
-
-                            const data = await response.json();
-
-                            if (data.notification) {
-                                await Swal.fire({
-                                    title: data.notification.title,
-                                    text: data.notification.text,
-                                    icon: data.notification.icon,
-                                    confirmButtonText: data.notification.confirmButtonText,
-                                    timer: data.notification.timer,
-                                    showConfirmButton: !data.notification.timer,
-                                    timerProgressBar: true,
-                                    customClass: {
-                                        popup: 'custom-swal-popup',
-                                        title: 'custom-swal-title',
-                                        confirmButton: 'custom-swal-confirm'
-                                    }
-                                });
-
-                                if (data.success) {
-                                    fetchNotifications();
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Lỗi!',
-                                text: 'Có lỗi xảy ra khi xử lý yêu cầu',
-                                icon: 'error',
-                                confirmButtonText: 'Đóng'
-                            });
-                        }
-                    });
-
-                    async function fetchNotifications() {
-                        try {
-                            const response = await fetch('/api/notifications', {
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                    'Accept': 'application/json',
-                                }
-                            });
-                            const data = await response.json();
-                            updateNotificationUI(data);
-                        } catch (error) {
-                            console.error('Error fetching notifications:', error);
-                        }
-                    }
-
-                    function updateNotificationUI(data) {
-                        const notificationList = document.getElementById('notification-list');
-                        const notificationCount = document.getElementById('notification-count');
-                        const countSpan = notificationCount.querySelector('.count');
-
-                        countSpan.textContent = data.count;
-                        notificationCount.style.display = data.count > 0 ? 'block' : 'none';
+                        // Update notification count
+                        const countSpan = document.querySelector('#notification-count .count');
+                        const currentCount = parseInt(countSpan.textContent) - 1;
+                        countSpan.textContent = currentCount;
                         
-                        if (data.count === 0) {
+                        // Show empty message if no notifications left
+                        if (currentCount === 0) {
                             notificationList.innerHTML = `
                                 <div class="notification-empty">
                                     <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
                                     <p>Không có thông báo nào</p>
                                 </div>
                             `;
-                        } else {
-                            notificationList.innerHTML = data.notifications.map(notification => `
-                                <div class="notification-item p-3 border-bottom ${notification.is_read ? 'bg-light' : ''} animate-fade-in">
-                                    <h6 class="mb-1">${notification.title}</h6>
-                                    <p class="mb-2 fs-13">${notification.content}</p>
-                                    <div class="d-flex gap-2">
-                                        ${getActionButtons(notification)}
-                                    </div>
-                                </div>
-                            `).join('');
                         }
-                    }
+                    }, 300);
+                }
 
-                    fetchNotifications();
-                    
-                    
-                    setInterval(fetchNotifications, 30000); 
-                });
+                // Show success message
+                if (data.notification) {
+                    await Swal.fire({
+                        title: data.notification.title,
+                        text: data.notification.text,
+                        icon: data.notification.icon,
+                        confirmButtonText: data.notification.confirmButtonText,
+                        timer: data.notification.timer,
+                        showConfirmButton: !data.notification.timer,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            confirmButton: 'custom-swal-confirm'
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Lỗi!',
+                text: 'Có lỗi xảy ra khi xử lý yêu cầu',
+                icon: 'error',
+                confirmButtonText: 'Đóng'
+            });
+        }
+    });
+});
                 </script>
 
                 <div class="topbar-item d-none d-md-flex">
