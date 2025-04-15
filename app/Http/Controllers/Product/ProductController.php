@@ -798,7 +798,7 @@ class ProductController extends Controller
 
                 // Cập nhật danh mục
                 $this->updateProductCategories($product, $data);
-
+                handleThumbnailUpdate
                 // Cập nhật ảnh
                 if (!empty($data['images'])) {
                     $this->handleProductImages($product, $data['images'], true);
