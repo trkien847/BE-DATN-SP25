@@ -1,5 +1,29 @@
 @extends('admin.layouts.layout')
 @section('content')
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/decade.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 
@@ -170,7 +194,7 @@
                 <ul class="list-unstyled">
                     <li><span class="info-label">Tên:</span> {{ $pendingUpdate->data['name'] }}</li>
                     <li><span class="info-label">SKU:</span> {{ $pendingUpdate->data['sku'] }}</li>
-                    <li><span class="info-label">Thương hiệu ID:</span> {{ $pendingUpdate->data['brand_id'] }}</li>
+                    <li><span class="info-label">Thương hiệu ID:</span> {{ $brand->name ?? 'Không có' }}</li>
                     <li><span class="info-label">Nội dung:</span> {{ $pendingUpdate->data['content'] ?? 'Không có' }}</li>
                     <li><span class="info-label">Thumbnail:</span>
                         @if ($pendingUpdate->data['thumbnail'])
@@ -179,8 +203,6 @@
                             Không có
                         @endif
                     </li>
-                    <li><span class="info-label">Danh mục cha:</span> {{ $pendingUpdate->data['category_id'] }}</li>
-                    <li><span class="info-label">Danh mục con:</span> {{ $pendingUpdate->data['category_type_id'] }}</li>
                     @if (!empty($pendingUpdate->data['images']))
                         <li><span class="info-label">Ảnh gallery:</span>
                             <div class="image-gallery mt-2 d-flex flex-wrap gap-2">
@@ -205,37 +227,43 @@
                         <tbody>
                             <tr>
                                 <td>Tên</td>
-                                <td>{{ $originalProduct->name }}</td>
-                                <td class="{{ $originalProduct->name !== $pendingUpdate->data['name'] ? 'changed' : '' }}">{{ $pendingUpdate->data['name'] }}</td>
+                                <td>{{ $originalProduct?->name ?? 'Không có' }}</td>
+                                <td class="{{ $originalProduct?->name !== ($pendingUpdate->data['name'] ?? null) ? 'changed' : '' }}">
+                                    {{ $pendingUpdate->data['name'] ?? 'Không có' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td>SKU</td>
-                                <td>{{ $originalProduct->sku }}</td>
-                                <td class="{{ $originalProduct->sku !== $pendingUpdate->data['sku'] ? 'changed' : '' }}">{{ $pendingUpdate->data['sku'] }}</td>
+                                <td>{{ $originalProduct?->sku ?? 'Không có' }}</td>
+                                <td class="{{ $originalProduct?->sku !== ($pendingUpdate->data['sku'] ?? null) ? 'changed' : '' }}">
+                                    {{ $pendingUpdate->data['sku'] ?? 'Không có' }}
+                                </td>
                             </tr>
                             <tr>
-                                <td>Thương hiệu ID</td>
-                                <td>{{ $originalProduct->brand_id }}</td>
-                                <td class="{{ $originalProduct->brand_id !== $pendingUpdate->data['brand_id'] ? 'changed' : '' }}">{{ $pendingUpdate->data['brand_id'] }}</td>
+                                <td>Thương hiệu</td>
+                                <td>{{ $originalProduct?->brand?->name ?? 'Không có' }}</td>
+                                <td class="{{ $originalProduct?->brand_id !== ($pendingUpdate->data['brand_id'] ?? null) ? 'changed' : '' }}">
+                                    {{ $brand?->name ?? 'Không có' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td>Nội dung</td>
-                                <td class="{{ strip_tags($originalProduct->content) !== strip_tags($pendingUpdate->data['content']) ? 'changed' : '' }}">
-                                    {{ strip_tags($pendingUpdate->data['content']) ?? 'Không có' }}
+                                <td>{{ $originalProduct?->content ? strip_tags($originalProduct->content) : 'Không có' }}</td>
+                                <td class="{{ $originalProduct?->content !== ($pendingUpdate->data['content'] ?? null) ? 'changed' : '' }}">
+                                    {{ isset($pendingUpdate->data['content']) ? strip_tags($pendingUpdate->data['content']) : 'Không có' }}
                                 </td>
-                                <td class="{{ $originalProduct->content !== $pendingUpdate->data['content'] ? 'changed' : '' }}">{{ strip_tags($pendingUpdate->data['content']) ?? 'Không có' }}</td>
                             </tr>
                             <tr>
                                 <td>Thumbnail</td>
                                 <td>
-                                    @if ($originalProduct->thumbnail)
+                                    @if ($originalProduct?->thumbnail)
                                         <img src="{{ asset('upload/' . $originalProduct->thumbnail) }}" class="img-thumbnail" width="100" alt="Old Thumbnail">
                                     @else
                                         Không có
                                     @endif
                                 </td>
-                                <td class="{{ $originalProduct->thumbnail !== $pendingUpdate->data['thumbnail'] ? 'changed' : '' }}">
-                                    @if ($pendingUpdate->data['thumbnail'])
+                                <td class="{{ $originalProduct?->thumbnail !== ($pendingUpdate->data['thumbnail'] ?? null) ? 'changed' : '' }}">
+                                    @if ($pendingUpdate->data['thumbnail'] ?? false)
                                         <img src="{{ asset('upload/' . $pendingUpdate->data['thumbnail']) }}" class="img-thumbnail" width="100" alt="New Thumbnail">
                                     @else
                                         Không có

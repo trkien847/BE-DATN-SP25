@@ -201,7 +201,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/products/search', [ProductController::class, 'search'])->name('products.import.search');
 
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-  // Quản lý thuộc tính sản phẩm 
+  // Quản lý thuộc tính sản phẩm  /products/approve-pending/
   Route::post('/admin/attributes/{attribute}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.attributes.toggle-status');
 
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
