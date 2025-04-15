@@ -29,7 +29,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="container">
     <h2>Danh sách Thuộc tính</h2>
-    <a href="javascript:void(0)" class="btn btn-primary" id="add-attribute-btn2">Thêm Thuộc tính</a>
+    <a href="javascript:void(0)" class="btn btn-Success" id="add-attribute-btn2" style="background: #1bb394; color: white;">Thêm Thuộc tính</a>
     <table class="table">
         <thead>
             <tr>
@@ -45,9 +45,9 @@
                 <td>{{ $group['count'] }}</td>
                 <td>
                 <a href="javascript:void(0)" 
-                class="btn btn-primary btn-sm ms-2 add-variant-btn" 
+                class="btn btn-sm ms-2 add-variant-btn" 
                 data-name="{{ $name }}"
-                data-id="{{ $group['firstAttribute']->id }}">
+                data-id="{{ $group['firstAttribute']->id }}" style="background: #1bb394; color: white;">
                     <i class="fas fa-plus"></i> Thêm dữ liệu vào biến thể
                 </a>
                 </td>

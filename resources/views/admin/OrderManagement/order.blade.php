@@ -30,7 +30,7 @@
 }
 
 .nav-link.active {
-    background-color: #007bff; 
+    background-color:rgb(208, 209, 209); 
     color: white; 
     transform: scale(1.1); 
 }
@@ -38,7 +38,7 @@
 
 .nav-link.clicked {
     transform: scale(1.15); 
-    background-color: #0056b3; 
+    background-color: #1bb394; 
 }
 
 .nav-link::after {
@@ -71,9 +71,9 @@
 }
 
 .pagination button.active {
-    background-color: #0d6efd;
+    background-color: #1bb394;
     color: white;
-    border-color: #0d6efd;
+    border-color: #1bb394;
 }
 
 .pagination button:disabled {
@@ -133,26 +133,26 @@
 <div class="container">
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
-            <a class="nav-link active" href="#" data-status="">Tất cả đơn giao hàng</a>
+            <a class="nav-link active" href="#" data-status=""  style="color:rgb(3, 3, 3);">Tất cả đơn giao hàng</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="1">Chờ xác nhận *</a>
+            <a class="nav-link" href="#" data-status="1"style="color:rgb(3, 3, 3);">Chờ xác nhận *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="2">Chờ giao hàng *</a>
+            <a class="nav-link" href="#" data-status="2"style="color:rgb(3, 3, 3);">Chờ giao hàng *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="3">Đang giao hàng *</a>
+            <a class="nav-link" href="#" data-status="3"style="color:rgb(3, 3, 3);">Đang giao hàng *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="4">Đã giao hàng</a>
+            <a class="nav-link" href="#" data-status="4"style="color:rgb(3, 3, 3);">Đã giao hàng</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="6">Hoàn thành</a>
+            <a class="nav-link" href="#" data-status="6"style="color:rgb(3, 3, 3);">Hoàn thành</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="7">Đã hủy</a>
+            <a class="nav-link" href="#" data-status="7"style="color:rgb(3, 3, 3);">Đã hủy</a>
         </li>
     </ul>
     
@@ -186,7 +186,7 @@
                 <option value="3">Đang giao hàng</option>
                 <option value="4">Đã giao hàng</option>
             </select>
-            <button id="updateBulkStatus" class="btn btn-success">Cập nhật trạng thái</button>
+            <button id="updateBulkStatus" class="btn btn-primary">Cập nhật trạng thái</button>
         </div>
 
         <div class="table-responsive">
@@ -258,8 +258,8 @@
 
     <div id="orderDetail" class="order-detail-overlay" style="display: none;">
         <div class="card order-detail-card">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Chi tiết đơn hàng <span id="orderCode"></span> ( Designed by TG )</h5>
+            <div class="card-header  text-white d-flex justify-content-between align-items-center" style="background: #1bb394;">
+                <h5 class="mb-0">Chi tiết đơn hàng <span id="orderCode"></span></h5>
                 <button class="btn-close btn-close-white" id="closeDetail"></button>
             </div>
             <div class="card-body">

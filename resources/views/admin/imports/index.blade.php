@@ -35,7 +35,7 @@
 <div class="container-fluid">
     <div class="imports-header">
         <h1><i class="fas fa-file-import"></i> Danh Sách Phiếu Nhập</h1>
-        <a href="{{ route('admin.imports.create') }}" class="btn-create">
+        <a href="{{ route('admin.imports.create') }}" class="btn-create" style="background: #1bb394;">
             <i class="fas fa-plus"></i> Tạo Phiếu Nhập
         </a>
     </div>
@@ -109,7 +109,7 @@
                                 <a href="javascript:void(0)" 
                                    class="btn-detail"
                                    data-import-id="{{ $import->id }}"
-                                   onclick="showImportDetail({{ $import->id }})">
+                                   onclick="showImportDetail({{ $import->id }})" style="background: #1bb394;">
                                     <i class="fas fa-eye"></i> Chi tiết
                                 </a>
                             </td>
