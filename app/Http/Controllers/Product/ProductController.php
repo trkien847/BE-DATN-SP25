@@ -267,16 +267,16 @@ class ProductController extends Controller
             $existingAttributes = [];
             $variantCount = 0;
 
-            // Validate input data
+            
             if (!$request->has('variants') || !is_array($request->variants)) {
                 throw new \Exception('Dữ liệu biến thể không hợp lệ');
             }
 
             foreach ($request->variants as $shapeId => $weights) {
-                // Validate shape attribute
+                
                 $shapeAttribute = AttributeValue::where('id', $shapeId)
                     ->where('attribute_id', 12)
-                    ->where('is_active', 1) // Thêm kiểm tra trạng thái active
+                    ->where('is_active', 1) 
                     ->first();
 
                 if (!$shapeAttribute) {
@@ -285,10 +285,10 @@ class ProductController extends Controller
                 }
 
                 foreach ($weights as $weightId) {
-                    // Validate weight attribute
+                    
                     $weightAttribute = AttributeValue::where('id', $weightId)
                         ->where('attribute_id', 14)
-                        ->where('is_active', 1) // Thêm kiểm tra trạng thái active
+                        ->where('is_active', 1) 
                         ->first();
 
                     if (!$weightAttribute) {
@@ -296,7 +296,7 @@ class ProductController extends Controller
                         continue;
                     }
 
-                    // Get variant prices with validation
+                   
                     $variantPrices = $request->input("variant_prices.{$shapeId}-{$weightId}");
                     if (!$variantPrices || !isset($variantPrices['price'])) {
                         \Log::warning("Thiếu thông tin giá cho biến thể: shape {$shapeId}, weight {$weightId}");
@@ -305,7 +305,7 @@ class ProductController extends Controller
 
                     DB::beginTransaction();
                     try {
-                        // Create product variant
+                       
                         $productVariant = ProductVariant::create([
                             'product_id' => $product->id,
                             'price' => $variantPrices['price'],
@@ -315,15 +315,15 @@ class ProductController extends Controller
                             'stock' => 0,
                         ]);
 
-                        // Create attribute value associations
+                        
                         foreach ([$shapeId, $weightId] as $attributeValueId) {
-                            // Create variant association
+                         
                             AttributeValueProductVariant::create([
                                 'product_variant_id' => $productVariant->id,
                                 'attribute_value_id' => $attributeValueId,
                             ]);
 
-                            // Create product association if not exists
+                            
                             if (!in_array($attributeValueId, $existingAttributes)) {
                                 AttributeValueProduct::firstOrCreate(
                                     [
@@ -464,7 +464,7 @@ class ProductController extends Controller
     // cập nhất sản phẩm
     public function update(Request $request, $id)
     {
-        // Validation rules
+        
         $validator = Validator::make($request->all(), [
             'category_id' => 'required',
             'category_type_id' => 'required',
@@ -503,7 +503,6 @@ class ProductController extends Controller
         $user = Auth::user();
         $product = Product::findOrFail($id);
 
-        // Check if user is not admin (role_id !== 3)
         if ($user->role_id !== 3) {
             $pendingData = [
                 'brand_id' => $request->brand_id,
@@ -518,7 +517,6 @@ class ProductController extends Controller
                 'variant_prices' => $request->variant_prices ?? []
             ];
 
-            // Handle thumbnail upload
             if ($request->hasFile('thumbnail')) {
                 $image = $request->file('thumbnail');
                 $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -526,7 +524,6 @@ class ProductController extends Controller
                 $pendingData['thumbnail'] = $imageName;
             }
 
-            // Handle multiple images upload
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -535,7 +532,6 @@ class ProductController extends Controller
                 }
             }
 
-            // Create pending update
             $pendingUpdate = ProductPendingUpdate::create([
                 'product_id' => $id,
                 'user_id' => $user->id,
@@ -543,7 +539,6 @@ class ProductController extends Controller
                 'data' => $pendingData,
             ]);
 
-            // Notify admins
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
                 \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu sửa sản phẩm từ user {$user->id}");
@@ -577,8 +572,6 @@ class ProductController extends Controller
 
             return redirect()->route('products.list')->with('success', 'Yêu cầu chỉnh sửa sản phẩm đã được gửi, chờ phê duyệt!');
         }
-
-        // Admin (role_id == 3) updates product directly
         $product->brand_id = $request->brand_id;
         $product->name = $request->name;
         $product->content = $request->content;
@@ -588,7 +581,6 @@ class ProductController extends Controller
         $product->sale_price = $request->sale_price;
         $product->is_active = 1;
 
-        // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
             if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
                 File::delete(public_path('upload/' . $product->thumbnail));
@@ -600,20 +592,15 @@ class ProductController extends Controller
         }
 
         $product->save();
-
-        // Update category
         $categoryProduct = CategoryProduct::updateOrCreate(
             ['product_id' => $id],
             ['category_id' => $request->category_id]
         );
-
-        // Update category type
         $categoryTypeProduct = CategoryTypeProduct::updateOrCreate(
             ['product_id' => $id],
             ['category_type_id' => $request->category_type_id]
         );
 
-        // Handle gallery images
         if ($request->hasFile('image')) {
             ProductGalleries::where('product_id', $id)->delete();
             foreach ($request->file('image') as $image) {
@@ -626,7 +613,6 @@ class ProductController extends Controller
             }
         }
 
-        // Handle variants
         $variantIds = [];
         if ($request->has('variants')) {
             $existingAttributes = [];
@@ -698,12 +684,11 @@ class ProductController extends Controller
             }
         }
 
-        // Delete unused variants
         ProductVariant::where('product_id', $product->id)->whereNotIn('id', $variantIds)->delete();
 
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
     }
-    //approvePendingUpdate 
+    
     public function pendingUpdates()
     {
         $user = auth()->user();
@@ -745,8 +730,6 @@ class ProductController extends Controller
             if ($user->role_id !== 3) {
                 return redirect()->back()->with('error', 'Bạn không có quyền duyệt!');
             }
-
-            // Cập nhật trạng thái thông báo
             $notificationId = $request->input('notification_id');
             $notification = Notification::find($notificationId);
             $notification->is_read = 1;
@@ -756,7 +739,6 @@ class ProductController extends Controller
             $data = $pendingUpdate->data;
 
             if ($pendingUpdate->action_type === 'create') {
-                // Tạo sản phẩm mới
                 $product = Product::create([
                     'brand_id' => $data['brand_id'],
                     'name' => $data['name'],
@@ -769,7 +751,6 @@ class ProductController extends Controller
                     'is_active' => 1
                 ]);
 
-                // Tạo liên kết danh mục
                 CategoryProduct::create([
                     'product_id' => $product->id,
                     'category_id' => $data['category_id'],
@@ -779,37 +760,25 @@ class ProductController extends Controller
                     'product_id' => $product->id,
                     'category_type_id' => $data['category_type_id'],
                 ]);
-
-                // Xử lý ảnh sản phẩm
                 if (!empty($data['images'])) {
                     $this->handleProductImages($product, $data['images']);
                 }
-
-                // Xử lý biến thể sản phẩm
                 if (!empty($data['variants']) && !empty($data['variant_prices'])) {
                     $this->handleProductVariants($product, $data['variants'], $data['variant_prices']);
                 }
             } else {
-                // Cập nhật sản phẩm hiện có
                 $product = Product::findOrFail($pendingUpdate->product_id);
-
-                // Cập nhật thông tin cơ bản
                 $this->updateBasicProductInfo($product, $data);
-
-                // Cập nhật danh mục
                 $this->updateProductCategories($product, $data);
-                // Cập nhật ảnh
                 if (!empty($data['images'])) {
                     $this->handleProductImages($product, $data['images'], true);
                 }
 
-                // Cập nhật biến thể
                 if (!empty($data['variants']) && !empty($data['variant_prices'])) {
                     $this->handleProductVariants($product, $data['variants'], $data['variant_prices'], true);
                 }
             }
 
-            // Tạo thông báo cho người yêu cầu
             Notification::create([
                 'user_id' => $pendingUpdate->user_id,
                 'title' => "Yêu cầu thêm sản phẩm đã được chấp nhận",
@@ -828,7 +797,6 @@ class ProductController extends Controller
                 ],
                 'is_read' => false
             ]);
-            // Xóa yêu cầu pending sau khi xử lý xong
             $pendingUpdate->delete();
 
             DB::commit();
@@ -850,7 +818,6 @@ class ProductController extends Controller
         $variantIds = [];
 
         foreach ($variants as $shapeId => $weights) {
-            // Validate shape attribute
             $shapeAttribute = AttributeValue::where('id', $shapeId)
                 ->where('attribute_id', 12)
                 ->where('is_active', 1)
@@ -859,7 +826,6 @@ class ProductController extends Controller
             if (!$shapeAttribute) continue;
 
             foreach ($weights as $weightId) {
-                // Validate weight attribute
                 $weightAttribute = AttributeValue::where('id', $weightId)
                     ->where('attribute_id', 14)
                     ->where('is_active', 1)
@@ -867,19 +833,16 @@ class ProductController extends Controller
 
                 if (!$weightAttribute) continue;
 
-                // Get variant prices
                 $priceKey = "{$shapeId}-{$weightId}";
                 $variantPrice = $variantPrices[$priceKey] ?? null;
 
                 if (!$variantPrice) continue;
 
-                // Find existing variant or create new one
                 $variant = $isUpdate ?
                     $this->findExistingVariant($product, $shapeId, $weightId) :
                     ProductVariant::create(['product_id' => $product->id]);
 
                 if ($variant) {
-                    // Update or create variant
                     $variant->update([
                         'price' => $variantPrice['price'],
                         'sale_price' => $variantPrice['sale_price'] ?? null,
@@ -888,7 +851,6 @@ class ProductController extends Controller
                         'stock' => $variant->stock ?? 0
                     ]);
 
-                    // Handle attribute associations
                     foreach ([$shapeId, $weightId] as $attributeValueId) {
                         if (!in_array($attributeValueId, $existingAttributes)) {
                             AttributeValueProduct::firstOrCreate([
@@ -909,7 +871,6 @@ class ProductController extends Controller
             }
         }
 
-        // Clean up old variants if updating
         if ($isUpdate && !empty($variantIds)) {
             ProductVariant::where('product_id', $product->id)
                 ->whereNotIn('id', $variantIds)
@@ -917,10 +878,38 @@ class ProductController extends Controller
         }
     }
 
+
+    private function updateProductCategories($product, $data)
+    {
+        if (!isset($data['category_id']) || !isset($data['category_type_id'])) {
+            \Log::error('Missing category_id or category_type_id in data', $data);
+            throw new \Exception('Dữ liệu danh mục không đầy đủ.');
+        }
+
+        if (!Category::find($data['category_id'])) {
+            \Log::error('Invalid category_id: ' . $data['category_id']);
+            throw new \Exception('Danh mục không tồn tại.');
+        }
+
+        if (!CategoryType::find($data['category_type_id'])) {
+            \Log::error('Invalid category_type_id: ' . $data['category_type_id']);
+            throw new \Exception('Loại danh mục không tồn tại.');
+        }
+
+        CategoryProduct::updateOrCreate(
+            ['product_id' => $product->id],
+            ['category_id' => $data['category_id']]
+        );
+
+        CategoryTypeProduct::updateOrCreate(
+            ['product_id' => $product->id],
+            ['category_type_id' => $data['category_type_id']]
+        );
+    }
+
     private function handleProductImages($product, $images, $isUpdate = false)
     {
         try {
-            // If updating, delete old images
             if ($isUpdate) {
                 $existingImages = ProductGalleries::where('product_id', $product->id)->get();
                 foreach ($existingImages as $existingImage) {
@@ -931,15 +920,12 @@ class ProductController extends Controller
                 }
             }
 
-            // Handle array of image paths or UploadedFile objects
             if (is_array($images)) {
                 foreach ($images as $image) {
                     if ($image instanceof \Illuminate\Http\UploadedFile) {
-                        // Handle uploaded file
                         $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
                         $image->move(public_path('upload'), $imageName);
                     } else {
-                        // Handle existing image path
                         $imageName = $image;
                     }
 
@@ -982,6 +968,17 @@ class ProductController extends Controller
             'thumbnail' => $this->handleThumbnailUpdate($product, $data['thumbnail']),
             'is_active' => 1
         ]);
+    }
+
+    private function handleThumbnailUpdate($product, $thumbnail)
+    {
+        if ($thumbnail && $product->thumbnail !== $thumbnail) {
+            if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
+                File::delete(public_path('upload/' . $product->thumbnail));
+            }
+            return $thumbnail;
+        }
+        return $product->thumbnail;
     }
 
     public function rejectPendingUpdate(Request $request, $pendingId)
