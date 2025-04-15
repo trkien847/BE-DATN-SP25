@@ -3,6 +3,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .order-header {
+            
             background-color: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
@@ -44,8 +45,8 @@
 </head>
 
 <body>
-    <div class="container mt-5">
-        <div class="order-header">
+    <div class="container mt-5" style="background: #1bb394;">
+        <div class="order-header" >
             <h2 class="mb-0">Chi tiết đơn hàng #{{ $order->code }}</h2>
         </div>
 

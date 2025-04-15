@@ -29,9 +29,9 @@
 @csrf
 <div class="container">
     <div class="panel">
-        <h2><i class="fas fa-box"></i> Danh Sách Sản Phẩm</h2>
+        <h2 ><i class="fas fa-box"></i> Danh Sách Sản Phẩm</h2>
         <a href="javascript:void(0)" id="add-product-btn" class="btn-add-product">
-            <i class="fas fa-plus"></i> Thêm Sản Phẩm ( Designed by TG )
+            <i class="fas fa-plus"></i> Thêm Sản Phẩm
         </a>
         
         <div id="productModal" class="modal">
@@ -284,9 +284,9 @@
 @push('styles')
 <style>
     :root {
-        --primary-color: #1a73e8;
-        --primary-hover: #1557b0;
-        --secondary-color: #4285f4;
+        --primary-color: #1bb394;
+        --primary-hover:rgb(22, 145, 120);
+        --secondary-color: #313b5e;
         --background-color: #f0f6ff;
         --card-background: #ffffff;
         --text-color: #333333;
