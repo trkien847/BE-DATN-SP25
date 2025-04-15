@@ -540,7 +540,7 @@
                 container.appendChild(filterBar);
 
                 const optionsContainer = document.createElement('div');
-                optionsContainer.className = 'weight-options-list flex flex-wrap gap-4';
+                optionsContainer.className = 'weight-options-list flex grid grid-cols-3';
                 container.appendChild(optionsContainer);
 
                 const weightValues = @json($weightValues);
@@ -1141,6 +1141,9 @@
                 const productImage = document.getElementById('productImage');
                 const categoryTypeSelect = document.getElementById('categoryTypeSelect');
                 let errorMessage = "";
+<<<<<<< Updated upstream
+                               
+=======
                 if (categorySelect.value.trim() === "") {
                     errorMessage += "<li>Vui lòng chọn Danh Mục Cha.</li>";
                 }
@@ -1165,7 +1168,7 @@
                     const errorBox = document.createElement('div');
                     errorBox.className = "error-box bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4";
                     errorBox.innerHTML = `
-                        <strong class="font-bold">Má nó nhập còn thiếu!</strong>
+                        <strong class="font-bold">Nhập thiếu Giữ liệu</strong>
                         <ul class="mt-2">${errorMessage}</ul>
                     `;
                     const form1 = document.querySelector('.form1');
@@ -1177,6 +1180,7 @@
                     return; 
                 }
                 
+>>>>>>> Stashed changes
                 console.log("btn-next clicked");
                 switchToForm2();
                 console.log("switchToForm2() has been called");
@@ -1214,6 +1218,8 @@
                 const timestampInput = document.getElementById('timestampInput');
                 const sale_price_end_at = document.getElementById('sale_price_end_at');
                 let errorMessage = "";
+<<<<<<< Updated upstream
+=======
                 if (brandSelect.value.trim() === "") {
                     errorMessage += "<li>Vui lòng chọn Danh Mục Cha.</li>";
                 }
@@ -1235,7 +1241,7 @@
                     const errorBox = document.createElement('div');
                     errorBox.className = "error-box bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4";
                     errorBox.innerHTML = `
-                        <strong class="font-bold">Má nó nhập còn thiếu!</strong>
+                        <strong class="font-bold">Nhập thiếu giữ liệu!</strong>
                         <ul class="mt-2">${errorMessage}</ul>
                     `;
                     const form2 = document.querySelector('.form2');
@@ -1246,6 +1252,7 @@
                     }, 5000);
                     return; 
                 }
+>>>>>>> Stashed changes
                 
                 console.log("btn-next2 clicked");
                 switchToForm3();
