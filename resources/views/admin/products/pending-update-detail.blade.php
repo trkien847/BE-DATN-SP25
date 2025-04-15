@@ -1,30 +1,148 @@
 @extends('admin.layouts.layout')
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 
 <style>
     .changed {
-        color: #dc3545; /* Màu đỏ cho giá trị thay đổi */
+        color: #dc3545;
         font-weight: bold;
+        transition: all 0.3s ease;
     }
+    
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
     .card-header {
-        background-color: #007bff;
+        background: linear-gradient(45deg, #007bff, #0056b3);
         color: white;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 1.5rem;
     }
+
     .info-label {
         font-weight: 600;
-        color: #333;
+        color: #2c3e50;
+        background: -webkit-linear-gradient(#2c3e50, #34495e);
+        -webkit-background-clip: text;
+        margin-right: 10px;
     }
+
     .image-gallery img {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        transition: transform 0.2s;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
+
     .image-gallery img:hover {
-        transform: scale(1.1);
+        transform: scale(1.1) rotate(2deg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1;
     }
+
     .action-buttons .btn {
         margin-right: 10px;
+        transition: all 0.3s ease;
+        transform: scale(1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .action-buttons .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .badge {
+        transition: all 0.3s ease;
+        font-size: 0.9em;
+        padding: 8px 12px;
+    }
+
+    .badge:hover {
+        transform: scale(1.1);
+    }
+
+    .table {
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        border: none;
+        padding: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .table td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    .list-unstyled li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+
+    .list-unstyled li:hover {
+        background-color: #f8f9fa;
+        padding-left: 10px;
+    }
+
+    /* Animation classes */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
     }
 </style>
 
@@ -102,8 +220,10 @@
                             </tr>
                             <tr>
                                 <td>Nội dung</td>
-                                <td>{{ $originalProduct->content ?? 'Không có' }}</td>
-                                <td class="{{ $originalProduct->content !== $pendingUpdate->data['content'] ? 'changed' : '' }}">{{ $pendingUpdate->data['content'] ?? 'Không có' }}</td>
+                                <td class="{{ strip_tags($originalProduct->content) !== strip_tags($pendingUpdate->data['content']) ? 'changed' : '' }}">
+                                    {{ strip_tags($pendingUpdate->data['content']) ?? 'Không có' }}
+                                </td>
+                                <td class="{{ $originalProduct->content !== $pendingUpdate->data['content'] ? 'changed' : '' }}">{{ strip_tags($pendingUpdate->data['content']) ?? 'Không có' }}</td>
                             </tr>
                             <tr>
                                 <td>Thumbnail</td>
@@ -146,4 +266,57 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add animation classes to elements as they appear
+    const elements = document.querySelectorAll('.list-unstyled li, .table tr');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('slide-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+
+    elements.forEach(element => {
+        observer.observe(element);
+    });
+
+    // Image preview functionality
+    const images = document.querySelectorAll('.image-gallery img');
+    images.forEach(img => {
+        img.addEventListener('click', function() {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+            
+            const modalImg = document.createElement('img');
+            modalImg.src = this.src;
+            modalImg.style.maxHeight = '90%';
+            modalImg.style.maxWidth = '90%';
+            modalImg.style.objectFit = 'contain';
+            modalImg.style.border = '3px solid white';
+            modalImg.style.borderRadius = '8px';
+            
+            modal.appendChild(modalImg);
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function() {
+                modal.remove();
+            });
+        });
+    });
+});
+</script>
 @endsection

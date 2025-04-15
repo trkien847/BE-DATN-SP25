@@ -147,7 +147,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
 
-  // nhập imports.show
+  // nhập /products/pending-update/
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
@@ -167,7 +167,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng 
+  //lịch sử mua hàng products.approve-pending 
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
