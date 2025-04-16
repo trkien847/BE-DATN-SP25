@@ -128,6 +128,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
 
 
+
   Route::get('/mark-as-read/{id}', function ($id) {
     auth()->user()->notifications()->find($id)->markAsRead();
     return back();
