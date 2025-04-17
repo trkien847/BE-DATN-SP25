@@ -264,21 +264,37 @@
                                     <ul>
                                         <li>
                                             <h3>Phân loại:</h3>
-                                            <div class="variant-buttons rounded-sm width: 200px; height: 200px">
-                                                @foreach($product->variants as $variant)
-                                                <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                                                    text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                                                    text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                                                    hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
-                                                    data-variant-id="{{ $variant->id }}"
-                                                    data-price="{{ $variant->price }}"
-                                                    data-sale-price="{{ $variant->sale_price }}"
-                                                    data-stock="{{ $variant->stock }}">
-                                                    @foreach($variant->attributeValues as $attributeValue)
-                                                    {{ $attributeValue->attribute->name }}: {{ $attributeValue->attribute->slug }}{{ $attributeValue->value }} <br>
+                                            <div class="variant-buttons grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-6 bg-gray-50 rounded-xl shadow-sm">
+                                                @if($product->variants->isEmpty())
+                                                    <p class="col-span-full text-center text-gray-500 font-medium">Không có biến thể nào</p>
+                                                @else
+                                                    @foreach($product->variants as $variant)
+                                                        @php
+                                                            // Use attribute IDs for reliability (from handleProductVariants: 12 = Shape, 14 = Weight)
+                                                            $shapeValue = $variant->attributeValues->firstWhere('attribute_id', 12);
+                                                            $weightValue = $variant->attributeValues->firstWhere('attribute_id', 14);
+                                                            $variantName = $shapeValue && $weightValue 
+                                                                ? "{$shapeValue->value} {$weightValue->value}"
+                                                                : $variant->attributeValues->map(fn($av) => "{$av->attribute->name}: {$av->value}")->join(', ');
+                                                        @endphp
+                                                        <button 
+                                                            class="variant-btn flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium 
+                                                                bg-white border border-primary-300 rounded-lg shadow-sm 
+                                                                hover:bg-primary-50 hover:border-primary-500 hover:shadow-md 
+                                                                focus:outline-none focus:ring-2 focus:ring-primary-300 
+                                                                disabled:bg-gray-100 disabled:border-gray-200 disabled:text-gray-400 
+                                                                disabled:cursor-not-allowed transition-all duration-300 
+                                                                {{ $variant->stock == 0 ? 'disabled' : '' }} 
+                                                                {{ session('selected_variant') == $variant->id ? 'bg-primary-100 border-primary-600 text-primary-700' : '' }}"
+                                                            data-variant-id="{{ $variant->id }}"
+                                                            data-price="{{ $variant->price }}"
+                                                            data-sale-price="{{ $variant->sale_price ?? 0 }}"
+                                                            data-stock="{{ $variant->stock }}"
+onclick="selectVariant(this)">
+                                                            <span>{{ $variantName ?: 'Không có thuộc tính' }}</span>
+                                                        </button>
                                                     @endforeach
-                                                </button>
-                                                @endforeach
+                                                @endif
                                             </div>
                                         </li>
                                     </ul>
