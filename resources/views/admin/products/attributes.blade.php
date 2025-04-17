@@ -59,7 +59,7 @@
                         @foreach ($group['firstAttribute']->values as $value)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="badge bg-primary">{{ $value->value }} {{ $value->id }}</span>
+                                    <span class="badge bg-primary">{{ $value->value }}</span>
                                 </div>
                                 <div class="form-check form-switch d-inline-block">
                                     <input type="checkbox" 

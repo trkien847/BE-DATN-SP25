@@ -43,7 +43,7 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+            <table class="table table-hover" id="importTable">
                     <thead>
                         <tr>
                             <th>Mã Nhập</th>
@@ -117,8 +117,7 @@
                         @endforeach
                     </tbody>
                 </table>
-
-                
+                <div id="pagination" class="mt-3 d-flex justify-content-center"></div>
             </div>
         </div>
     </div>
@@ -428,6 +427,16 @@
         border: none;
         padding: 10px;
     }
+    #pagination button {
+        min-width: 36px;
+    }
+    .proof-image-thumb {
+        width: 40px;
+        height: auto;
+        margin-right: 4px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
 </style>
 @endpush
 
@@ -564,5 +573,46 @@ window.addEventListener('pageshow', function(event) {
         document.getElementById('loading-overlay').classList.remove('active');
     }
 });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const rowsPerPage = 5; // Số dòng mỗi trang
+        const table = document.getElementById("importTable");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const paginationContainer = document.getElementById("pagination");
+
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        function displayPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                row.style.display = index >= start && index < end ? "" : "none";
+            });
+
+            updatePagination(page);
+        }
+
+        function updatePagination(page) {
+            paginationContainer.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement("button");
+                btn.innerText = i;
+                btn.className = "btn btn-sm mx-1 " + (i === page ? "btn-primary" : "btn-outline-primary");
+                btn.addEventListener("click", function () {
+                    currentPage = i;
+                    displayPage(currentPage);
+                });
+                paginationContainer.appendChild(btn);
+            }
+        }
+
+        // Khởi tạo phân trang khi trang vừa load
+        displayPage(currentPage);
+    });
+
 </script>
 @endpush

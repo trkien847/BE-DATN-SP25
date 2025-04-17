@@ -369,13 +369,11 @@ class OrderController extends Controller
             $end = Carbon::today()->endOfDay();
             $dateLabel = Carbon::today()->format('d/m/Y');
         }
-
-        // Xuất Excel 
+ 
         if ($request->has('export')) {
             return Excel::download(new OrdersStatisticsExport($start, $end, $filterType, $dateLabel), 'thong-ke-don-hang.xlsx');
         }
 
-        // Logic biểu đồ
         $labels = [];
         $expectedRevenueData = [];
         $actualRevenueData = [];

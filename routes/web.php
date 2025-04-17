@@ -41,7 +41,7 @@ Route::middleware(['check.auth'])->group(function () {
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
 
-// /admin/orders/
+// /orders/statistics
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])

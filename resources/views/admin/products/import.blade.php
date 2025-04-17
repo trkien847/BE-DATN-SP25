@@ -550,7 +550,7 @@ td, th {
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="importDetailsLabel">Chi Tiết Nhập Hàng</h5>
+                <h5 class="modal-title" id="importDetailsLabel">Chi Tiết Nhập Hàng (Saygex69.com)</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -879,7 +879,7 @@ $(document).ready(function() {
         errorMessage += `Giá bán không được âm (${sellPrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
       }
       if (salePrice < 0) {
-        hasError = true;w-5 h-5
+        hasError = true;
         errorMessage += `Giá sale không được âm (${salePrice.toLocaleString('vi-VN')} ₫) cho biến thể: ${variantLabel}\n`;
       }
       if (stock < 0) {

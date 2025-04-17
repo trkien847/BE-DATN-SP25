@@ -992,7 +992,7 @@
                     card.id = `variant-card-${combinationId}`;
                     card.className = 'variant-card bg-white p-4 rounded-lg shadow-sm border fade-in';
                     
-                    card.innerHTML = `
+                    let cardContent = `
                         <div class="flex justify-between items-center mb-3">
                             <h6 class="font-medium text-gray-800">${combinationName}</h6>
                             <button type="button" 
@@ -1034,15 +1034,80 @@
                                         class="form-control w-full mt-1">
                                 </div>
                             </div>
-                        </div>
+                            <div class="error-message text-red-500 text-sm mt-2 hidden">
+                                Vui lòng nhập thời gian bắt đầu và kết thúc khuyến mãi khi có giá khuyến mãi!
+                            </div>
                     `;
+
+                    if (container.children.length === 0) {
+                        cardContent += `
+                            <button type="button" 
+                                class="apply-all-btn bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition-colors">
+                                Áp dụng tất cả
+                            </button>
+                        `;
+                    }
+
+                    cardContent += `</div>`;
+                    card.innerHTML = cardContent;
                     
                     container.appendChild(card);
+                    const applyAllButton = card.querySelector('.apply-all-btn');
+                    if (applyAllButton) {
+                        applyAllButton.addEventListener('click', applyToAllVariants);
+                    }
 
                     const priceInput = card.querySelector('input[name$="[price]"]');
                     const salePriceInput = card.querySelector('input[name$="[sale_price]"]');
                     const startDateInput = card.querySelector('input[name$="[sale_start_at]"]');
                     const endDateInput = card.querySelector('input[name$="[sale_end_at]"]');
+                    const errorMessage = card.querySelector('.error-message');
+
+                    function validatePrice() {
+                        const price = parseFloat(priceInput.value) || 0;
+                        if (price <= 0) {
+                            priceInput.setCustomValidity('Giá bán phải lớn hơn 0');
+                        } else {
+                            priceInput.setCustomValidity('');
+                        }
+                    }
+
+                    function validateSalePrice() {
+                        const salePrice = parseFloat(salePriceInput.value) || 0;
+                        const startDate = startDateInput.value;
+                        const endDate = endDateInput.value;
+
+                        if (salePrice > 0) {
+                            if (!startDate || !endDate) {
+                                errorMessage.classList.remove('hidden');
+                                salePriceInput.value = '';
+                                salePriceInput.focus();
+                            } else {
+                                errorMessage.classList.add('hidden');
+                            }
+                        } else {
+                            errorMessage.classList.add('hidden');
+                        }
+                    }
+
+                    function validateDates() {
+                        const startDate = startDateInput.value;
+                        const endDate = endDateInput.value;
+
+                        if (startDate && endDate) {
+                            const start = new Date(startDate);
+                            const end = new Date(endDate);
+                            if (start >= end) {
+                                endDateInput.setCustomValidity('Ngày kết thúc phải sau ngày bắt đầu');
+                            } else {
+                                endDateInput.setCustomValidity('');
+                            }
+                        } else {
+                            endDateInput.setCustomValidity('');
+                        }
+
+                        validateSalePrice();
+                    }
 
                     priceInput.addEventListener('change', validatePrice);
                     salePriceInput.addEventListener('change', validateSalePrice);
@@ -1050,6 +1115,41 @@
                     endDateInput.addEventListener('change', validateDates);
                 }
             }
+
+            function applyToAllVariants() {
+                const container = document.getElementById('selected-variants-container');
+                const cards = container.querySelectorAll('.variant-card');
+
+                if (cards.length === 0) return;
+
+                const firstCard = cards[0];
+                const firstPrice = firstCard.querySelector('input[name$="[price]"]').value;
+                const firstSalePrice = firstCard.querySelector('input[name$="[sale_price]"]').value;
+                const firstStartDate = firstCard.querySelector('input[name$="[sale_start_at]"]').value;
+                const firstEndDate = firstCard.querySelector('input[name$="[sale_end_at]"]').value;
+
+                cards.forEach((card, index) => {
+                    if (index === 0) return; 
+
+                    const priceInput = card.querySelector('input[name$="[price]"]');
+                    const salePriceInput = card.querySelector('input[name$="[sale_price]"]');
+                    const startDateInput = card.querySelector('input[name$="[sale_start_at]"]');
+                    const endDateInput = card.querySelector('input[name$="[sale_end_at]"]');
+
+                    priceInput.value = firstPrice;
+                    salePriceInput.value = firstSalePrice;
+                    startDateInput.value = firstStartDate;
+                    endDateInput.value = firstEndDate;
+
+                    priceInput.dispatchEvent(new Event('change'));
+                    salePriceInput.dispatchEvent(new Event('change'));
+                    startDateInput.dispatchEvent(new Event('change'));
+                    endDateInput.dispatchEvent(new Event('change'));
+                });
+            }
+
+            window.applyToAllVariants = applyToAllVariants;
+
 
             function removeWeightSelectionArea(shapeId) {
                 const area = document.querySelector(`.weight-selection-area[data-shape-id="${shapeId}"]`);
