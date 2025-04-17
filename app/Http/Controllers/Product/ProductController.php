@@ -101,7 +101,6 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'sku' => 'required|max:100',
             'brand_id' => 'required',
-            'thumbnail' => 'nullable',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
@@ -235,8 +234,7 @@ class ProductController extends Controller
                 }
 
                 DB::commit();
-                return redirect()->route('products.list')
-                    ->with('success', 'Sản phẩm đã được tạo thành công!');
+                return redirect()->route('products.list')->with('success', 'Sản phẩm đã được tạo thành công!');
             }
         } catch (\Exception $e) {
             DB::rollBack();
