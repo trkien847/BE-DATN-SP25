@@ -270,12 +270,12 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Tên sản phẩm</th>
+                                    <th>Tên</th>
                                     <th>Biến thể</th>
                                     <th>Số lượng</th>
                                     <th>Giá</th>
-                                    <th>Ngày sản xuất</th>
-                                    <th>Hạn sử dụng</th>
+                                    <th>HSD</th>
+                                    <th>Mã lô</th>
                                 </tr>
                             </thead>
                             <tbody id="orderItems"></tbody>
@@ -375,32 +375,34 @@ function attachDetailEvents() {
                 const itemsBody = document.getElementById('orderItems');
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    const manufactureDate = item.manufacture_date ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') : 'Không có';
-                    let expiryDate = 'Không có';
-                    let expiryClass = '';
-                    
-                    if (item.expiry_date) {
-                        const expiry = new Date(item.expiry_date);
-                        const today = new Date();
-                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                        
-                        expiryDate = expiry.toLocaleDateString('vi-VN');
-                        if (daysUntilExpiry <= 30) {
-                            expiryClass = 'expiry-warning';
-                        }
-                    }
+                const row = document.createElement('tr');
 
-                    row.innerHTML = `
-                        <td>${item.product ? item.product.name : 'Không có'}</td>
-                        <td>${item.name_variant || 'Không có'}</td>
-                        <td>${item.quantity}</td>
-                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
-                        <td>${manufactureDate}</td>
-                        <td class="${expiryClass}">${expiryDate}</td>
-                    `;
-                    itemsBody.appendChild(row);
-                });
+                // Format manufacture_date
+                const manufactureDate = item.manufacture_date 
+                    ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') 
+                    : 'Không có';
+
+                // Tính thời gian hết hạn (days_until_expiry)
+                let expiryDays = item.days_until_expiry !== null ? item.days_until_expiry : 'Không có';
+                let expiryClass = '';
+
+                if (item.days_until_expiry !== null && item.days_until_expiry <= 30) {
+                    expiryClass = 'expiry-warning';
+                }
+
+                // Lấy import_code
+                const importCode = item.import_code || 'Không có';
+
+                row.innerHTML = `
+                    <td>${item.product ? item.product.name : 'Không có'}</td>
+                    <td>${item.name_variant || 'Không có'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    <td class="${expiryClass}">${expiryDays} ngày</td>
+                    <td>${importCode}</td>
+                `;
+                itemsBody.appendChild(row);
+            });
                 document.getElementById('orderDetail').style.display = 'flex';
             })
             .catch(error => {
@@ -620,32 +622,28 @@ document.querySelectorAll('.detail-btn').forEach(button => {
                 const itemsBody = document.getElementById('orderItems');
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    const manufactureDate = item.manufacture_date ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') : 'Không có';
-                    let expiryDate = 'Không có';
-                    let expiryClass = '';
-                    
-                    if (item.expiry_date) {
-                        const expiry = new Date(item.expiry_date);
-                        const today = new Date();
-                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                        
-                        expiryDate = expiry.toLocaleDateString('vi-VN');
-                        if (daysUntilExpiry <= 30) {
-                            expiryClass = 'expiry-warning';
-                        }
-                    }
+                const row = document.createElement('tr');
+                const manufactureDate = item.manufacture_date 
+                    ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') 
+                    : 'Không có';
+                let expiryDays = item.days_until_expiry !== null ? item.days_until_expiry : 'Không có';
+                let expiryClass = '';
 
-                    row.innerHTML = `
-                        <td>${item.product ? item.product.name : 'Không có'}</td>
-                        <td>${item.name_variant || 'Không có'}</td>
-                        <td>${item.quantity}</td>
-                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
-                        <td>${manufactureDate}</td>
-                        <td class="${expiryClass}">${expiryDate}</td>
-                    `;
-                    itemsBody.appendChild(row);
-                });
+                if (item.days_until_expiry !== null && item.days_until_expiry <= 30) {
+                    expiryClass = 'expiry-warning';
+                }
+                const importCode = item.import_code || 'Không có';
+
+                row.innerHTML = `
+                    <td>${item.product ? item.product.name : 'Không có'}</td>
+                    <td>${item.name_variant || 'Không có'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    <td class="${expiryClass}">${expiryDays} ngày</td>
+                    <td>${importCode}</td>
+                `;
+                itemsBody.appendChild(row);
+            });
                 document.getElementById('orderDetail').style.display = 'flex';
             })
             .catch(error => {
@@ -772,7 +770,7 @@ document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
     });
 });
 
-// Add this to your existing script section
+
 document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     const rowsPerPage = 5;
@@ -783,13 +781,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = Array.from(tableBody.getElementsByTagName('tr'));
         const totalPages = Math.ceil(rows.length / rowsPerPage);
         
-        // Update showing text
         updateShowingText(rows.length);
-        
-        // Create pagination buttons
         createPaginationButtons(totalPages);
         
-        // Show first page
         showPage(1);
     }
     

@@ -1,10 +1,11 @@
-<?php 
+<?php
+
 namespace App\Notifications;
 
+use App\Models\Coupon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\DatabaseMessage;
 
 class CouponCreatedNotification extends Notification
 {
@@ -12,22 +13,24 @@ class CouponCreatedNotification extends Notification
 
     protected $coupon;
 
-    public function __construct($coupon)
+    public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
+        
     }
 
-    public function via($notifiable)
+    public function via($notifiable) 
     {
-        return ['database']; // Gửi thông báo vào database
+        return ['database']; 
     }
 
-    public function toArray($notifiable)
-    { 
+    public function toDatabase($notifiable)  
+    {
+        
         return [
-            'message' => 'Một mã giảm giá mới đã được tạo: ' . $this->coupon->code,
             'coupon_id' => $this->coupon->id,
-            'status' => $this->coupon->status
+            'message' => "Yêu cầu phê duyệt mã giảm giá <strong>{$this->coupon->code}</strong>",
+            'url' => route('coupons.list', $this->coupon->id),
         ];
     }
 }

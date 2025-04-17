@@ -311,19 +311,31 @@ class CartController extends Controller
             $orderStatus->note = 'Đơn hàng mới được tạo.';
             $orderStatus->save();
 
+            $today = Carbon::today();
+
             foreach ($selectedProducts as $product) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $orderItem->product_id = $product['id'];
-                $orderItem->product_variant_id = $product['id_variant'];
-                $orderItem->name = $product['name'];
-                $orderItem->price = $product['price'];
-                $orderItem->quantity = $product['quantity'];
-                $orderItem->name_variant = $product['name_variant'];
-                $orderItem->attributes_variant = $product['variant_value'];
-                $orderItem->price_variant = $product['price'];
-                $orderItem->quantity_variant = $product['quantity'];
-                $orderItem->save();
+                $importProducts = DB::table('import_products')
+                    ->where('product_id', $product['id'])
+                    ->get();
+
+                if ($importProducts->isEmpty()) {
+                    throw new \Exception("Không tìm thấy sản phẩm với product_id: {$product['id']} trong bảng import_products");
+                }
+
+                $validImportProducts = $importProducts->map(function ($import) use ($today) {
+                    $expiryDate = Carbon::parse($import->expiry_date);
+                    $monthsDiff = $today->diffInMonths($expiryDate);
+                    $import->months_diff = $monthsDiff;
+                    return $import;
+                })
+                    ->filter(function ($import) {
+                        return $import->months_diff >= 8;
+                    })
+                    ->sortBy('months_diff');
+
+                if ($validImportProducts->isEmpty()) {
+                    throw new \Exception("Không có sản phẩm với product_id: {$product['id']} có expiry_date >= 8 tháng");
+                }
 
                 $variant = ProductVariant::where('id', $product['id_variant'])->first();
                 if ($variant) {
@@ -335,6 +347,77 @@ class CartController extends Controller
                     }
                 } else {
                     throw new \Exception("Không tìm thấy variant với ID: {$product['id_variant']}");
+                }
+
+                $remainingQuantity = $product['quantity'];
+                $importDetails = [];
+
+                foreach ($validImportProducts as $importProduct) {
+                    $importVariants = DB::table('import_product_variants')
+                        ->where('import_product_id', $importProduct->id)
+                        ->where('product_variant_id', $product['id_variant'])
+                        ->get();
+
+                    foreach ($importVariants as $importVariant) {
+                        if ($remainingQuantity <= 0) {
+                            break 2;
+                        }
+
+                        $availableQuantity = $importVariant->quantity;
+
+                        if ($availableQuantity > 0) {
+                            $quantityToDeduct = min($remainingQuantity, $availableQuantity);
+                            $remainingQuantity -= $quantityToDeduct;
+
+                            DB::table('import_product_variants')
+                                ->where('id', $importVariant->id)
+                                ->update(['quantity' => $importVariant->quantity - $quantityToDeduct]);
+
+                            $import = DB::table('imports')
+                                ->where('id', $importProduct->import_id)
+                                ->first();
+
+                            if (!$import) {
+                                throw new \Exception("Không tìm thấy thông tin lô nhập với import_id: {$importProduct->import_id}");
+                            }
+
+                            $importDetails[] = [
+                                'import_product' => $importProduct,
+                                'quantity' => $quantityToDeduct,
+                                'import_code' => $import->import_code,
+                            ];
+                        }
+                    }
+                }
+
+                if ($remainingQuantity > 0) {
+                    throw new \Exception("Số lượng tồn kho không đủ trong import_product_variants cho sản phẩm: {$product['name']} (Variant ID: {$product['id_variant']})");
+                }
+
+                if (empty($importDetails)) {
+                    throw new \Exception("Không tìm thấy variant phù hợp với Variant ID: {$product['id_variant']}");
+                }
+
+                foreach ($importDetails as $detail) {
+                    $importProduct = $detail['import_product'];
+                    $quantity = $detail['quantity'];
+                    $importCode = $detail['import_code'];
+
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->product_id = $product['id'];
+                    $orderItem->product_variant_id = $product['id_variant'];
+                    $orderItem->name = $product['name'];
+                    $orderItem->price = $product['price'];
+                    $orderItem->quantity = $quantity;
+                    $orderItem->name_variant = $product['name_variant'];
+                    $orderItem->attributes_variant = $product['variant_value'];
+                    $orderItem->price_variant = $product['price'];
+                    $orderItem->quantity_variant = $quantity;
+                    $orderItem->manufacture_date = $importProduct->manufacture_date;
+                    $orderItem->expiry_date = $importProduct->expiry_date;
+                    $orderItem->import_code = $importCode;
+                    $orderItem->save();
                 }
             }
 
@@ -376,13 +459,13 @@ class CartController extends Controller
                 $order = new Order();
                 $order->code = $orderData['code'];
                 $order->user_id = $orderData['user_id'];
-                $order->payment_id = 2; // VNPay
+                $order->payment_id = 2;
                 $order->phone_number = $orderData['phone_number'];
                 $order->email = $orderData['email'];
                 $order->fullname = $orderData['fullname'];
                 $order->address = $orderData['address'];
                 $order->total_amount = (float) $orderData['total_amount'];
-                $order->is_paid = 1; // Đã thanh toán
+                $order->is_paid = 1;
                 if ($orderData['coupon_code']) {
                     $order->coupon_id = $orderData['coupon_id'];
                     $order->coupon_code = $orderData['coupon_code'];
@@ -392,33 +475,119 @@ class CartController extends Controller
                 }
                 $order->save();
 
-
                 $orderStatus = new OrderOrderStatus();
                 $orderStatus->order_id = $order->id;
                 $orderStatus->order_status_id = 1;
                 $orderStatus->note = 'Đơn hàng mới được tạo.';
                 $orderStatus->save();
 
+                $today = Carbon::today();
+
                 foreach ($selectedProducts as $product) {
-                    $orderItem = new OrderItem();
-                    $orderItem->order_id = $order->id;
-                    $orderItem->product_id = $product['id'];
-                    $orderItem->product_variant_id = $product['id_variant'];
-                    $orderItem->name = $product['name'];
-                    $orderItem->price = $product['price'];
-                    $orderItem->quantity = $product['quantity'];
-                    $orderItem->name_variant = $product['name_variant'];
-                    $orderItem->attributes_variant = $product['variant_value'];
-                    $orderItem->price_variant = $product['price'];
-                    $orderItem->quantity_variant = $product['quantity'];
-                    $orderItem->save();
+                    $importProducts = DB::table('import_products')
+                        ->where('product_id', $product['id'])
+                        ->get();
+
+                    if ($importProducts->isEmpty()) {
+                        throw new \Exception("Không tìm thấy sản phẩm với product_id: {$product['id']} trong bảng import_products");
+                    }
+
+                    $validImportProducts = $importProducts->map(function ($import) use ($today) {
+                        $expiryDate = Carbon::parse($import->expiry_date);
+                        $monthsDiff = $today->diffInMonths($expiryDate);
+                        $import->months_diff = $monthsDiff;
+                        return $import;
+                    })
+                        ->filter(function ($import) {
+                            return $import->months_diff >= 8;
+                        })
+                        ->sortBy('months_diff');
+
+                    if ($validImportProducts->isEmpty()) {
+                        throw new \Exception("Không có sản phẩm với product_id: {$product['id']} có expiry_date >= 8 tháng");
+                    }
 
                     $variant = ProductVariant::where('id', $product['id_variant'])->first();
-                    if ($variant && $variant->stock >= $product['quantity']) {
-                        $variant->stock -= $product['quantity'];
-                        $variant->save();
+                    if ($variant) {
+                        if ($variant->stock >= $product['quantity']) {
+                            $variant->stock -= $product['quantity'];
+                            $variant->save();
+                        } else {
+                            throw new \Exception("Số lượng tồn kho không đủ cho sản phẩm: {$product['name']} (Variant ID: {$product['id_variant']})");
+                        }
                     } else {
-                        throw new \Exception("Số lượng tồn kho không đủ cho sản phẩm: {$product['name']}");
+                        throw new \Exception("Không tìm thấy variant với ID: {$product['id_variant']}");
+                    }
+
+                    $remainingQuantity = $product['quantity'];
+                    $importDetails = [];
+
+                    foreach ($validImportProducts as $importProduct) {
+                        $importVariants = DB::table('import_product_variants')
+                            ->where('import_product_id', $importProduct->id)
+                            ->where('product_variant_id', $product['id_variant'])
+                            ->get();
+
+                        foreach ($importVariants as $importVariant) {
+                            if ($remainingQuantity <= 0) {
+                                break 2;
+                            }
+
+                            $availableQuantity = $importVariant->quantity;
+
+                            if ($availableQuantity > 0) {
+                                $quantityToDeduct = min($remainingQuantity, $availableQuantity);
+                                $remainingQuantity -= $quantityToDeduct;
+
+                                DB::table('import_product_variants')
+                                    ->where('id', $importVariant->id)
+                                    ->update(['quantity' => $importVariant->quantity - $quantityToDeduct]);
+
+                                $import = DB::table('imports')
+                                    ->where('id', $importProduct->import_id)
+                                    ->first();
+
+                                if (!$import) {
+                                    throw new \Exception("Không tìm thấy thông tin lô nhập với import_id: {$importProduct->import_id}");
+                                }
+
+                                $importDetails[] = [
+                                    'import_product' => $importProduct,
+                                    'quantity' => $quantityToDeduct,
+                                    'import_code' => $import->import_code,
+                                ];
+                            }
+                        }
+                    }
+
+                    if ($remainingQuantity > 0) {
+                        throw new \Exception("Số lượng tồn kho không đủ trong import_product_variants cho sản phẩm: {$product['name']} (Variant ID: {$product['id_variant']})");
+                    }
+
+                    if (empty($importDetails)) {
+                        throw new \Exception("Không tìm thấy variant phù hợp với Variant ID: {$product['id_variant']}");
+                    }
+
+                    foreach ($importDetails as $detail) {
+                        $importProduct = $detail['import_product'];
+                        $quantity = $detail['quantity'];
+                        $importCode = $detail['import_code'];
+
+                        $orderItem = new OrderItem();
+                        $orderItem->order_id = $order->id;
+                        $orderItem->product_id = $product['id'];
+                        $orderItem->product_variant_id = $product['id_variant'];
+                        $orderItem->name = $product['name'];
+                        $orderItem->price = $product['price'];
+                        $orderItem->quantity = $quantity;
+                        $orderItem->name_variant = $product['name_variant'];
+                        $orderItem->attributes_variant = $product['variant_value'];
+                        $orderItem->price_variant = $product['price'];
+                        $orderItem->quantity_variant = $quantity;
+                        $orderItem->manufacture_date = $importProduct->manufacture_date;
+                        $orderItem->expiry_date = $importProduct->expiry_date;
+                        $orderItem->import_code = $importCode;
+                        $orderItem->save();
                     }
                 }
 

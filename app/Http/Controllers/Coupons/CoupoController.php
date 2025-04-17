@@ -32,7 +32,7 @@ class CoupoController extends Controller
                 ->orWhere('description', 'LIKE', "%$search%");
         }
 
-        $coupons = $query->where('status', 'approved')->orderBy('created_at', 'desc')->paginate(10);
+        $coupons = $query->where('status', 'pending')->orderBy('created_at', 'desc')->paginate(10);
         // status	enum('pending', 'approved', 'rejected')	utf8mb4_unicode_ci	
         // Lấy tên sản phẩm và danh mục theo valid_products & valid_categories
         foreach ($coupons as $coupon) {
@@ -68,51 +68,59 @@ class CoupoController extends Controller
      */
     public function store(CouponRequest $request)
     {
-
         DB::beginTransaction();
-
+    
         try {
-
             // Tạo mã giảm giá
-
             $coupon = Coupon::create([
                 'code' => $request->code,
                 'title' => $request->title,
                 'description' => $request->description,
                 'discount_type' => $request->discount_type,
                 'discount_value' => $request->discount_value,
-                'usage_limit' => $request->usage_limit ?? null, // 
+                'usage_limit' => $request->usage_limit ?? null,
                 'usage_count' => 0,
                 'start_date' => $request->start_date ?? null,
                 'end_date' => $request->end_date ?? null,
-                'status' => 'pending', // Chờ duyệt
+                'status' => 'pending',
             ]);
+   
+            // Tạo CouponRestriction
 
-       
             try {
-                CouponRestriction::create([
+               CouponRestriction::create([
+
                     'coupon_id' => $coupon->id,
-                    'min_order_value' => $request->min_order_value ?? 1000,
-                    'max_discount_value' => $request->max_discount_value ?? 2000,
-                    'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
-                    'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
+                    'min_order_value' => $request->filled('min_order_value') ? $request->min_order_value : 1000,
+                    'max_discount_value' => $request->filled('max_discount_value') ? $request->max_discount_value : 2000,
+                    'valid_categories' => json_encode(array_map('intval', (array) ($request->valid_categories ?? []))),
+                    'valid_products' => json_encode(array_map('intval', (array) ($request->valid_products ?? []))),
                 ]);
-                Log::info("CouponRestriction được tạo thành công cho Coupon ID: " . $coupon->id);
+               
             } catch (\Exception $e) {
-                Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage());
+                Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             }
-            $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 1 là Admin
-            foreach ($adminUsers as $admin) {
-                $admin->notify(new CouponCreatedNotification($coupon));
-            }
+            
+         
+    
+            //Gửi thông báo đến Admin bằng Notification
+            // $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 3 là Admin
+            
+            // foreach ($adminUsers as $admin) {
+               
+            //     $admin->notify(new CouponCreatedNotification($coupon));
+            
+            // }
+    
             DB::commit();
             Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
-
+    
             return redirect()->route('coupons.list')->with('success', 'Thêm mã giảm giá thành công!');
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
-
+    
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
@@ -278,7 +286,8 @@ class CoupoController extends Controller
         return redirect()->back()->with('error', 'Mã giảm giá đã bị từ chối.');
     }
 
- 
+    
+    
 
 
 }

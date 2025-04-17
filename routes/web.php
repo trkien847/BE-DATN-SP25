@@ -41,7 +41,7 @@ Route::middleware(['check.auth'])->group(function () {
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
 
-
+// /orders/statistics
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -133,9 +133,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/coupons/create', [CoupoController::class, 'store'])->name('coupons.store');
   Route::delete('/coupons/{id}', [CoupoController::class, 'destroy'])->name('coupons.destroy');
   Route::get('coupons/{id}/edit', [CoupoController::class, 'edit'])->name('coupons.edit');
+  Route::get('coupons/{id}', [CoupoController::class, 'show'])->name('coupons.show');
+
   Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
   Route::put('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
   Route::put('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
 
 
   Route::get('/mark-as-read/{id}', function ($id) {

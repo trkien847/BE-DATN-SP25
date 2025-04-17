@@ -1,9 +1,173 @@
 @extends('client.layouts.layout')
 @section('content')
-    {{-- @include('client.components.CartMenuStart') --}}
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/wake-up.mp3') }}" type="audio/mpeg">
+            </audio>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
+<style>
+    .cart-coupon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.coupon-btn {
+    position: relative;
+    padding: 10px 20px;
+    border: 2px solid #22C55E;
+    background: #FFFFFF;
+    color: #22C55E;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.coupon-btn {
+    border-radius: 0; 
+    aspect-ratio: 3 / 1; 
+}
+
+.coupon-btn:disabled {
+    border-color: #D1D5DB; 
+    color: #9CA3AF; 
+    cursor: not-allowed;
+    background: #F3F4F6;
+}
+
+
+.coupon-btn::before,
+.coupon-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    transition: width 0.3s ease;
+    z-index: 0;
+}
+
+.coupon-btn::before {
+    left: 0;
+    background: #22C55E; 
+}
+
+.coupon-btn::after {
+    right: 0;
+    background: #A855F7; 
+}
+
+.coupon-btn:hover:not(:disabled),
+.coupon-btn:active:not(:disabled) {
+    color: #FFFFFF; 
+}
+
+.coupon-btn:hover:not(:disabled)::before,
+.coupon-btn:active:not(:disabled)::before,
+.coupon-btn:hover:not(:disabled)::after,
+.coupon-btn:active:not(:disabled)::after {
+    width: 50%; 
+}
+
+
+.coupon-btn .btn-text,
+.coupon-btn .btn-w {
+    position: relative;
+    z-index: 1; 
+    transition: opacity 0.3s ease;
+}
+
+.coupon-btn .btn-text {
+    opacity: 1;
+}
+
+.coupon-btn .btn-w {
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.coupon-btn:hover:not(:disabled) .btn-text,
+.coupon-btn:active:not(:disabled) .btn-text {
+    opacity: 0;
+}
+
+.coupon-btn:hover:not(:disabled) .btn-w,
+.coupon-btn:active:not(:disabled) .btn-w {
+    opacity: 1;
+}
+
+.loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .designed-by {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .hidden-content {
+            display: none;
+        }
+</style>
     <div class="ltn__utilize-overlay"></div>
 
-    <!-- BREADCRUMB AREA START -->
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image " data-bs-bg="img/bg/14.jpg">
         <div class="container">
             <div class="row">
@@ -22,9 +186,7 @@
             </div>
         </div>
     </div>
-    <!-- BREADCRUMB AREA END -->
 
-    <!-- SHOPING CART AREA START -->
     <div class="liton__shoping-cart-area mb-120">
         <div class="container">
             <div class="row">
@@ -63,31 +225,36 @@
                                             <td class="cart-product-price">
                                                 {{ number_format($cart->productVariant->sale_price) }}
                                             </td>
+                                            
                                             <td class="cart-product-quantity">
                                                 <div class="cart-plus-minus">
                                                     <input type="text" value="{{ $cart->quantity }}"
                                                         class="cart-plus-minus-box" min="1" readonly>
                                                 </div>
                                             </td>
+
                                             <td class="cart-product-subtotal">
-                                                {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
-                                            </td>
-                                            <td class="cart-product-subtotal" style="display: none;">
                                                 {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
                                             </td>
 
                                             <td class="cart-product-attributes" style="display: none;">
-                                                {{ $cart->productVariant->id }}</td>
+                                                {{ $cart->productVariant->id }}
+                                            </td>
 
                                             <td class="cart-product-attributes-name" style="display: none;">
-                                                @foreach ($cart->productVariant->attributeValues as $attrValue)
-                                                    {{ $attrValue->attribute->name }}
-                                                @endforeach
+                                                @php
+                                                    $shapeValue = $cart->productVariant->attributeValues->firstWhere('attribute_id', 12);
+                                                    $weightValue = $cart->productVariant->attributeValues->firstWhere('attribute_id', 14);
+                                                    $variantName = $shapeValue && $weightValue 
+                                                        ? "{$shapeValue->value} {$weightValue->value}"
+                                                        : $cart->productVariant->attributeValues->map(fn($av) => "{$av->attribute->name}: {$av->value}")->join(', ');
+                                                @endphp
+                                                {{ $variantName }}
                                             </td>
 
                                             <td class="cart-product-attributes-value" style="display: none;">
                                                 @foreach ($cart->productVariant->attributeValues as $attrValue)
-                                                    {{ $attrValue->attribute->slug }}{{ $attrValue->value }}
+                                                    {{ $attrValue->attribute->slug }}: {{ $attrValue->value }}
                                                 @endforeach
                                             </td>
 
@@ -108,12 +275,15 @@
                                     </tr>
                                     <tr class="cart-coupon-row">
                                         <td colspan="6">
-                                            <div class="cart-coupon">
+                                            <div class="cart-coupon flex items-center gap-3">
                                                 <input type="text" name="cart-coupon" placeholder="Coupon code"
-                                                    id="coupon-code" {{ $appliedCoupon ? 'disabled' : '' }}>
-                                                <button type="button" class="btn theme-btn-2 btn-effect-2"
-                                                    id="apply-coupon" {{ $appliedCoupon ? 'disabled' : '' }}>Sử dụng mã
-                                                    giảm giá</button>
+                                                    id="coupon-code" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                    {{ $appliedCoupon ? 'disabled' : '' }}>
+                                                <button type="button" class="btn btn-effect-2 coupon-btn"
+                                                    id="apply-coupon" {{ $appliedCoupon ? 'disabled' : '' }}>
+                                                    <span class="btn-text">Sử dụng mã giảm giá</span>
+                                                    <span class="btn-w hidden">W</span>
+                                                </button>
                                                 @if ($appliedCoupon)
                                                     <small id="applied-coupon-text">Đã áp dụng:
                                                         {{ $appliedCoupon['code'] }} (Giảm
@@ -122,14 +292,24 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn theme-btn-2 btn-effect-2"
-                                                id="show-coupons">Lấy mã giảm giá</button>
+                                            <button type="button" class="btn btn-effect-2 coupon-btn"
+                                                id="show-coupons">
+                                                <span class="btn-text">Lấy mã giảm giá</span>
+                                                <span class="btn-w hidden">W</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-
+                        <script>
+                        document.querySelectorAll('.coupon-btn').forEach(button => {
+                            button.addEventListener('click', () => {
+                                if (button.disabled) return;
+                                console.log(`${button.id} clicked`);
+                            });
+                        });
+                        </script>
                         <div class="shoping-cart-total mt-50">
                             <h4>Thông tin đơn hàng:</h4>
                             <table class="table">
@@ -151,7 +331,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="btn-wrapper text-right">
+                            <div class="btn-wrapper text-right" id="page-content">
                                 <form id="checkout-form" action="{{ route('checkout') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="selected_products" id="selected-products">
@@ -168,17 +348,15 @@
             </div>
         </div>
     </div>
-    <!-- SHOPING CART AREA END -->
     <div id="coupon-overlay" class="coupon-overlay" style="display: none;">
         <div class="coupon-content">
-            <h3>Danh sách mã giảm giá</h3>
+            <h3>Danh sách mã giảm giá ( Designed by TG )</h3>
             <div id="coupon-list">
 
             </div>
             <button class="btn theme-btn-2 btn-effect-2" id="close-coupons">Đóng</button>
         </div>
     </div>
-    <!-- CALL TO ACTION START (call-to-action-6) -->
     <div class="ltn__call-to-action-area call-to-action-6 before-bg-bottom" data-bs-bg="img/1.jpg--">
         <div class="container">
             <div class="row">
@@ -199,9 +377,26 @@
             </div>
         </div>
     </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Đang tiến hành lên đơn</div>
+        <div class="designed-by">Designed by TG</div>
+    </div>
 @endsection
 @push('js')
     <script>
+
+
+        document.getElementById('checkout-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            document.getElementById('page-content').classList.add('hidden-content');
+            document.getElementById('loading-overlay').style.display = 'flex';
+            setTimeout(() => {
+                this.submit();
+            }, 2000);
+        });
+
         $(document).ready(function() {
             function animateRow(row) {
                 row.addClass('animate__animated animate__fadeIn');
@@ -339,10 +534,7 @@
                                     /[,.đ]/g, '')) || 0;
                                 totalAmount += amount;
                             });
-
-                            // Cập nhật hiển thị tổng tiền
-                            $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN')
-                                    .format(totalAmount) + 'đ')
+                            $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + 'đ')
                                 .addClass('updating');
                             $('sup').text(response.cart_count);
                             setTimeout(() => {
@@ -1063,8 +1255,6 @@
             }
         }
 
-
-        /* Thêm vào phần CSS của bạn */
         .shopping-cart-main-table thead th {
             text-align: center;
             vertical-align: middle;
@@ -1130,6 +1320,16 @@
         .shopping-cart-main-table .cart-product-price,
         .shopping-cart-main-table .cart-product-subtotal {
             white-space: nowrap;
+        }
+
+        /* Căn chỉnh tổng tiền */
+        .shopping-cart-main-table .cart-summary-row td:first-child {
+            text-align: right;
+        }
+
+        .shopping-cart-main-table .cart-summary-row td:last-child {
+            text-align: right;
+            font-weight: bold;
         }
 
         /* Căn chỉnh tổng tiền */
