@@ -16,19 +16,21 @@ class CouponCreatedNotification extends Notification
     public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
+        
     }
 
-    public function via($notifiable)
+    public function via($notifiable) 
     {
-        return ['database']; // Nếu dùng bảng notifications
+        return ['database']; 
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable)  
     {
+        
         return [
             'coupon_id' => $this->coupon->id,
             'message' => "Yêu cầu phê duyệt mã giảm giá <strong>{$this->coupon->code}</strong>",
-            'url' => route('coupons.review', $this->coupon->id),
+            'url' => route('coupons.list', $this->coupon->id),
         ];
     }
 }

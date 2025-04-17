@@ -84,30 +84,39 @@ class CoupoController extends Controller
                 'end_date' => $request->end_date ?? null,
                 'status' => 'pending',
             ]);
-    
+   
             // Tạo CouponRestriction
+
             try {
-                CouponRestriction::create([
+               CouponRestriction::create([
+
                     'coupon_id' => $coupon->id,
-                    'min_order_value' => $request->min_order_value ?? 1000,
-                    'max_discount_value' => $request->max_discount_value ?? 2000,
-                    'valid_categories' => json_encode(array_map('intval', $request->valid_categories ?? [])),
-                    'valid_products' => json_encode(array_map('intval', $request->valid_products ?? [])),
+                    'min_order_value' => $request->filled('min_order_value') ? $request->min_order_value : 1000,
+                    'max_discount_value' => $request->filled('max_discount_value') ? $request->max_discount_value : 2000,
+                    'valid_categories' => json_encode(array_map('intval', (array) ($request->valid_categories ?? []))),
+                    'valid_products' => json_encode(array_map('intval', (array) ($request->valid_products ?? []))),
                 ]);
+               
             } catch (\Exception $e) {
-                Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage());
+                Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             }
+            
+         
     
-            // Gửi thông báo đến Admin bằng Notification
-            $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 3 là Admin
-            foreach ($adminUsers as $admin) {
-                $admin->notify(new CouponCreatedNotification($coupon));
-            }
+            //Gửi thông báo đến Admin bằng Notification
+            // $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 3 là Admin
+            
+            // foreach ($adminUsers as $admin) {
+               
+            //     $admin->notify(new CouponCreatedNotification($coupon));
+            
+            // }
     
             DB::commit();
             Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
     
             return redirect()->route('coupons.list')->with('success', 'Thêm mã giảm giá thành công!');
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
