@@ -7,7 +7,30 @@
 <!-- Utilize Mobile Menu Start -->
 @include('client.components.MobileMenuStart')
 <!-- Utilize Mobile Menu End -->
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/amine.mp3') }}" type="audio/mpeg">
+            </audio>
 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <div class="ltn__utilize-overlay"></div>
 
 <!-- BREADCRUMB AREA START -->
