@@ -118,7 +118,7 @@
                     </tbody>
                 </table>
 
-                {{ $imports->links() }}
+                
             </div>
         </div>
     </div>
@@ -129,7 +129,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Chi Tiết Phiếu Nhập ( Designed by TG )</h5>
+                <h5 class="modal-title">Chi Tiết Phiếu Nhập</h5>
             </div>
             <div class="modal-body">
                 <div id="importDetail">
@@ -441,7 +441,7 @@ async function showImportDetail(importId) {
         if (data.success) {
             let html = `
                 <div class="import-info">
-                    <h4>Thông tin phiếu nhập</h4>
+                    <h4>Thông tin phiếu nhập ( Designed by TG )</h4>
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Mã nhập:</strong> ${data.import.import_code}</p>

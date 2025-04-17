@@ -175,6 +175,37 @@
             transform: scale(1.05);
         }
     }
+
+    .variant-btn {
+    transition: all 0.3s ease;
+}
+
+.variant-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+.variant-btn.selected {
+    background: #DBEAFE;
+    border-color: #3B82F6;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #1E40AF;
+}
+
+/* Scale-up animation on click */
+@keyframes scaleUp {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.variant-btn.clicked {
+    animation: scaleUp 0.3s ease;
+}
+
+.variant-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 </style>
 <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image" data-bs-bg="img/bg/14.jpg">
     <div class="container">
@@ -272,7 +303,6 @@
                                                 @else
                                                     @foreach($product->variants as $variant)
                                                         @php
-                                                            // Use attribute IDs for reliability (from handleProductVariants: 12 = Shape, 14 = Weight)
                                                             $shapeValue = $variant->attributeValues->firstWhere('attribute_id', 12);
                                                             $weightValue = $variant->attributeValues->firstWhere('attribute_id', 14);
                                                             $variantName = $shapeValue && $weightValue 
@@ -527,6 +557,7 @@
             <div class="col-lg-4">
                 <aside class="sidebar ltn__shop-sidebar ltn__right-sidebar">
                     <!-- Top Rated Product Widget -->
+                     
                     <div class="widget ltn__top-rated-product-widget">
                         <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
                         <ul>
@@ -601,6 +632,7 @@
                             </li>
                         </ul>
                     </div>
+
                     <!-- Banner Widget -->
                     <div class="widget ltn__banner-widget">
                         <a href="shop.html"><img src="img/banner/2.jpg" alt="#"></a>

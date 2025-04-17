@@ -102,27 +102,12 @@ class ProductController extends Controller
             'sku' => 'required|max:100',
             'brand_id' => 'required',
             'thumbnail' => 'nullable',
-
-            'variant_prices' => 'required|array',
-            'variant_prices.*.price' => 'required|numeric|min:0',
-            'variant_prices.*.sale_price' => 'nullable|numeric|min:0',
-            'variant_prices.*.sale_start_at' => 'required_with:variant_prices.*.sale_price',
-            'variant_prices.*.sale_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-
-            'variants.required' => 'Vui lòng chọn ít nhất một biến thể',
-            'variants.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
-            'variants.*.price.numeric' => 'Giá bán phải là số',
-            'variants.*.price.min' => 'Giá bán phải lớn hơn 0',
-            'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
-            'variants.*.sale_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variants.*.sale_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variants.*.sale_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
