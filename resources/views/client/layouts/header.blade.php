@@ -105,7 +105,7 @@
                                         <a href="#ltn__utilize-cart-menu" class="ltn__utilize-toggle">
                                             <span class="mini-cart-icon">
                                                 <i class="icon-shopping-cart"></i>
-                                                <sup>{{ $carts->count() }}</sup>
+                                                <sup>{{ $carts->sum('quantity') }}</sup>
                                             </span>
                                             <h6><span>Giỏ hàng</span> <span
                                                 class="ltn__secondary-color" id="cart-subtotal">{{ number_format($subtotal, 0) }}đ</span>

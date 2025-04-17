@@ -31,27 +31,89 @@
         }
 
 
-.section-title .char:nth-child(1) { animation-delay: 0s, 2s, 4s; }
-.section-title .char:nth-child(2) { animation-delay: 0.1s, 2s, 4s; }
-.section-title .char:nth-child(3) { animation-delay: 0.2s, 2s, 4s; }
-.section-title .char:nth-child(4) { animation-delay: 0.3s, 2s, 4s; }
-.section-title .char:nth-child(5) { animation-delay: 0.4s, 2s, 4s; }
-.section-title .char:nth-child(6) { animation-delay: 0.5s, 2s, 4s; }
-.section-title .char:nth-child(7) { animation-delay: 0.6s, 2s, 4s; }
-.section-title .char:nth-child(8) { animation-delay: 0.7s, 2s, 4s; }
-.section-title .char:nth-child(9) { animation-delay: 0.8s, 2s, 4s; }
-.section-title .char:nth-child(10) { animation-delay: 0.9s, 2s, 4s; }
-.section-title .char:nth-child(11) { animation-delay: 1s, 2s, 4s; }
-.section-title .char:nth-child(12) { animation-delay: 1.1s, 2s, 4s; }
-.section-title .char:nth-child(13) { animation-delay: 1.2s, 2s, 4s; }
-.section-title .char:nth-child(14) { animation-delay: 1.3s, 2s, 4s; }
-.section-title .char:nth-child(15) { animation-delay: 1.4s, 2s, 4s; }
-.section-title .char:nth-child(16) { animation-delay: 1.5s, 2s, 4s; }
-.section-title .char:nth-child(17) { animation-delay: 1.6s, 2s, 4s; }
-.section-title .char:nth-child(18) { animation-delay: 1.7s, 2s, 4s; }
-.section-title .char:nth-child(19) { animation-delay: 1.8s, 2s, 4s; }
-.section-title .char:nth-child(20) { animation-delay: 1.9s, 2s, 4s; }
-.section-title .char:nth-child(21) { animation-delay: 2s, 2s, 4s; }
+        .section-title .char:nth-child(1) {
+            animation-delay: 0s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(2) {
+            animation-delay: 0.1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(3) {
+            animation-delay: 0.2s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(4) {
+            animation-delay: 0.3s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(5) {
+            animation-delay: 0.4s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(6) {
+            animation-delay: 0.5s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(7) {
+            animation-delay: 0.6s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(8) {
+            animation-delay: 0.7s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(9) {
+            animation-delay: 0.8s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(10) {
+            animation-delay: 0.9s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(11) {
+            animation-delay: 1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(12) {
+            animation-delay: 1.1s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(13) {
+            animation-delay: 1.2s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(14) {
+            animation-delay: 1.3s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(15) {
+            animation-delay: 1.4s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(16) {
+            animation-delay: 1.5s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(17) {
+            animation-delay: 1.6s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(18) {
+            animation-delay: 1.7s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(19) {
+            animation-delay: 1.8s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(20) {
+            animation-delay: 1.9s, 2s, 4s;
+        }
+
+        .section-title .char:nth-child(21) {
+            animation-delay: 2s, 2s, 4s;
+        }
 
         .section-title .char:nth-child(1) {
             animation-delay: 0s, 2s, 4s;
@@ -249,7 +311,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
 
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
@@ -316,7 +378,7 @@
                             <div class="ltn__feature-info">
                                 <h4>Miễn phí vận chuyển</h4>
                                 <p>Cho tất cả các đơn hàng trên 49,000</p>
-                            </div>                            
+                            </div>
                         </div>
                         {{-- <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
@@ -346,7 +408,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -397,9 +459,11 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                    <a href="{{ route('products.productct', $product->id) }}">
-                                                        <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="product-image" width="250px" height="200px">
-                                                    </a>
+                                                        <a href="{{ route('products.productct', $product->id) }}">
+                                                            <img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                                                alt="{{ $product->name }}" class="product-image"
+                                                                width="250px" height="200px">
+                                                        </a>
                                                         <div class="product-badge">
                                                             <ul>
                                                                 @if (!empty($salePrice) && $salePrice > 0)
@@ -410,7 +474,8 @@
                                                                                 100,
                                                                         );
                                                                     @endphp
-                                                                    <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
+                                                                    <li class="sale-badge bg-danger rounded-1">-
+                                                                        {{ $discount }}%</li>
                                                                 @endif
                                                             </ul>
                                                         </div>
@@ -424,13 +489,6 @@
                                                                         <i class="far fa-eye"></i>
                                                                     </a>
                                                                 </li>
-                                                                {{-- <li>
-                                                                    <a href="#" class="add-to-cart-btn"
-                                                                        data-id="{{ $product->id }}"
-                                                                        title="Thêm vào giỏ hàng">
-                                                                        <i class="fas fa-shopping-cart"></i>
-                                                                    </a>
-                                                                </li> --}}
                                                             </ul>
                                                         </div>
                                                     </div>
@@ -448,8 +506,11 @@
                                                             @endphp
 
                                                             @if (!empty($salePrice) && $salePrice > 0)
-                                                                <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
-                                                                <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
+                                                                <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }}
+                                                                    VND</del>
+                                                                <span
+                                                                    class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }}
+                                                                    VND</span>
                                                             @else
                                                                 <span>{{ number_format($regularPrice) }}đ</span>
                                                             @endif
@@ -565,9 +626,10 @@
                 @foreach ($productBestSale as $product)
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
-                            <div class="product-img" >
+                            <div class="product-img">
                                 <a href="{{ route('products.productct', $product->id) }}">
-                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }} " width="250px" height="200px">
+                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }} "
+                                        width="250px" height="200px">
                                 </a>
                                 <div class="product-badge">
                                     <ul>
@@ -612,8 +674,10 @@
                                     @endphp
 
                                     @if (!empty($salePrice) && $salePrice > 0)
-                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }} VND</span>
-                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }} VND</del>
+                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }}
+                                            VND</span>
+                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }}
+                                            VND</del>
                                     @else
                                         <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif
@@ -634,7 +698,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title" >SẢN PHẨM NỔI BẬT</h1>
+                        <h1 class="section-title">SẢN PHẨM NỔI BẬT</h1>
                     </div>
                 </div>
             </div>
@@ -644,20 +708,23 @@
                     <div class="col-lg-4 col-md-6 col-12">
                         <div class="ltn__small-product-item">
                             <div class="small-product-item-img">
-                                <a href="{{ route('products.productct', $product->id) }}"><img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                        alt="Image" width="250px" height="100px"></a>
+                                <a href="{{ route('products.productct', $product->id) }}"><img
+                                        src="{{ asset('upload/' . $product->thumbnail) }}" alt="Image" width="250px"
+                                        height="100px"></a>
                             </div>
                             <div class="small-product-item-info">
                                 <div class="product-ratting">
-                                <ul>
-                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                    <li><a href="#"><i class="far fa-star"></i></a></li>
-                                </ul>
-                            </div>
-                                <h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2>
+                                    <ul>
+                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
+                                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
+                                        <li><a href="#"><i class="far fa-star"></i></a></li>
+                                    </ul>
+                                </div>
+                                <h2 class="product-title"><a
+                                        href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                </h2>
                                 <div class="product-price">
                                     @php
                                         $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
@@ -762,7 +829,8 @@
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                    alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
@@ -797,7 +865,8 @@
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                    alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
@@ -831,7 +900,8 @@
                 <div class="col-lg-12">
                     <div class="ltn__blog-item ltn__blog-item-3">
                         <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}" alt="Ảnh bài viết"></a>
+                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                    alt="Ảnh bài viết"></a>
                         </div>
                         <div class="ltn__blog-brief">
                             <div class="ltn__blog-meta">
@@ -882,7 +952,7 @@
                                 Khám phá sản phẩm <i class="icon-next"></i>
                             </a>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -949,13 +1019,13 @@
             `.replace(':id', response.id));
 
                     $('#quick_view_modal h3').text(response.name);
-                    $('#quick_view_modal .product-price span').text(
-                        new Intl.NumberFormat().format(response.sale_price) + 'đ'
-                    );
-                    $('#quick_view_modal .product-price del').text(
-                        new Intl.NumberFormat().format(response.sell_price) + 'đ'
-                    );
+                    $('#quick_view_modal .product-price span')
+                        .css('font-size', '30px')
+                        .text(new Intl.NumberFormat().format(response.sale_price) + 'đ');
 
+                    $('#quick_view_modal .product-price del')
+                        .css('font-size', '30px')
+                        .text(new Intl.NumberFormat().format(response.sell_price) + 'đ');
                     let categoriesHtml = response.categories.map(category =>
                         `<a href="#">${category.name}</a>`
                     ).join(", ");
@@ -965,9 +1035,13 @@
                     if (response.variants && response.variants.length > 0) {
                         let variantsHtml = '<div class="variant-buttons">';
                         variantsHtml += response.variants.map((variant, index) => {
-                            let attributesHtml = variant.attributes.map(attr =>
-                                `${attr.attribute.name}: ${attr.attribute.slug}${attr.value}`
-                            ).join('<br>');
+                            let shapeAttr = variant.attributes.find(attr => attr.attribute?.name
+                                .includes('Hình'));
+                            let weightAttr = variant.attributes.find(attr => attr.attribute
+                                ?.name.includes('Khối'));
+
+                            let variantName = [shapeAttr?.value, weightAttr?.value].filter(
+                                Boolean).join(' ') || 'Không có thuộc tính';
 
                             return `
                         <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
@@ -980,7 +1054,7 @@
                             data-sale-price="${variant.sale_price}"
                             data-stock="${variant.stock}"
                             data-variant-index="${index}">
-                            ${attributesHtml ? attributesHtml + '<br>' : ''}
+                            ${variantName || 'Không có thuộc tính'}
                         </button>
                     `;
                         }).join('');
@@ -1052,7 +1126,6 @@
                 },
                 success: function(response) {
                     if (response.status === "success") {
-                        console.log(response.cart_items);
                         $(".mini-cart-quantity").text(response.cart_count);
                         let cartHtml = "";
                         response.cart_items.forEach(item => {
@@ -1077,6 +1150,7 @@
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
                         $("#cart-subtotal").text(response.subtotal);
+                        $('sup').text(response.cart_count);
 
                         Toastify({
                             text: "Sản phẩm đã được thêm vào giỏ hàng!",
@@ -1098,7 +1172,7 @@
         });
     </script>
 @endpush
-@push('styles')
+@push('css')
     <style>
         .toastify {
             padding: 12px 20px;
@@ -1117,6 +1191,71 @@
 
         .modal-product-variants {
             margin: 15px 0;
+        }
+
+        .variant-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            /* tương đương gap-2 của Bootstrap */
+            margin-top: 0.5rem;
+            /* tương đương mt-2 */
+        }
+
+        .ltn__product-item {
+            min-height: 380px;
+            /* hoặc chiều cao bạn thấy hợp lý */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        .product-info {
+            margin-top: 10px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            min-height: 48px;
+            /* Đảm bảo chiếm 2 dòng */
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            /* Hiển thị 2 dòng */
+            -webkit-box-orient: vertical;
+            text-overflow: ellipsis;
+            line-height: 1.4em;
+            height: 2.8em;
+        }
+
+        .product-img img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-price {
+            min-height: 48px;
+            /* Chiều cao cố định cho khu vực giá */
+        }
+
+        .product-price span,
+        .product-price del {
+            display: block;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .product-price del {
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .product-img {
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
         }
     </style>
 @endpush

@@ -267,16 +267,16 @@ class ProductController extends Controller
             $existingAttributes = [];
             $variantCount = 0;
 
-            
+
             if (!$request->has('variants') || !is_array($request->variants)) {
                 throw new \Exception('Dữ liệu biến thể không hợp lệ');
             }
 
             foreach ($request->variants as $shapeId => $weights) {
-                
+
                 $shapeAttribute = AttributeValue::where('id', $shapeId)
                     ->where('attribute_id', 12)
-                    ->where('is_active', 1) 
+                    ->where('is_active', 1)
                     ->first();
 
                 if (!$shapeAttribute) {
@@ -285,10 +285,10 @@ class ProductController extends Controller
                 }
 
                 foreach ($weights as $weightId) {
-                    
+
                     $weightAttribute = AttributeValue::where('id', $weightId)
                         ->where('attribute_id', 14)
-                        ->where('is_active', 1) 
+                        ->where('is_active', 1)
                         ->first();
 
                     if (!$weightAttribute) {
@@ -296,7 +296,7 @@ class ProductController extends Controller
                         continue;
                     }
 
-                   
+
                     $variantPrices = $request->input("variant_prices.{$shapeId}-{$weightId}");
                     if (!$variantPrices || !isset($variantPrices['price'])) {
                         \Log::warning("Thiếu thông tin giá cho biến thể: shape {$shapeId}, weight {$weightId}");
@@ -305,7 +305,7 @@ class ProductController extends Controller
 
                     DB::beginTransaction();
                     try {
-                       
+
                         $productVariant = ProductVariant::create([
                             'product_id' => $product->id,
                             'price' => $variantPrices['price'],
@@ -315,15 +315,15 @@ class ProductController extends Controller
                             'stock' => 0,
                         ]);
 
-                        
+
                         foreach ([$shapeId, $weightId] as $attributeValueId) {
-                         
+
                             AttributeValueProductVariant::create([
                                 'product_variant_id' => $productVariant->id,
                                 'attribute_value_id' => $attributeValueId,
                             ]);
 
-                            
+
                             if (!in_array($attributeValueId, $existingAttributes)) {
                                 AttributeValueProduct::firstOrCreate(
                                     [
@@ -464,7 +464,7 @@ class ProductController extends Controller
     // cập nhất sản phẩm
     public function update(Request $request, $id)
     {
-        
+
         $validator = Validator::make($request->all(), [
             'category_id' => 'required',
             'category_type_id' => 'required',
@@ -688,7 +688,7 @@ class ProductController extends Controller
 
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
     }
-    
+
     public function pendingUpdates()
     {
         $user = auth()->user();
@@ -1207,13 +1207,7 @@ class ProductController extends Controller
     // client
     public function productct($id)
     {
-        $carts = Cart::where('user_id', auth()->id())->get();
-        $subtotal = $carts->sum(function ($cart) {
-            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0
-                ? $cart->product->sale_price
-                : $cart->product->sell_price;
-            return $cart->quantity * $price;
-        });
+        $user = auth()->user();
         $product = Product::query()
             ->with([
                 'brand',
@@ -1245,7 +1239,17 @@ class ProductController extends Controller
             ->with('variants')
             ->limit(10)
             ->get();
+        $carts = Cart::where('user_id', $user->id)
+            ->with(['product', 'productVariant'])
+            ->get();
 
+        $subtotal = $carts->sum(function ($cart) {
+            $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
+            return $cart->quantity * $price;
+        });
+        $cart_count = $carts->sum('quantity');
         return view('client.product.productct', compact(
             'product',
             'categories',
@@ -1256,7 +1260,8 @@ class ProductController extends Controller
             'carts',
             'subtotal',
             'relatedProducts',
-            'min_variant_price'
+            'min_variant_price',
+            'cart_count'
         ));
     }
 

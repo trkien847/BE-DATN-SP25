@@ -795,13 +795,13 @@
                         // ✅ Cập nhật tổng tiền trên header & giỏ hàng
                         $(".mini-cart-sub-total span").text(data.subtotal);
                         $("#cart-subtotal").text(data.subtotal);
+                        $('sup').text(response.cart_count);
                     } else {
                         showToast("Lỗi: " + data.message, "error");
                     }
                 })
                 .catch(error => {
                     console.error("Lỗi:", error);
-                    showToast("Đã xảy ra lỗi khi thêm vào giỏ hàng!", "error");
                 });
         });
 

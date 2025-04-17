@@ -962,9 +962,21 @@ class CartController extends Controller
     public function remove(Request $request)
     {
         $cart = Cart::find($request->cart_id);
-        $cart->delete();
-        return response()->json(['status' => 'success', 'message' => 'Xóa sản phẩm khỏi giỏ hàng thành công!']);
+
+        if ($cart) {
+            $cart->delete();
+        }
+
+        // Lấy lại danh sách giỏ hàng và tính tổng số lượng sản phẩm
+        $carts = Cart::where('user_id', auth()->id())->get();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Xóa sản phẩm khỏi giỏ hàng thành công!',
+            'cart_count' => $carts->sum('quantity') 
+        ]);
     }
+
     public function update(Request $request)
     {
         $cart = Cart::find($request->cart_id);
@@ -990,7 +1002,8 @@ class CartController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Cập nhật giỏ hàng thành công!',
-            'subtotal' => number_format($subtotal, 2) . 'đ'
+            'subtotal' => number_format($subtotal, 2) . 'đ',
+            'cart_count' => $carts->sum('quantity')
         ]);
     }
 }
