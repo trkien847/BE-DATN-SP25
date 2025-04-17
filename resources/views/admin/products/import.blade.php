@@ -274,7 +274,7 @@ td, th {
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Chọn sản phẩm heheboy</label>
+          <label class="form-label">Chọn sản phẩm </label>
 
           <div class="product-list" style="margin-top: 5px;">
               <!-- Sản phẩm đã nhập -->
@@ -555,10 +555,10 @@ td, th {
             </div>
             <div class="modal-body">
                 <p><strong>Ngày nhập:</strong> <span id="modal-imported-at"></span></p>
-                <p><strong>Người Chịu trận:</strong> <span id="modal-imported-by"></span></p>
+                <p><strong>Người nhậnnhận:</strong> <span id="modal-imported-by"></span></p>
                 <p><strong>Trạng thái:</strong> <span id="modal-status"></span></p>
                 
-                <h5>Danh sách sản phẩm nhập(Truy cập saygex69 để tham gia vào hội ae xã đoàn nhé)</h5>
+                <h5>Danh sách sản phẩm nhập</h5>
                 <ul id="modal-import-details" class="list-group"></ul>
             </div>
         </div>

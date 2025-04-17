@@ -41,7 +41,7 @@ Route::middleware(['check.auth'])->group(function () {
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
 
-
+// /orders/statistics
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -150,7 +150,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
 
-  // nhập imports.show
+  // nhập /products/pending-update/
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
@@ -170,7 +170,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng 
+  //lịch sử mua hàng products.approve-pending 
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
@@ -204,7 +204,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/products/search', [ProductController::class, 'search'])->name('products.import.search');
 
   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-  // Quản lý thuộc tính sản phẩm 
+  // Quản lý thuộc tính sản phẩm  /products/approve-pending/
   Route::post('/admin/attributes/{attribute}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.attributes.toggle-status');
 
   Route::get('/admin/attributes', [ProductController::class, 'attributesList'])->name('attributes.list');
@@ -220,7 +220,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
 
-  // Quản lý đơn hàng
+  // Quản lý đơn hàng /products/
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');

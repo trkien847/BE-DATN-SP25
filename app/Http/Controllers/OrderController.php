@@ -55,21 +55,28 @@ class OrderController extends Controller
     public function getOrderDetails($id)
     {
         $order = Order::findOrFail($id);
-        $items = OrderItem::with(['product' => function ($query) {
-            $query->with(['importProducts' => function ($query) {
-                $query->orderBy('created_at', 'desc')->first(); 
-            }]);
-        }])->where('order_id', $id)->get()
+        $items = OrderItem::with('product')
+            ->where('order_id', $id)
+            ->get()
             ->map(function ($item) {
-                $latestImport = $item->product->importProducts->first();
+                // Tính thời gian hết hạn từ created_at đến expiry_date (nếu có)
+                $daysUntilExpiry = null;
+                if ($item->created_at && $item->expiry_date) {
+                    $createdAt = \Carbon\Carbon::parse($item->created_at);
+                    $expiryDate = \Carbon\Carbon::parse($item->expiry_date);
+                    $daysUntilExpiry = $createdAt->diffInDays($expiryDate);
+                }
 
                 return [
                     'product' => $item->product,
                     'name_variant' => $item->name_variant,
                     'quantity' => $item->quantity,
                     'price' => $item->price,
-                    'manufacture_date' => $latestImport ? $latestImport->manufacture_date : null,
-                    'expiry_date' => $latestImport ? $latestImport->expiry_date : null
+                    'manufacture_date' => $item->manufacture_date,
+                    'expiry_date' => $item->expiry_date,
+                    'import_code' => $item->import_code,
+                    'days_until_expiry' => $daysUntilExpiry, // Số ngày từ created_at đến expiry_date
+                    'created_at' => $item->created_at,
                 ];
             });
 
@@ -362,13 +369,11 @@ class OrderController extends Controller
             $end = Carbon::today()->endOfDay();
             $dateLabel = Carbon::today()->format('d/m/Y');
         }
-
-        // Xuất Excel 
+ 
         if ($request->has('export')) {
             return Excel::download(new OrdersStatisticsExport($start, $end, $filterType, $dateLabel), 'thong-ke-don-hang.xlsx');
         }
 
-        // Logic biểu đồ
         $labels = [];
         $expectedRevenueData = [];
         $actualRevenueData = [];

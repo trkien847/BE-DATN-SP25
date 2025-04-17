@@ -44,13 +44,6 @@
                                 @endfor
                             </select>
                         </div>
-                        <div class="col">
-                            <select name="year" class="form-control">
-                                @for ($y = $currentYear; $y >= 2000; $y--)
-                                    <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
                     </div>
                 </div>
 
