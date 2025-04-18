@@ -17,6 +17,9 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'fullname' => 'required|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'gender' => 'nullable|in:Nam,Nữ,Khác',
+            'birthday' => 'nullable|date',
             'email' => [
                 'nullable',
                 'email',

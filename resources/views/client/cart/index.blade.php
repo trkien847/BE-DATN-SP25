@@ -213,8 +213,7 @@
                                             <td class="cart-product-remove"><i class="fas fa-trash-alt"></td>
                                             <td class="cart-product-image">
                                                 <a href="{{ route('products.productct', $cart->product->id) }}">
-                                                    <img
-                                                        src="{{ asset('upload/' . $cart->product->thumbnail) }}"
+                                                    <img src="{{ asset('upload/' . $cart->product->thumbnail) }}"
                                                         alt="#">
                                                 </a>
                                             </td>
@@ -262,13 +261,16 @@
                                         </tr>
                                     @endforeach
                                     <tr class="cart-summary-row">
-                                        <td colspan="4" class="text-end cart-summary-text">Tổng tiền của tất cả sản phẩm:</td>
+                                        <td colspan="4" class="text-end cart-summary-text">Tổng tiền của tất cả sản phẩm:
+                                        </td>
                                         <td colspan="3" class="cart-summary-amount">
-                                            {{ number_format($carts->sum(function($cart) {
-                                                return ($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 
-                                                    ? $cart->productVariant->sale_price 
-                                                    : $cart->productVariant->sell_price) * $cart->quantity;
-                                            })) }}đ
+                                            {{ number_format(
+                                                $carts->sum(function ($cart) {
+                                                    return ($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0
+                                                        ? $cart->productVariant->sale_price
+                                                        : $cart->productVariant->sell_price) * $cart->quantity;
+                                                }),
+                                            ) }}đ
                                         </td>
                                     </tr>
                                     <tr class="cart-coupon-row">
@@ -369,7 +371,7 @@
                                 Khám phá sản phẩm <i class="icon-next"></i>
                             </a>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -418,8 +420,12 @@
             });
 
             $('.theme-btn-2').hover(
-                function() { $(this).addClass('hover'); },
-                function() { $(this).removeClass('hover'); }
+                function() {
+                    $(this).addClass('hover');
+                },
+                function() {
+                    $(this).removeClass('hover');
+                }
             );
         });
 
@@ -443,7 +449,7 @@
                 let isChecked = $(this).is(':checked');
                 let cartId = $row.data('cart-id');
 
-                if (isChecked) { 
+                if (isChecked) {
                     addToCartDetails($row);
                 } else {
                     removeFromCartDetails(cartId);
@@ -524,12 +530,13 @@
                             );
                             let totalAmount = 0;
                             $('.cart-product-subtotal').each(function() {
-                                const amount = parseFloat($(this).text().replace(/[,.đ]/g, '')) || 0;
+                                const amount = parseFloat($(this).text().replace(
+                                    /[,.đ]/g, '')) || 0;
                                 totalAmount += amount;
                             });
                             $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + 'đ')
                                 .addClass('updating');
-                            
+                            $('sup').text(response.cart_count);
                             setTimeout(() => {
                                 $('.cart-summary-amount').removeClass('updating');
                             }, 300);
@@ -547,28 +554,28 @@
             });
 
 
-            $(document).on('click', '.cart-product-remove', function() {
-                let cartRow = $(this).closest('tr');
-                let cartId = cartRow.data('cart-id');
+            // $(document).on('click', '.cart-product-remove', function() {
+            //     let cartRow = $(this).closest('tr');
+            //     let cartId = cartRow.data('cart-id');
 
-                $.ajax({
-                    url: "{{ route('cart.remove') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        cart_id: cartId
-                    },
-                    success: function(response) {
-                        if (response.status === "success") {
-                            cartRow.remove();
-                            updateCartTotal();
-                            showToast(response.message, "success");
-                        } else {
-                            showToast(response.message, "error");
-                        }
-                    }
-                });
-            });
+            //     $.ajax({
+            //         url: "{{ route('cart.remove') }}",
+            //         type: "POST",
+            //         data: {
+            //             _token: "{{ csrf_token() }}",
+            //             cart_id: cartId
+            //         },
+            //         success: function(response) {
+            //             if (response.status === "success") {
+            //                 cartRow.remove();
+            //                 updateCartTotal();
+            //                 showToast(response.message, "success");
+            //             } else {
+            //                 showToast(response.message, "error");
+            //             }
+            //         }
+            //     });
+            // });
 
 
             $('#apply-coupon').on('click', function() {
@@ -606,7 +613,7 @@
                             $('#cart-details').after(discountRow);
                             $('#coupon-code').after(
                                 `<small id="applied-coupon-text">Đã áp dụng: ${couponCode} (Giảm ${response.discount}đ)</small>`
-                                );
+                            );
 
                             $('#coupon-code, #apply-coupon').prop('disabled', true);
                             showToast(response.message, "success");
@@ -654,6 +661,7 @@
                             }
 
                             updateCartTotal();
+                            $('sup').text(response.cart_count);
                             if ($('.cart-item-checkbox').length === $(
                                     '.cart-item-checkbox:checked').length) {
                                 $('#select-all').prop('checked', true);
@@ -797,15 +805,16 @@
             });
 
             $(".cart-product-subtotal").each(function() {
-                let value = $(this).text().replace(/[^0-9]/g, ''); 
-                let price = value ? parseFloat(value) : 0; 
+                let value = $(this).text().replace(/[^0-9]/g, '');
+                let price = value ? parseFloat(value) : 0;
                 total2 += price;
             });
 
             total = isNaN(total) ? 0 : total;
             total2 = isNaN(total2) ? 0 : total2;
 
-            const discount = $('#discount-row').length ? parseFloat($('#discount-row td:last-child').text().replace(/[^0-9]/g, '')) : 0;
+            const discount = $('#discount-row').length ? parseFloat($('#discount-row td:last-child').text().replace(
+                /[^0-9]/g, '')) : 0;
             total -= discount;
 
             $("#cart-grand-total").text(total.toLocaleString('vi-VN') + "đ");
@@ -900,9 +909,6 @@
 
             this.submit();
         });
-
-
-       
     </script>
 @endpush
 @push('css')
@@ -973,7 +979,7 @@
         .shoping-cart-table {
             background: #fff;
             border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             margin: 20px 0;
         }
@@ -1001,7 +1007,7 @@
         .table tbody tr:hover {
             background-color: #f8f9fa;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
         .table td {
@@ -1048,7 +1054,7 @@
             display: inline-flex;
             overflow: hidden;
             background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
         .cart-plus-minus-box {
@@ -1124,9 +1130,17 @@
         }
 
         @keyframes priceUpdate {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .cart-coupon input {
@@ -1146,15 +1160,26 @@
         }
 
         @keyframes priceUpdate {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .cart-coupon input:focus {
             outline: none;
             border-color: #0d6efd;
-            box-shadow: 0 0 0 2px rgba(13,110,253,0.25);
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
         }
 
         .cart-product-subtotal {
@@ -1181,10 +1206,10 @@
         .theme-btn-2:hover {
             background: #0b5ed7;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13,110,253,0.3);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
         }
 
-      
+
         .updating {
             opacity: 0.7;
             pointer-events: none;
@@ -1198,7 +1223,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255,255,255,0.7) url('data:image/svg+xml,...') center no-repeat;
+            background: rgba(255, 255, 255, 0.7) url('data:image/svg+xml,...') center no-repeat;
             background-size: 30px;
         }
 
@@ -1214,17 +1239,17 @@
             margin-bottom: 15px;
         }
 
-        
+
         @media (max-width: 768px) {
             .cart-product-image img {
                 width: 60px;
                 height: 60px;
             }
-            
+
             .table td {
                 padding: 10px;
             }
-            
+
             .cart-coupon {
                 flex-direction: column;
             }
@@ -1307,6 +1332,14 @@
             font-weight: bold;
         }
 
+        /* Căn chỉnh tổng tiền */
+        .shopping-cart-main-table .cart-summary-row td:first-child {
+            text-align: right;
+        }
 
+        .shopping-cart-main-table .cart-summary-row td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
     </style>
 @endpush

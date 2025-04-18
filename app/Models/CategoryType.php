@@ -22,7 +22,7 @@ class CategoryType extends Model implements Transformable
      *
      * @var array
      */
-    protected $fillable = ['category_id', 'name', 'icon'];
+    protected $fillable = ['category_id', 'name', 'status', 'created_by', 'approved_by', 'approved_at'];
 
     public function category()
     {

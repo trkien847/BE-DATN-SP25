@@ -160,7 +160,6 @@ class ProductController extends Controller
                 $admins = User::where('role_id', 3)->get();
 
                 if ($admins->isEmpty()) {
-                    \Log::warning("No admins found to notify for product creation request from user {$user->id}");
                     throw new \Exception('Không tìm thấy admin để xử lý yêu cầu');
                 }
 
@@ -250,45 +249,42 @@ class ProductController extends Controller
             $existingAttributes = [];
             $variantCount = 0;
 
-            
+
             if (!$request->has('variants') || !is_array($request->variants)) {
                 throw new \Exception('Dữ liệu biến thể không hợp lệ');
             }
 
             foreach ($request->variants as $shapeId => $weights) {
-                
+
                 $shapeAttribute = AttributeValue::where('id', $shapeId)
                     ->where('attribute_id', 12)
-                    ->where('is_active', 1) 
+                    ->where('is_active', 1)
                     ->first();
 
                 if (!$shapeAttribute) {
-                    \Log::warning("Hình dạng không hợp lệ hoặc không còn hoạt động: {$shapeId}");
                     continue;
                 }
 
                 foreach ($weights as $weightId) {
-                    
+
                     $weightAttribute = AttributeValue::where('id', $weightId)
                         ->where('attribute_id', 14)
-                        ->where('is_active', 1) 
+                        ->where('is_active', 1)
                         ->first();
 
                     if (!$weightAttribute) {
-                        \Log::warning("Khối lượng không hợp lệ hoặc không còn hoạt động: {$weightId}");
                         continue;
                     }
 
-                   
+
                     $variantPrices = $request->input("variant_prices.{$shapeId}-{$weightId}");
                     if (!$variantPrices || !isset($variantPrices['price'])) {
-                        \Log::warning("Thiếu thông tin giá cho biến thể: shape {$shapeId}, weight {$weightId}");
                         continue;
                     }
 
                     DB::beginTransaction();
                     try {
-                       
+
                         $productVariant = ProductVariant::create([
                             'product_id' => $product->id,
                             'price' => $variantPrices['price'],
@@ -298,15 +294,15 @@ class ProductController extends Controller
                             'stock' => 0,
                         ]);
 
-                        
+
                         foreach ([$shapeId, $weightId] as $attributeValueId) {
-                         
+
                             AttributeValueProductVariant::create([
                                 'product_variant_id' => $productVariant->id,
                                 'attribute_value_id' => $attributeValueId,
                             ]);
 
-                            
+
                             if (!in_array($attributeValueId, $existingAttributes)) {
                                 AttributeValueProduct::firstOrCreate(
                                     [
@@ -322,11 +318,6 @@ class ProductController extends Controller
                         DB::commit();
                     } catch (\Exception $e) {
                         DB::rollBack();
-                        \Log::error("Lỗi khi tạo biến thể: {$e->getMessage()}", [
-                            'shape_id' => $shapeId,
-                            'weight_id' => $weightId,
-                            'product_id' => $product->id
-                        ]);
                     }
                 }
             }
@@ -337,7 +328,6 @@ class ProductController extends Controller
 
             return $variantCount;
         } catch (\Exception $e) {
-            \Log::error("Lỗi trong quá trình tạo biến thể: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -416,11 +406,6 @@ class ProductController extends Controller
                 }
             }
 
-            \Log::debug('Variant Data:', [
-                'variantData' => $variantData,
-                'selectedVariants' => $selectedVariants
-            ]);
-
             return view('admin.products.productUpdateForm', compact(
                 'product',
                 'categories',
@@ -433,21 +418,16 @@ class ProductController extends Controller
                 'weightValues'
             ));
         } catch (\Exception $e) {
-            \Log::error('Error in edit product:', [
-                'product_id' => $id,
-                'error' => $e->getMessage()
-            ]);
-
             return redirect()
                 ->route('products.list')
                 ->with('error', 'Có lỗi xảy ra khi tải thông tin sản phẩm: ' . $e->getMessage());
         }
     }
 
-    // cập nhất sản phẩm
+    // cập nhất sản phẩm 
     public function update(Request $request, $id)
     {
-        
+
         $validator = Validator::make($request->all(), [
             'category_id' => 'required',
             'category_type_id' => 'required',
@@ -524,7 +504,6 @@ class ProductController extends Controller
 
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
-                \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu sửa sản phẩm từ user {$user->id}");
             } else {
                 $detailUrl = route('products.pending-update-detail', $pendingUpdate->id);
                 $approveUrl = route('products.approve-pending', $pendingUpdate->id);
@@ -602,14 +581,12 @@ class ProductController extends Controller
             foreach ($request->variants as $shapeId => $weights) {
                 $shapeAttribute = AttributeValue::where('id', $shapeId)->where('attribute_id', 12)->first();
                 if (!$shapeAttribute) {
-                    \Log::warning("Invalid shapeId: {$shapeId}");
                     continue;
                 }
 
                 foreach ($weights as $weightId) {
                     $weightAttribute = AttributeValue::where('id', $weightId)->where('attribute_id', 14)->first();
                     if (!$weightAttribute) {
-                        \Log::warning("Invalid weightId: {$weightId}");
                         continue;
                     }
 
@@ -671,7 +648,7 @@ class ProductController extends Controller
 
         return redirect()->route('products.list')->with('success', 'Sản phẩm đã được sửa thành công!');
     }
-    
+
     public function pendingUpdates()
     {
         $user = auth()->user();
@@ -789,7 +766,6 @@ class ProductController extends Controller
                 ->with('success', 'Đã duyệt thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error approving product update: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
@@ -865,17 +841,14 @@ class ProductController extends Controller
     private function updateProductCategories($product, $data)
     {
         if (!isset($data['category_id']) || !isset($data['category_type_id'])) {
-            \Log::error('Missing category_id or category_type_id in data', $data);
             throw new \Exception('Dữ liệu danh mục không đầy đủ.');
         }
 
         if (!Category::find($data['category_id'])) {
-            \Log::error('Invalid category_id: ' . $data['category_id']);
             throw new \Exception('Danh mục không tồn tại.');
         }
 
         if (!CategoryType::find($data['category_type_id'])) {
-            \Log::error('Invalid category_type_id: ' . $data['category_type_id']);
             throw new \Exception('Loại danh mục không tồn tại.');
         }
 
@@ -921,7 +894,6 @@ class ProductController extends Controller
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Error handling product images: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -1190,13 +1162,7 @@ class ProductController extends Controller
     // client
     public function productct($id)
     {
-        $carts = Cart::where('user_id', auth()->id())->get();
-        $subtotal = $carts->sum(function ($cart) {
-            $price = !empty($cart->product->sale_price) && $cart->product->sale_price > 0
-                ? $cart->product->sale_price
-                : $cart->product->sell_price;
-            return $cart->quantity * $price;
-        });
+        $user = auth()->user();
         $product = Product::query()
             ->with([
                 'brand',
@@ -1228,7 +1194,17 @@ class ProductController extends Controller
             ->with('variants')
             ->limit(10)
             ->get();
+        $carts = Cart::where('user_id', $user->id)
+            ->with(['product', 'productVariant'])
+            ->get();
 
+        $subtotal = $carts->sum(function ($cart) {
+            $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
+                ? $cart->productVariant->sale_price
+                : $cart->productVariant->price;
+            return $cart->quantity * $price;
+        });
+        $cart_count = $carts->sum('quantity');
         return view('client.product.productct', compact(
             'product',
             'categories',
@@ -1239,7 +1215,8 @@ class ProductController extends Controller
             'carts',
             'subtotal',
             'relatedProducts',
-            'min_variant_price'
+            'min_variant_price',
+            'cart_count'
         ));
     }
 
@@ -1362,7 +1339,7 @@ class ProductController extends Controller
         if ($isActive == 0) {
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
-                \Log::warning("Không tìm thấy admin để gửi thông báo cho yêu cầu nhập hàng từ user " . auth()->id());
+                
             } else {
                 $confirmUrl = route('products.import.confirm', $import->id);
                 $rejectUrl = route('products.import.reject', $import->id);
@@ -1825,12 +1802,9 @@ class ProductController extends Controller
     public function acknowledgeNotification(Request $request, $type, $id)
     {
         try {
-            // Validate parameters
             if (!in_array($type, ['import_response', 'product_approval_response'])) {
                 throw new \InvalidArgumentException('Loại thông báo không hợp lệ');
             }
-
-            // Find and update notification
             $updated = Notification::where([
                 'user_id' => auth()->id(),
                 'type' => $type,
@@ -1846,28 +1820,7 @@ class ProductController extends Controller
             if (!$updated) {
                 throw new \Exception('Không tìm thấy thông báo hoặc đã được đánh dấu trước đó');
             }
-
-            // Log the action
-            \Log::info('Notification acknowledged', [
-                'user_id' => auth()->id(),
-                'type' => $type,
-                'id' => $id
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xác nhận thông báo',
-                'notification' => [
-                    'title' => 'Thành công!',
-                    'icon' => 'success',
-                    'text' => 'Thông báo đã được đánh dấu là đã đọc',
-                    'confirmButtonText' => 'Đồng ý',
-                    'timer' => 2000
-                ],
-                'data' => [
-                    'updated_at' => now()->format('Y-m-d H:i:s')
-                ]
-            ]);
+            return redirect()->back()->with('success', 'Thông báo đã được đánh dấu là đã đọc!');
         } catch (\InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
@@ -1880,13 +1833,6 @@ class ProductController extends Controller
                 ]
             ], 400);
         } catch (\Exception $e) {
-            \Log::error('Error acknowledging notification:', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-                'type' => $type,
-                'id' => $id
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra',
