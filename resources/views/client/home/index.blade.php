@@ -310,12 +310,12 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="http://127.0.0.1:8000/upload/1744296326.gif">
+                            data-bs-bg="http://127.0.0.1:8000/upload/baner1.jpg">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
 
-                                        <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
+                                        <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
                                             <div class="slide-item-info">
                                                 <div class="slide-item-info-inner ltn__slide-animation">
                                                     <h5
@@ -334,7 +334,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> -->
 
 
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
@@ -348,11 +348,11 @@
                         </div>
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGFuYnU1YjU5MmV4ZHFkdHo4NXU0NnpweG5oNzFvajhpcGxrZTN4ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l36kU80xPf0ojG0Erg/giphy.gif">
+                            data-bs-bg="http://127.0.0.1:8000/upload/baner2.jpg">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
-                                        <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
+                                        <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
                                             <div class="slide-item-info">
                                                 <div class="slide-item-info-inner ltn__slide-animation">
                                                     <h4
@@ -372,7 +372,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                             <div class="slide-item-img">
                                                 <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
