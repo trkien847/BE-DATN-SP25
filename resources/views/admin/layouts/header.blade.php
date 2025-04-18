@@ -670,21 +670,7 @@
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
                                         `;
-                                case 'coupon_created':
-                                    return `
-                                            <form action="${notification.data.actions.approved}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                            </form>
-                                            <form action="${notification.data.actions.reject_request}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                            </form>
-                                        `;
+                             
                                 case 'coupon_pending_create':
                                     let data = notification.data;
                                     if (typeof data === 'string') {
