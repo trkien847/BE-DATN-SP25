@@ -1,7 +1,6 @@
 @extends('admin.layouts.layout')
 
 @section('content')
-
     <div class="row">
         <div class="col">
             <div class="card">
@@ -37,8 +36,10 @@
                             <div class="mb-3">
                                 <label for="discount_type" class="form-label">Kiểu giảm giá</label>
                                 <select id="discount_type" name="discount_type" class="form-control">
-                                    <option value="phan_tram" {{ $coupon->discount_type == 'phan_tram' ? 'selected' : '' }}>Phần trăm (%)</option>
-                                    <option value="co_dinh" {{ $coupon->discount_type == 'co_dinh' ? 'selected' : '' }}>Cố định</option>
+                                    <option value="phan_tram" {{ $coupon->discount_type == 'phan_tram' ? 'selected' : '' }}>
+                                        Phần trăm (%)</option>
+                                    <option value="co_dinh" {{ $coupon->discount_type == 'co_dinh' ? 'selected' : '' }}>Cố
+                                        định</option>
                                 </select>
                             </div>
 
@@ -49,8 +50,8 @@
                                     value="{{ old('discount_value', $coupon->discount_value) }}">
                             </div>
 
-                             <!-- Số lần sử dụng tối đa -->
-                            
+                            <!-- Số lần sử dụng tối đa -->
+
                             <div class="mb-3">
                                 <label for="usage_limit" class="form-label">Số lần sử dụng tối đa</label>
                                 <input type="number" id="usage_limit" name="usage_limit" class="form-control"
@@ -63,11 +64,11 @@
                                     <div class="mb-3">
                                         <label for="min_order_value" class="form-label">Số tiền tối thiểu để áp dụng</label>
                                         <input type="number" id="min_order_value" name="min_order_value"
-                                            class="form-control" step="0.01" placeholder="Nhập số tiền tối thiểu" 
+                                            class="form-control" step="0.01" placeholder="Nhập số tiền tối thiểu"
                                             value="{{ old('min_order_value', $minOrderValue) }}">
                                     </div>
                                 </div>
-                            
+
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="max_discount_value" class="form-label">Số tiền tối đa giảm</label>
@@ -77,7 +78,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
 
                             <!-- Ngày bắt đầu & Ngày kết thúc -->
                             <div class="row">
@@ -98,30 +99,38 @@
                             </div>
 
                             <!-- Chỉ áp dụng cho sản phẩm -->
-                            <div class="mb-3">
-                                <label for="valid_products" class="form-label">Áp dụng cho sản phẩm</label>
-                                <select class="form-control" name="valid_products[]" multiple>
-                                    @foreach ($products as $product)
-                                        <option value="{{ $product->id }}" {{ in_array($product->id, $validProducts) ? 'selected' : '' }}>
-                                            {{ $product->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="valid_products" class="form-label">Áp dụng cho sản phẩm</label>
+                                        <select class="form-control" id="choices-multiple-remove-buttonsss" data-choices
+                                            data-choices-removeItem name="valid_products[]" multiple>
+                                            @foreach ($products as $product)
+                                                <option value="{{ $product->id }}"
+                                                    {{ collect(old('valid_products', $validProducts))->contains($product->id) ? 'selected' : '' }}>
+                                                    {{ $product->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- Chỉ áp dụng cho danh mục -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="valid_categories" class="form-label">Áp dụng cho danh mục</label>
+                                        <select class="form-control" id="choices-multiple-remove-buttonsss" data-choices
+                                            data-choices-removeItem name="valid_categories[]" multiple>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}"
+                                                    {{ collect(old('valid_categories', $validCategories))->contains($category->id) ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-
-                            <!-- Chỉ áp dụng cho danh mục -->
-                            <div class="mb-3">
-                                <label for="valid_categories" class="form-label">Áp dụng cho danh mục</label>
-                                <select class="form-control" name="valid_categories[]" multiple>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}" {{ in_array($category->id, $validCategories) ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Áp dụng cho khách hàng -->
+                            {{-- <!-- Áp dụng cho khách hàng -->
                             <div class="mb-3">
                                 <label for="user_id" class="form-label">Áp dụng cho khách hàng</label>
                                 <select class="form-control" name="user_id[]" multiple>
@@ -131,7 +140,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
+                            </div> --}}
 
                             <!-- Nút cập nhật -->
                             <button type="submit" class="btn btn-primary">Cập nhật mã giảm giá</button>
@@ -141,5 +150,4 @@
             </div>
         </div>
     </div>
-
 @endsection

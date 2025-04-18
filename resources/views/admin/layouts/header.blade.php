@@ -121,10 +121,10 @@
                                     </form>
                                     <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
                                         @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                        @include('components.hidden-notification-id', ['notification' => $notification])
                                         <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
                                     </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                    <a href="{{ e($notification->data['actions']['view_details']) }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                 </div>
                                 @elseif($notification->type === 'refund_request')
                                 <div class="d-flex gap-2">
@@ -160,13 +160,13 @@
                                 </div>
                                 @elseif($notification->type === 'product_pending_create')
                                 <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['approve_request'] }}" method="POST" style="display:inline;">
+                                    <form action="{{ e($notification->data['actions']['approve_request']) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="notification_id" value="{{ $notification->id }}">
                                         <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
                                     </form>
-                                    <form action="{{ $notification->data['actions']['reject_request'] }}" method="POST" style="display:inline;">
+                                    <form action="{{ e($notification->data['actions']['reject_request']) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="notification_id" value="{{ $notification->id }}">
@@ -194,7 +194,7 @@
                                 <div class="d-flex gap-2">
                                     <form action="{{ $notification->data['actions']['confirm_request'] }}" method="POST" style="display:inline;">
                                         @csrf
-                                        @method('PATCH')
+                                        @method('POST')
                                         <input type="hidden" name="notification_id" value="{{ $notification->id }}">
                                         <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
                                     </form>
@@ -205,7 +205,35 @@
                                         <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                     </form>
                                 </div>
+                                
+                                {{-- mã giảm giá --}}
+                                @elseif($notification->type === 'coupon_pending_create')
+                                @php
+                                    $data = is_array($notification->data) ? $notification->data : json_decode($notification->data, true);
+                                @endphp
+                                @if(isset($data['actions']) && is_array($data['actions']) && !empty($data['actions']['approve_request']) && !empty($data['actions']['reject_request']) && !empty($data['actions']['view_details']))
+                                    <div class="d-flex gap-2">
+                                        <form action="{{ $data['actions']['approve_request'] }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                            <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                        </form>
+                                        <form action="{{ $data['actions']['reject_request'] }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                        </form>
+                                        <a href="{{ $data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                    </div>
+                                @else
+                                    <div class="text-danger">Không có hành động khả dụng cho thông báo này.</div>
                                 @endif
+
+                                
+                            @endif
+                            
                             </div>
                             @endforeach
                             @if(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', false)->count() === 0)
@@ -399,21 +427,55 @@
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
                                         `;
-                                        case 'coupon_created':
-                                    return `
-                                            <form action="${notification.data.actions.approved}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                            </form>
-                                            <form action="${notification.data.actions.reject_request}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                            </form>
-                                        `;
+                                    case 'coupon_pending_create':
+                                        let data = notification.data;
+                                        if (typeof data === 'string') {
+                                            try {
+                                                data = JSON.parse(data);
+                                            } catch (e) {
+                                                console.error('Failed to parse notification.data:', data, e);
+                                                return `<div class="text-danger">Không thể hiển thị hành động do lỗi dữ liệu.</div>`;
+                                            }
+                                        }
+
+                                        if (data.actions && data.actions.approve_request && data.actions.reject_request && data.actions.view_details) {
+                                            return `
+                                                <div class="d-flex gap-2">
+                                                    <form action="${data.actions.approve_request}" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                        <input type="hidden" name="_method" value="PATCH">
+                                                        <input type="hidden" name="notification_id" value="${notification.id}">
+                                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                                    </form>
+                                                    <form action="${data.actions.reject_request}" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                        <input type="hidden" name="_method" value="PATCH">
+                                                        <input type="hidden" name="notification_id" value="${notification.id}">
+                                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                                    </form>
+                                                    <a href="${data.actions.view_details}?notification_id=${notification.id}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                                                </div>
+                                            `;
+                                        } else {
+                                            console.error('Missing actions in notification data for coupon_pending_create:', data);
+                                            return `<div class="text-danger">Không có hành động khả dụng cho thông báo này.</div>`;
+                                        }
+                                    case 'coupon_created':
+                                        return `
+                                                <form action="${notification.data.actions.approved}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="PATCH">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
+                                                </form>
+                                                <form action="${notification.data.actions.reject_request}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="PATCH">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
+                                                </form>
+                                            `;
+
                                 default:
                                     return '';
                             }
@@ -423,83 +485,7 @@
                     });
                 </script>
 
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-    const notificationList = document.getElementById('notification-list');
-    
-    // Add form submission handler
-    notificationList.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const form = e.target;
-        
-        try {
-            const response = await fetch(form.action, {
-                method: form.method,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(Object.fromEntries(new FormData(form)))
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Remove the notification item from UI
-                const notificationItem = form.closest('.notification-item');
-                if (notificationItem) {
-                    notificationItem.style.animation = 'fadeOut 0.3s ease-out';
-                    setTimeout(() => {
-                        notificationItem.remove();
-                        
-                        // Update notification count
-                        const countSpan = document.querySelector('#notification-count .count');
-                        const currentCount = parseInt(countSpan.textContent) - 1;
-                        countSpan.textContent = currentCount;
-                        
-                        // Show empty message if no notifications left
-                        if (currentCount === 0) {
-                            notificationList.innerHTML = `
-                                <div class="notification-empty">
-                                    <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
-                                    <p>Không có thông báo nào</p>
-                                </div>
-                            `;
-                        }
-                    }, 300);
-                }
-
-                // Show success message
-                if (data.notification) {
-                    await Swal.fire({
-                        title: data.notification.title,
-                        text: data.notification.text,
-                        icon: data.notification.icon,
-                        confirmButtonText: data.notification.confirmButtonText,
-                        timer: data.notification.timer,
-                        showConfirmButton: !data.notification.timer,
-                        timerProgressBar: true,
-                        customClass: {
-                            popup: 'custom-swal-popup',
-                            title: 'custom-swal-title',
-                            confirmButton: 'custom-swal-confirm'
-                        }
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Lỗi!',
-                text: 'Có lỗi xảy ra khi xử lý yêu cầu',
-                icon: 'error',
-                confirmButtonText: 'Đóng'
-            });
-        }
-    });
-});
-                </script>
+                
 
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"

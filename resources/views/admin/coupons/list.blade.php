@@ -37,7 +37,6 @@
                                     <th scope="col">Hạn sử dụng</th>
                                     <th scope="col">Sản phẩm áp dụng</th>
                                     <th scope="col">Danh mục áp dụng</th>
-                                    <th scope="col">Người dùng áp dụng</th>
                                     <th scope="col">Hành động</th>
                                 </tr>
                             </thead> <!-- end thead -->
@@ -75,15 +74,6 @@
                                                 <strong>{{ implode(', ', $coupon->categoryNames) }}</strong>
                                             @else
                                                 <strong>Không có</strong>
-                                            @endif
-                                        </td>
-                                        
-                                        <!-- Người dùng áp dụng -->
-                                        <td>
-                                            @if ($coupon->users->isNotEmpty())
-                                                <strong>{{ implode(', ', $coupon->users->pluck('fullname')->toArray()) }}</strong>
-                                            @else
-                                                <strong>Không áp dụng</strong>
                                             @endif
                                         </td>
 

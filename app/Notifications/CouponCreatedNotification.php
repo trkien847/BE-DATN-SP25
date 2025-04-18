@@ -13,24 +13,40 @@ class CouponCreatedNotification extends Notification
 
     protected $coupon;
 
+    /**
+     * Constructor to initialize the notification with a Coupon instance.
+     *
+     * @param Coupon $coupon
+     */
     public function __construct(Coupon $coupon)
     {
         $this->coupon = $coupon;
-        
     }
 
-    public function via($notifiable) 
+    /**
+     * Define the notification delivery channels.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function via($notifiable)
     {
-        return ['database']; 
+        return ['database'];
     }
 
-    public function toDatabase($notifiable)  
+    /**
+     * Format the notification data for database storage.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function toDatabase($notifiable)
     {
-        
         return [
+            'message' => __('Yêu cầu phê duyệt mã giảm giá :code', ['code' => $this->coupon->code]),
             'coupon_id' => $this->coupon->id,
-            'message' => "Yêu cầu phê duyệt mã giảm giá <strong>{$this->coupon->code}</strong>",
-            'url' => route('coupons.list', $this->coupon->id),
+            'created_at' => now(),
+            'created_by' => auth()->user()->name ?? __('Hệ thống'),
         ];
     }
 }
