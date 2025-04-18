@@ -805,7 +805,7 @@ class ProductController extends Controller
             $product->brand_id = $data['brand_id'];
             $product->name = $data['name'];
             $product->content = $data['content'];
-            $product->sku = $data['sku'];
+            $product->sku = $data['sku'];   
             $product->price = $data['price'];
             $product->sell_price = $data['sell_price'];
             $product->sale_price = $data['sale_price'];
