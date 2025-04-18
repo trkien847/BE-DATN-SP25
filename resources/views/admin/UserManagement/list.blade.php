@@ -140,13 +140,12 @@
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="text-secondary">DANH SÁCH NGƯỜI DÙNG</h4>
-    <div class="d-flex flex-wrap justify-content-between gap-3">
+    {{-- <div class="d-flex flex-wrap justify-content-between gap-3">
       <a href="{{ route('admin.users.create') }}" class="btn btn-success shake">
-        <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
-        Thêm Người Dùng
+        <i class="bx bx-plus me-1"></i>Thêm người dùng
       </a>
       
-    </div>
+    </div> --}}
   </div>
 
   <div class="d-flex flex-wrap justify-content-between gap-3">
@@ -179,23 +178,27 @@
             <td>{{ $user->email }}</td>
             <td>{{ $user->phone_number }}</td>
             <td>
-                {{ ['Admin', 'Staff', 'Customer'][$user->role_id - 1] ?? 'Người dùng' }}
+                {{ $user->role->name }}
+                {{-- Debug giá trị role --}}
             </td>
             
-            <td>
-              {{-- Debug giá trị status --}}
-              <span style="display: none;">{{ $user->status }}</span>
+              <td>
+                <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input toggle-status" type="checkbox" role="switch"
+                            data-id="{{ $user->id }}"
+                            {{ $user->status === 'Online' ? 'checked' : '' }}>
+                    </div>
+                </div>
+            </td>
           
-              <span class="badge {{ $user->status === 'Online' ? 'bg-success' : 'bg-danger' }}">
-                  {{ $user->status === 'Online' ? 'Online' : 'Offline' }}
-              </span>
-          </td>
+          
           
             <td>
-              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm ripple">
+              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success btn-sm ripple">
                 <i class="bx bx-edit fs-16"></i>
             </a>            
-                <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-info btn-sm" title="Chi tiết người dùng">
+                <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-primary btn-sm" title="Chi tiết người dùng">
                     <i class="bx bx-detail fs-16"></i>
                 </a>
                 <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
@@ -206,13 +209,39 @@
                   </button>
               </form>              
             </td>
-            
+           
             
         @endforeach
     </tbody>
     </table>
   </div>
+  
 
+  {{-- Phân trang --}}
+<div class="pagination-simple mt-3 text-center">
+  <!-- Previous -->
+  @if ($users->currentPage() > 1)
+      <a href="{{ $users->previousPageUrl() . ($search ? '&search=' . $search : '') }}" class="btn btn-sm btn-outline-primary mx-1">Trước</a>
+  @else
+      <span class="btn btn-sm btn-outline-secondary mx-1 disabled">Trước</span>
+  @endif
+
+  <!-- Số trang -->
+  @for ($i = 1; $i <= $users->lastPage(); $i++)
+      @if ($i == $users->currentPage())
+          <span class="btn btn-sm btn-primary mx-1">{{ $i }}</span>
+      @else
+          <a href="{{ $users->url($i) . ($search ? '&search=' . $search : '') }}" class="btn btn-sm btn-outline-primary mx-1">{{ $i }}</a>
+      @endif
+  @endfor
+
+  <!-- Next -->
+  @if ($users->hasMorePages())
+      <a href="{{ $users->nextPageUrl() . ($search ? '&search=' . $search : '') }}" class="btn btn-sm btn-outline-primary mx-1">Tiếp</a>
+  @else
+      <span class="btn btn-sm btn-outline-secondary mx-1 disabled">Tiếp</span>
+  @endif
+</div>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
     const deleteButtons = document.querySelectorAll('.delete-button');

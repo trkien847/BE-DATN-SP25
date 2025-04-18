@@ -30,7 +30,7 @@
 }
 
 .nav-link.active {
-    background-color: #007bff; 
+    background-color:rgb(208, 209, 209); 
     color: white; 
     transform: scale(1.1); 
 }
@@ -38,7 +38,7 @@
 
 .nav-link.clicked {
     transform: scale(1.15); 
-    background-color: #0056b3; 
+    background-color: #1bb394; 
 }
 
 .nav-link::after {
@@ -55,6 +55,37 @@
     z-index: 0;
 }
 
+.pagination {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pagination button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination button.active {
+    background-color: #1bb394;
+    color: white;
+    border-color: #1bb394;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
 .nav-link.clicked::after {
     width: 100px; 
     height: 100px;
@@ -62,6 +93,17 @@
 }
 .nav-link.clicked {
     animation: bounce 0.5s ease;
+}
+
+.expiry-warning {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.table td:nth-child(5),
+.table td:nth-child(6) {
+    white-space: nowrap;
+    font-size: 0.9em;
 }
 
 @keyframes bounce {
@@ -87,59 +129,30 @@
     white-space: nowrap;
 }
 </style>
+
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
-        <h4 class="text-secondary">DANH SÁCH ĐƠN HÀNG <strong id="animatedText">Bla Bla Bla Ble Ble Ble Blu Blu Blu hah BLU BLU BLU BLU BLU BLU BLU BLU</strong></h4>
-    </div>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const textElement = document.getElementById('animatedText');
-    const text = textElement.textContent.trim();
-    const words = text.split(' ');
-    const wordCount = words.length;
-    const durationPerWord = 1;
-    const totalDuration = wordCount * durationPerWord;
-
-    function animateWords() {
-        textElement.innerHTML = '';
-        words.forEach((word, index) => {
-            const span = document.createElement('span');
-            span.textContent = word;
-            span.classList.add('animated-word');
-            span.style.animationDelay = `${index * durationPerWord}s`;
-            textElement.appendChild(span);
-            if (index < wordCount - 1) {
-                textElement.appendChild(document.createTextNode(' '));
-            }
-        });
-    }
-
-    animateWords();
-    setInterval(animateWords, totalDuration * 1000);
-});
-</script>
     <ul class="nav" id="statusFilter">
         <li class="nav-item">
-            <a class="nav-link active" href="#" data-status="">Tất cả đơn giao hàng</a>
+            <a class="nav-link active" href="#" data-status=""  style="color:rgb(3, 3, 3);">Tất cả đơn giao hàng</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="1">Chờ xác nhận *</a>
+            <a class="nav-link" href="#" data-status="1"style="color:rgb(3, 3, 3);">Chờ xác nhận *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="2">Chờ giao hàng *</a>
+            <a class="nav-link" href="#" data-status="2"style="color:rgb(3, 3, 3);">Chờ giao hàng *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="3">Đang giao hàng *</a>
+            <a class="nav-link" href="#" data-status="3"style="color:rgb(3, 3, 3);">Đang giao hàng *</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="4">Đã giao hàng</a>
+            <a class="nav-link" href="#" data-status="4"style="color:rgb(3, 3, 3);">Đã giao hàng</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="6">Hoàn thành</a>
+            <a class="nav-link" href="#" data-status="6"style="color:rgb(3, 3, 3);">Hoàn thành</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-status="7">Đã hủy</a>
+            <a class="nav-link" href="#" data-status="7"style="color:rgb(3, 3, 3);">Đã hủy</a>
         </li>
     </ul>
     
@@ -158,8 +171,8 @@
                 <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Nhập tên khách hàng">
             </div>
             <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary">SAYGEX</button>
-                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">KO SAYGEX</button>
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                <button type="button" id="resetFilter" class="btn btn-secondary ms-2">Hủy</button>
             </div>
         </form>
     </div>
@@ -173,7 +186,7 @@
                 <option value="3">Đang giao hàng</option>
                 <option value="4">Đã giao hàng</option>
             </select>
-            <button id="updateBulkStatus" class="btn btn-success">Cập nhật trạng thái</button>
+            <button id="updateBulkStatus" class="btn btn-primary">Cập nhật trạng thái</button>
         </div>
 
         <div class="table-responsive">
@@ -183,7 +196,7 @@
                         <th scope="col" class="checkbox-column" style="display: none;"><input type="checkbox" id="selectAll"></th>
                         <th scope="col">Mã đơn hàng</th>
                         <th scope="col">Tên khách hàng</th>
-                        <th scope="col">Mã giảm giá</th>
+                        <th scope="col">Ngày mua</th>
                         <th scope="col">Trạng thái</th>
                         <th scope="col">Tổng hóa đơn</th>
                         <th scope="col">Người xử lý</th>
@@ -196,7 +209,7 @@
                         <td class="checkbox-column" style="display: none;"><input type="checkbox" class="orderCheckbox" value="{{ $order->id }}"></td>
                         <td>{{ $order->code }}</td>
                         <td>{{ $order->fullname }}</td>
-                        <td>{{ $order->coupon_code ?? 'Không có' }}</td>
+                        <td>{{ $order->created_at }}</td>
                         <td class="status-cancelled">
                             <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
                                 @php
@@ -209,6 +222,12 @@
                                 <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
                                 <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
                                 <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
+                                <option><hr></option>
+                                <option value="" {{ $currentStatus == 'Chờ hủy' ? 'selected' : '' }}>Chờ hủy</option>
+                                <option value="" {{ $currentStatus == 'Chờ hoàn tiền' ? 'selected' : '' }}>Chờ hoàn tiền</option>
+                                <option value="" {{ $currentStatus == 'Xác nhận thông tin' ? 'selected' : '' }}>Xác nhận thông tin</option>
+                                <option value="" {{ $currentStatus == 'Chuyển khoản thành công' ? 'selected' : '' }}>Chuyển khoản thành công</option>
+                                <option value="" {{ $currentStatus == 'Yêu cầu hoàn hàng' ? 'selected' : '' }}>Yêu cầu hoàn hàng</option>
                             </select>
                             <div class="evidence-upload" style="display: none;">
                                 <input type="file" class="evidence-file" accept="image/*">
@@ -224,6 +243,13 @@
                 </tbody>
             </table>
         </div>
+        <!-- Add this pagination container -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="pagination-info">
+                Hiển thị <span id="showing">0-0</span> trong tổng số <span id="total">0</span> đơn hàng
+            </div>
+            <div id="pagination" class="pagination"></div>
+        </div>
         
         
     </div>
@@ -232,7 +258,7 @@
 
     <div id="orderDetail" class="order-detail-overlay" style="display: none;">
         <div class="card order-detail-card">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div class="card-header  text-white d-flex justify-content-between align-items-center" style="background: #1bb394;">
                 <h5 class="mb-0">Chi tiết đơn hàng <span id="orderCode"></span></h5>
                 <button class="btn-close btn-close-white" id="closeDetail"></button>
             </div>
@@ -244,10 +270,12 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Tên sản phẩm</th>
+                                    <th>Tên</th>
                                     <th>Biến thể</th>
                                     <th>Số lượng</th>
                                     <th>Giá</th>
+                                    <th>HSD</th>
+                                    <th>Mã lô</th>
                                 </tr>
                             </thead>
                             <tbody id="orderItems"></tbody>
@@ -259,7 +287,7 @@
                     <div class="col-md-4">
                         <h6>Thông tin khách hàng</h6>
                         <ul class="list-unstyled">
-                            <li><strong>Tên:</strong> <span id="customerName"></span></li>
+                            <li><strong>Tên:</strong> <span id="customerNameo"></span></li>
                             <li><strong>Địa chỉ:</strong> <span id="customerAddress"></span></li>
                             <li><strong>Số điện thoại:</strong> <span id="customerPhone"></span></li>
                             <li><strong>Email:</strong> <span id="customerEmail"></span></li>
@@ -276,8 +304,6 @@
 <script>
 const modifiedBy = {{ $currentUserId ?? 'null' }};
 
-
-// Hàm gắn sự kiện cho các phần tử .status-select
 function attachStatusEvents() {
     document.querySelectorAll('.status-select').forEach(select => {
         select.addEventListener('change', function() {
@@ -307,7 +333,7 @@ function attachDetailEvents() {
             const orderId = this.dataset.orderId;
 
             Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 
@@ -320,7 +346,7 @@ function attachDetailEvents() {
             fetch(`/admin/orders/${orderId}/details`, {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 }
             })
@@ -341,7 +367,7 @@ function attachDetailEvents() {
                 document.getElementById('orderCode').textContent = data.order.code;
                 document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
                 document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
-                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerNameo').textContent = data.order.fullname;
                 document.getElementById('customerAddress').textContent = data.order.address;
                 document.getElementById('customerPhone').textContent = data.order.phone_number;
                 document.getElementById('customerEmail').textContent = data.order.email;
@@ -349,15 +375,34 @@ function attachDetailEvents() {
                 const itemsBody = document.getElementById('orderItems');
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.product ? item.product.name : 'Không có'}</td>
-                        <td>${item.name_variant || 'Không có'}</td>
-                        <td>${item.quantity}</td>
-                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
-                    `;
-                    itemsBody.appendChild(row);
-                });
+                const row = document.createElement('tr');
+
+                // Format manufacture_date
+                const manufactureDate = item.manufacture_date 
+                    ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') 
+                    : 'Không có';
+
+                // Tính thời gian hết hạn (days_until_expiry)
+                let expiryDays = item.days_until_expiry !== null ? item.days_until_expiry : 'Không có';
+                let expiryClass = '';
+
+                if (item.days_until_expiry !== null && item.days_until_expiry <= 30) {
+                    expiryClass = 'expiry-warning';
+                }
+
+                // Lấy import_code
+                const importCode = item.import_code || 'Không có';
+
+                row.innerHTML = `
+                    <td>${item.product ? item.product.name : 'Không có'}</td>
+                    <td>${item.name_variant || 'Không có'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    <td class="${expiryClass}">${expiryDays} ngày</td>
+                    <td>${importCode}</td>
+                `;
+                itemsBody.appendChild(row);
+            });
                 document.getElementById('orderDetail').style.display = 'flex';
             })
             .catch(error => {
@@ -381,7 +426,7 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
     if (customerName) url.searchParams.append('customer_name', customerName);
 
     Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 
@@ -423,7 +468,6 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
             }
         }
 
-        attachStatusEvents();
         attachDetailEvents();
 
         const elapsedTime = Date.now() - startTime;
@@ -536,7 +580,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
             const orderId = this.dataset.orderId;
 
             Swal.fire({
-                imageUrl: 'https://i.makeagif.com/media/1-10-2021/gwZO0J.gif',
+                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
                 imageWidth: 200, 
                 imageHeight: 100, 
                 imageAlt: 'Đang Say Gex...', 
@@ -549,7 +593,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
             fetch(`/admin/orders/${orderId}/details`, {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 }
             })
@@ -570,7 +614,7 @@ document.querySelectorAll('.detail-btn').forEach(button => {
                 document.getElementById('orderCode').textContent = data.order.code;
                 document.getElementById('totalAmount').textContent = Number(data.order.total_amount).toLocaleString('vi-VN') + ' VND';
                 document.getElementById('couponCode').textContent = data.order.coupon_code || 'Không có';
-                document.getElementById('customerName').textContent = data.order.fullname;
+                document.getElementById('customerNameo').textContent = data.order.fullname;
                 document.getElementById('customerAddress').textContent = data.order.address;
                 document.getElementById('customerPhone').textContent = data.order.phone_number;
                 document.getElementById('customerEmail').textContent = data.order.email;
@@ -578,15 +622,28 @@ document.querySelectorAll('.detail-btn').forEach(button => {
                 const itemsBody = document.getElementById('orderItems');
                 itemsBody.innerHTML = ''; 
                 data.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.product ? item.product.name : 'Không có'}</td>
-                        <td>${item.name_variant || 'Không có'}</td>
-                        <td>${item.quantity}</td>
-                        <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
-                    `;
-                    itemsBody.appendChild(row);
-                });
+                const row = document.createElement('tr');
+                const manufactureDate = item.manufacture_date 
+                    ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') 
+                    : 'Không có';
+                let expiryDays = item.days_until_expiry !== null ? item.days_until_expiry : 'Không có';
+                let expiryClass = '';
+
+                if (item.days_until_expiry !== null && item.days_until_expiry <= 30) {
+                    expiryClass = 'expiry-warning';
+                }
+                const importCode = item.import_code || 'Không có';
+
+                row.innerHTML = `
+                    <td>${item.product ? item.product.name : 'Không có'}</td>
+                    <td>${item.name_variant || 'Không có'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${Number(item.price).toLocaleString('vi-VN')} VND</td>
+                    <td class="${expiryClass}">${expiryDays} ngày</td>
+                    <td>${importCode}</td>
+                `;
+                itemsBody.appendChild(row);
+            });
                 document.getElementById('orderDetail').style.display = 'flex';
             })
             .catch(error => {
@@ -711,6 +768,92 @@ document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
 
         filterOrders(status, startDate, endDate, customerName);
     });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    const rowsPerPage = 5;
+    const tableBody = document.getElementById('orderBody');
+    const paginationContainer = document.getElementById('pagination');
+    
+    function initializePagination() {
+        const rows = Array.from(tableBody.getElementsByTagName('tr'));
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+        
+        updateShowingText(rows.length);
+        createPaginationButtons(totalPages);
+        
+        showPage(1);
+    }
+    
+    function showPage(page) {
+        const rows = Array.from(tableBody.getElementsByTagName('tr'));
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach(row => row.style.display = 'none');
+        
+        rows.slice(start, end).forEach(row => row.style.display = '');
+        
+        currentPage = page;
+        
+        updateShowingText(rows.length, start + 1, Math.min(end, rows.length));
+        
+        updatePaginationButtons();
+    }
+    
+    function createPaginationButtons(totalPages) {
+        paginationContainer.innerHTML = '';
+        
+        const prevButton = createButton('«', () => {
+            if (currentPage > 1) showPage(currentPage - 1);
+        });
+        prevButton.classList.add('btn-prev');
+        paginationContainer.appendChild(prevButton);
+        
+        for (let i = 1; i <= totalPages; i++) {
+            const button = createButton(i.toString(), () => showPage(i));
+            button.dataset.page = i;
+            paginationContainer.appendChild(button);
+        }
+        
+        const nextButton = createButton('»', () => {
+            if (currentPage < totalPages) showPage(currentPage + 1);
+        });
+        nextButton.classList.add('btn-next');
+        paginationContainer.appendChild(nextButton);
+    }
+    
+    function createButton(text, onClick) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = 'btn btn-outline-primary btn-sm mx-1';
+        button.addEventListener('click', onClick);
+        return button;
+    }
+    
+    function updatePaginationButtons() {
+        paginationContainer.querySelectorAll('button').forEach(button => {
+            if (button.dataset.page) {
+                button.classList.toggle('active', parseInt(button.dataset.page) === currentPage);
+            }
+        });
+        
+        const prevButton = paginationContainer.querySelector('.btn-prev');
+        const nextButton = paginationContainer.querySelector('.btn-next');
+        const totalPages = Math.ceil(tableBody.getElementsByTagName('tr').length / rowsPerPage);
+        
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+    }
+    
+    function updateShowingText(total, start = 0, end = 0) {
+        document.getElementById('showing').textContent = start && end ? `${start}-${end}` : '0-0';
+        document.getElementById('total').textContent = total;
+    }
+    
+    initializePagination();
+    window.reinitializePagination = initializePagination;
 });
 </script>
 @endsection

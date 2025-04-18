@@ -4,7 +4,6 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <style>
   .form-container {
     max-width: 1000px;
@@ -275,7 +274,7 @@ td, th {
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Chọn sản phẩm heheboy</label>
+          <label class="form-label">Chọn sản phẩm </label>
 
           <div class="product-list" style="margin-top: 5px;">
               <!-- Sản phẩm đã nhập -->
@@ -510,11 +509,11 @@ td, th {
                 <td>{{ $import->details->sum('quantity') }}</td>
                 <td>
                     @if ($import->is_active == 0)
-                        <span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>
+                        <span class="badge text-bg-warning">Đang chờ chấp nhận</span>
                     @elseif ($import->is_active == 1)
-                        <span class="badge text-bg-success">Cấp trên đã bị lừa</span>
+                        <span class="badge text-bg-success">Đã chấp nhận</span>
                     @elseif ($import->is_active == 2)
-                        <span class="badge text-bg-danger">Cấp trên khôn quá</span>
+                        <span class="badge text-bg-danger">Không chấp nhận</span>
                     @endif
                 </td>
                 <td>
@@ -556,10 +555,10 @@ td, th {
             </div>
             <div class="modal-body">
                 <p><strong>Ngày nhập:</strong> <span id="modal-imported-at"></span></p>
-                <p><strong>Người Chịu trận:</strong> <span id="modal-imported-by"></span></p>
+                <p><strong>Người nhậnnhận:</strong> <span id="modal-imported-by"></span></p>
                 <p><strong>Trạng thái:</strong> <span id="modal-status"></span></p>
                 
-                <h5>Danh sách sản phẩm nhập(Truy cập saygex69 để tham gia vào hội ae xã đoàn nhé)</h5>
+                <h5>Danh sách sản phẩm nhập</h5>
                 <ul id="modal-import-details" class="list-group"></ul>
             </div>
         </div>
@@ -578,11 +577,11 @@ td, th {
         console.log(statusValue);
         switch (statusValue) {
             case 0:
-                return '<span class="badge text-bg-warning">Đang chờ cấp trên bị lừa</span>';
+                return '<span class="badge text-bg-warning">Đang chờ chấp nhận</span>';
             case 1:
-                return '<span class="badge text-bg-success">Cấp trên đã bị lừa</span>';
+                return '<span class="badge text-bg-success">Đã chấp nhận</span>';
             case 2:
-                return '<span class="badge text-bg-danger">Cấp trên khôn quá</span>';
+                return '<span class="badge text-bg-danger">Không chấp nhận</span>';
             default:
                 return '<span class="badge text-bg-secondary">Không xác định</span>';
         }

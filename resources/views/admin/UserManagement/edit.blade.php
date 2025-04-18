@@ -109,6 +109,9 @@
                             </div>
                         
                             <button type="submit" class="btn btn-primary">Cập nhật</button>
+                            <a href="{{ route('admin.users.list') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                            </a>
                         </form>
                         
                         

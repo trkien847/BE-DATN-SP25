@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -42,8 +43,9 @@ class UserController extends Controller
         $user = User::create([
             'fullname' => $fullName,
             'email' => $request->email,
+            'avatar' => '/admin/images/users/dummy-avatar.png',
             'password' => Hash::make($request->password),
-            'role_id' => 3,
+            'role_id' => 1,
         ]);
         auth()->login($user);
         return redirect()->route('index');
@@ -51,41 +53,90 @@ class UserController extends Controller
     public function showProfile()
     {
         $user = auth()->user();
-        $address = $user->address->pluck('address');
-        $carts = Cart::where('user_id', auth()->id())->get();
+        $address = $user->address ? $user->address->address : null; // Hoặc để trống nếu chưa có
+
+        $carts = Cart::where('user_id', $user->id)->get();
+
         $subtotal = $carts->sum(function ($cart) {
             $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
                 ? $cart->productVariant->sale_price
                 : $cart->productVariant->sell_price;
             return $cart->quantity * $price;
         });
+
         return view('client.auth.profile', compact('carts', 'subtotal', 'user', 'address'));
     }
+
     public function updateProfile(ProfileUpdateRequest $request)
     {
         $user = auth()->user();
-
         $updateData = [];
 
+        // Collect validated profile data
         if ($request->filled('fullname')) {
-            $updateData['fullname'] = $request->fullname;
+            $updateData['fullname'] = $request->validated('fullname');
         }
 
-        if ($request->filled('email')) {
-            $updateData['email'] = $request->email;
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $updateData['email'] = $request->validated('email');
         }
+
         if ($request->filled('phone_number')) {
-            $updateData['phone_number'] = $request->phone_number;
+            $updateData['phone_number'] = $request->validated('phone_number');
         }
-        $user->update($updateData);
+        if ($request->filled('birthday')) {
+            $updateData['birthday'] = $request->birthday;
+        }
+        
+        if ($request->filled('gender')) {
+            $updateData['gender'] = $request->gender;
+        }
 
-        // Cập nhật mật khẩu nếu có nhập
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            try {
+                $avatar = $request->file('avatar');
+                if ($avatar->isValid()) {
+                    // Delete old avatar if it exists
+                    if ($user->avatar && file_exists(public_path($user->avatar))) {
+                        unlink(public_path($user->avatar));
+                    }
+
+                    $avatarName = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+                    $avatar->move(public_path('upload'), $avatarName);
+                    $avatarPath = 'upload/' . $avatarName;
+
+                    // Verify the file was stored
+                    if (file_exists(public_path($avatarPath))) {
+                        $updateData['avatar'] = $avatarPath;
+                    } else {
+                        return back()->withErrors(['avatar' => 'Không thể lưu ảnh đại diện.']);
+                    }
+                } else {
+                    return back()->withErrors(['avatar' => 'Vui lòng chọn ảnh hợp lệ.']);
+                }
+            } catch (\Exception $e) {
+                Log::error('Avatar upload failed: ' . $e->getMessage());
+                return back()->withErrors(['avatar' => 'Đã xảy ra lỗi khi tải ảnh lên.']);
+            }
+        }
+
+        // Update password if provided
         if ($request->filled('current_password') && $request->filled('new_password')) {
             if (!Hash::check($request->current_password, $user->password)) {
-                return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng']);
+                return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
             }
+            $updateData['password'] = Hash::make($request->validated('new_password'));
+        }
 
-            $user->update(['password' => Hash::make($request->new_password)]);
+        // Apply updates if there are any
+        if (!empty($updateData)) {
+            try {
+                $user->update($updateData);
+            } catch (\Exception $e) {
+                Log::error('Profile update failed: ' . $e->getMessage());
+                return back()->withErrors(['error' => 'Không thể cập nhật thông tin. Vui lòng thử lại.']);
+            }
         }
 
         return redirect()->back()->with('success', 'Thông tin tài khoản đã được cập nhật.');

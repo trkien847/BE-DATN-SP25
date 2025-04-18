@@ -1,7 +1,30 @@
 @extends('admin.layouts.layout')
 
 @section('content')
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Champions 2021.mp3') }}" type="audio/mpeg">
+            </audio>
 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

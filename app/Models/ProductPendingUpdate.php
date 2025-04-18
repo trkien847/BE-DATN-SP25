@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductPendingUpdate extends Model
 {
-    protected $fillable = ['product_id', 'user_id', 'data', 'is_approved'];
+    protected $fillable = ['product_id', 'user_id', 'action_type', 'data', 'is_approved'];
 
     protected $casts = [
         'data' => 'array', 

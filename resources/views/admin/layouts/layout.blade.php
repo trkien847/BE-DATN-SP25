@@ -8,9 +8,6 @@
     <!-- Title Meta -->
     <meta charset="utf-8" />
     <title>BeePharmacy | Nhà thuốc cho bạn</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="Techzaa" />
@@ -33,10 +30,18 @@
     <!-- Theme Config js (Require in all Page) -->
     <script src="{{ asset('admin/js/config.min.js') }}"></script>
     @stack('styles')
+    <style>
+        #notification-container {
+            max-height: 280px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    </style>
 </head>
 
-<body>
 
+<body>
+   
     <!-- START Wrapper -->
     <div class="wrapper">
 
@@ -196,21 +201,22 @@
 
     </div>
     <!-- END Wrapper -->
-
     <!-- Vendor Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/vendor.js') }}"></script>
 
     <!-- App Javascript (Require in all Page) -->
     <script src="{{ asset('admin/js/app.js') }}"></script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
- <!-- Thêm vào cuối file view -->
-
+    <script src="https://unpkg.com/simplebar@latest/dist/simplebar.min.js"></script>
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+   
     @stack('scripts')
 
 </body>
+
 
 
 <!-- Mirrored from techzaa.in/rasket/admin/apps-invoices.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 14 Jan 2025 16:51:56 GMT -->

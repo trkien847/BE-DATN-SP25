@@ -1,11 +1,33 @@
 @extends('admin.layouts.layout')
-
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div> 
+            <audio id="backgroundMusic" autoplay>
+                <source src="{{ asset('audio/Champions 2022.mp3') }}" type="audio/mpeg">
+            </audio>
 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const audio = document.getElementById('backgroundMusic');
+                audio.volume = 1;
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay was prevented");
+                    });
+                }
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !audio.ended) {
+                        audio.play();
+                    }
+                });
+            });
+            </script>
+    </div>
 <style>
   .select2-container .select2-selection--single {
     height: 38px;
@@ -179,7 +201,7 @@
   }
 
   .rainbow-text {
-      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+      background: #313b5e;
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -195,6 +217,62 @@
           background-position: 0 0;
       }
   }
+
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+.loading-text span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-text span:nth-child(1) { animation-delay: 0.1s; }
+.loading-text span:nth-child(2) { animation-delay: 0.2s; }
+.loading-text span:nth-child(3) { animation-delay: 0.3s; }
+.loading-text span:nth-child(4) { animation-delay: 0.4s; }
+.loading-text span:nth-child(5) { animation-delay: 0.5s; }
+.loading-text span:nth-child(6) { animation-delay: 0.6s; }
+.loading-text span:nth-child(7) { animation-delay: 0.7s; }
+.loading-text span:nth-child(8) { animation-delay: 0.8s; }
+.loading-text span:nth-child(9) { animation-delay: 0.9s; }
+.loading-text span:nth-child(10) { animation-delay: 1.0s; }
+.loading-text span:nth-child(11) { animation-delay: 1.1s; }
+.loading-text span:nth-child(12) { animation-delay: 1.2s; }
+.loading-text span:nth-child(13) { animation-delay: 1.3s; }
+.loading-text span:nth-child(14) { animation-delay: 1.4s; }
 </style>
 
 @if(session('success'))
@@ -210,14 +288,36 @@
 </script>
 @endif
 
+<!-- Keep the loading overlay HTML -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="loading-text">
+            <span>D</span>
+            <span>e</span>
+            <span>s</span>
+            <span>i</span>
+            <span>g</span>
+            <span>n</span>
+            <span>e</span>
+            <span>d</span>
+            <span>&nbsp;</span>
+            <span>b</span>
+            <span>y</span>
+            <span>&nbsp;</span>
+            <span>T</span>
+            <span>G</span>
+        </div>
+    </div>
+</div>
+
 <div class="container">
   <div class="d-flex flex-wrap justify-content-between gap-3">
     <h4 class="rainbow-text">DANH SÁCH SẢN PHẨM</h4>
     <div class="d-flex flex-wrap justify-content-between gap-3">
-      <a href="{{ route('products.add') }}" class="btn btn-success shake">
+    <a href="{{ route('products.add') }}" class="btn btn-animate shake-link add-product-btn" style="background: #1bb394; color: white;">
         <i class="bi bi-plus-circle"></i><i class="bx bx-plus me-1"></i>
         Thêm Sản Phẩm
-      </a>
+    </a>
       <a href="{{ route('products.hidden') }}" class="btn btn-secondary">
         <i class="bx bx-hide me-1"></i>
         Xem Sản Phẩm Đã Ẩn
@@ -451,5 +551,21 @@ $(document).ready(function() {
       width: '100%'
     });
   });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const addProductBtn = document.querySelector('.add-product-btn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadingOverlay.classList.add('active');
+            
+            setTimeout(() => {
+                window.location.href = this.href;
+            }, 2000);
+        });
+    }
+});
 </script>
 @endsection

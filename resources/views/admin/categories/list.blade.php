@@ -10,6 +10,11 @@
                             <input type="search" class="form-control" id="search" placeholder="Search categories...">
                         </div>
                         <div>
+                            @if (auth()->user()->role_id == 3)
+                                <a href="{{ route('categories.pending') }}" class="btn btn-success">
+                                    <i class="bx bx-plus me-1"></i>Danh mục đợi duyệt
+                                </a>
+                            @endif
                             <a href="{{ route('categories.create') }}" class="btn btn-success">
                                 <i class="bx bx-plus me-1"></i>Thêm Danh Mục
                             </a>
@@ -214,7 +219,7 @@
                                                 0; // Nếu cha tắt, vô hiệu hóa danh mục con
                                             if (isActive === 0) {
                                                 subCheckbox.checked =
-                                                    false; 
+                                                    false;
                                             }
                                         }
                                         subcategory.style.display = isActive === 1 ?
@@ -226,7 +231,7 @@
                                 console.error(
                                     "Không thể bật danh mục con nếu danh mục cha đang tắt.");
                                 this.checked = !
-                                    isActive; 
+                                    isActive;
                             }
                         })
                         .catch(error => console.error("Lỗi:", error));
