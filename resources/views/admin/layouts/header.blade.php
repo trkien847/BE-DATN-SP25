@@ -519,109 +519,6 @@
                                     <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
                                     <p>Không có thông báo nào</p>
                                 </div>
-                        <div data-simplebar style="max-height: 280px;" id="notification-list">
-                            @foreach(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', 0)->latest()->limit(10)->get() as $notification)
-                            <div class="notification-item p-3 border-bottom {{ $notification->is_read ? 'bg-light' : '' }}">
-                                <h6 class="mb-1">{{ $notification->title }}</h6>
-                                <p class="mb-2 fs-13">{{ $notification->content }}</p>
-                                @if($notification->type === 'order_cancel')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
-                                @elseif($notification->type === 'refund_request')
-                                <div class="d-flex gap-2">
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem trực tiếp</a>
-                                </div>
-                                @elseif($notification->type === 'order_status_request')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
-                                @elseif($notification->type === 'return_request')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['accept_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['cancel_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
-                                @elseif($notification->type === 'product_pending_create')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['approve_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['reject_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
-                                @elseif($notification->type === 'product_pending_update')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['approve_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['reject_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                    <a href="{{ $notification->data['actions']['view_details'] }}?notification_id={{ $notification->id }}" class="btn btn-sm btn-info">Xem chi tiết</a>
-                                </div>
-                                @elseif($notification->type === 'import_pending')
-                                <div class="d-flex gap-2">
-                                    <form action="{{ $notification->data['actions']['confirm_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                    </form>
-                                    <form action="{{ $notification->data['actions']['reject_request'] }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="notification_id" value="{{ $notification->id }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                    </form>
-                                </div>
-                                @endif
-                            </div>
-                            @endforeach
-                            @if(\App\Models\Notification::userOrSystem(Auth::id())->where('is_read', false)->count() === 0)
-                            <div class="text-center p-3">Không có thông báo nào</div>
                             @endif
                         </div>
                         <div class="text-center py-3 footer-bg">
@@ -721,8 +618,25 @@
                                             </form>
                                             <a href="${notification.data.actions.view_details}?notification_id=${notification.id}" class="btn btn-sm btn-info">Xem chi tiết</a>
                                         `;
-                                    case 'product_pending_create':
-                                        return `
+                                case 'import_response':
+                                    return `
+                                            <div class="d-flex gap-2">
+                                                <a href="${notification.data.actions.view_details}" 
+                                                class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                                <form action="${notification.data.actions.acknowledge}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Đã xem
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        `;
+                                case 'product_pending_create':
+                                    return `
                                             <form action="${notification.data.actions.approve_request}" method="POST" style="display:inline;">
                                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
                                                 <input type="hidden" name="_method" value="PUT">
@@ -811,21 +725,71 @@
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
                                         `;
-                                        case 'coupon_created':
+                                case 'category_pending_create':
                                     return `
-                                            <form action="${notification.data.actions.approved}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-success">Chấp nhận</button>
-                                            </form>
-                                            <form action="${notification.data.actions.reject_request}" method="POST" style="display:inline;">
-                                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                                                <input type="hidden" name="_method" value="PATCH">
-                                                <input type="hidden" name="notification_id" value="${notification.id}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
-                                            </form>
+                                            <div class="d-flex gap-2">
+                                                <form action="${notification.data.actions.approve_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Phê duyệt
+                                                    </button>
+                                                </form>
+                                                <form action="${notification.data.actions.reject_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times me-1"></i>Từ chối
+                                                    </button>
+                                                </form>
+                                                <a href="${notification.data.actions.view_details}" class="btn btn-sm btn-info mark-as-read" 
+                                                data-notification-id="${notification.id}">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                            </div>
                                         `;
+
+                                case 'category_pending_update':
+                                    return `
+                                            <div class="d-flex gap-2">
+                                                <form action="${notification.data.actions.approve_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Chấp nhận thay đổi
+                                                    </button>
+                                                </form>
+                                                <form action="${notification.data.actions.reject_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times me-1"></i>Từ chối thay đổi
+                                                    </button>
+                                                </form>
+                                                <a href="${notification.data.actions.view_details}" class="btn btn-sm btn-info mark-as-read" 
+                                                data-notification-id="${notification.id}">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                            </div>
+                                        `;
+
+                                case 'category_approval_response':
+                                    return `
+                                            <div class="d-flex gap-2">
+                                                <a href="${notification.data.actions.view_details}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                                <form action="${notification.data.actions.acknowledge}" method="POST" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="_method" value="POST">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Đã xem
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        `;
+
                                 default:
                                     return '';
                             }
@@ -958,9 +922,6 @@
                     <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center position-relative">
-                            @php
-                                $currentUser = Auth::user(); // Lấy thông tin người dùng hiện tại
-                            @endphp
                             <img class="rounded-circle" width="42" height="42"
                                 src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('admin/images/users/dummy-avatar.png') }}"
                                 style="object-fit: cover;"
@@ -975,7 +936,7 @@
                     <div class="dropdown-menu dropdown-menu-end">
 
                         <h6 class="dropdown-header">Xin chào <span
-                                class="text-black fw-bold">{{ $currentUser->fullname }}</span> !</h6>
+                                class="text-black fw-bold">{{ auth()->user()->fullname }}</span> !</h6>
 
                         {{-- <a class="dropdown-item" href="apps-chat.html">
                             <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span
