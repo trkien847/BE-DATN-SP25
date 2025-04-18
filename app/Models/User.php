@@ -96,4 +96,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserAddress::class, 'user_id', 'id');
     }
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isStaff()
+    {
+        return $this->role === 'staff';
+    }
 }

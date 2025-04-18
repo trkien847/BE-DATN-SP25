@@ -22,7 +22,7 @@
                                 <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i
                                                 class="fas fa-home"></i></span>Trang chủ</a></li>
                                 <li>Sản phẩm</li>
-                        {{-- <h1 class="page-title"> 
+                                {{-- <h1 class="page-title"> 
                             @foreach ($category->categoryTypes->where('is_active', true) as $type)
                             
                                 <a href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
@@ -69,7 +69,7 @@
                             </li>
                             <li>
                                 <div class="showing-product-number text-right">
-                                    
+
                                 </div>
                             </li>
                             <li>
@@ -95,14 +95,15 @@
                                     @foreach ($products as $product)
                                         <div class="col-xl-4 col-sm-6 col-6">
                                             <div class="ltn__product-item ltn__product-item-3 text-center"
-                                            style="height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;"> {{-- fix tràn ô  --}}
+                                                style="height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                                                {{-- fix tràn ô  --}}
                                                 <div class="product-img">
                                                     <a href="#">
                                                         <img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                             alt="{{ $product->name }}"
-                                                             style="width: 250px; height: 200px; object-fit: cover;">
+                                                            alt="{{ $product->name }}"
+                                                            style="width: 250px; height: 200px; object-fit: cover;">
                                                     </a>
-                                                
+
                                                     <div class="product-badge">
                                                         <ul>
                                                             @if (!empty($product->sale_price) && $product->sale_price > 0)
@@ -132,7 +133,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h2 class="product-title"><a
-                                                            href="{{ route('get-product', $product->id) }}">{{ $product->name }}</a>
+                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
                                                     <div class="product-price">
                                                         @php
@@ -250,7 +251,9 @@
                                                         <li><a href="#"><i class="fas fa-star"></i></a></li>
                                                     </ul> --}}
                                                 </div>
-                                                <h6><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h6>
+                                                <h6><a
+                                                        href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                </h6>
                                                 <div class="product-price">
                                                     @php
                                                         $salePrice = $product->variants
@@ -300,7 +303,7 @@
                                 Khám phá sản phẩm <i class="icon-next"></i>
                             </a>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -380,11 +383,6 @@
                                                 <i class="far fa-eye"></i>
                                             </a>
                                         </li>
-                                        <li>
-                                            <a href="#" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#add_to_cart_modal">
-                                                <i class="fas fa-shopping-cart"></i>
-                                            </a>
-                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -393,7 +391,7 @@
                                 <div class="product-price">
                                     ${product.min_sale_price > 0 ? 
                                         `<span>${new Intl.NumberFormat().format(product.min_sale_price)}đ</span> 
-                                            <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
+                                                            <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
                                         `<span>${new Intl.NumberFormat().format(product.min_price)}đ</span>`
                                     }
                                 </div>
@@ -420,7 +418,7 @@
                     success: function(response) {
                         console.log(response);
                         $('#quick_view_modal').attr('data-product-id', response
-                            .id); // Cập nhật productId
+                            .id);
                         $('#quick_view_modal .modal-product-img').html(`
                 <a href="{{ route('products.productct', ':id') }}" target="_blank">
                     <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
@@ -428,12 +426,13 @@
             `.replace(':id', response.id));
 
                         $('#quick_view_modal h3').text(response.name);
-                        $('#quick_view_modal .product-price span').text(
-                            new Intl.NumberFormat().format(response.sale_price) + 'đ'
-                        );
-                        $('#quick_view_modal .product-price del').text(
-                            new Intl.NumberFormat().format(response.sell_price) + 'đ'
-                        );
+                        $('#quick_view_modal .product-price span')
+                            .css('font-size', '30px')
+                            .text(new Intl.NumberFormat().format(response.sale_price) + 'đ');
+
+                        $('#quick_view_modal .product-price del')
+                            .css('font-size', '30px')
+                            .text(new Intl.NumberFormat().format(response.sell_price) + 'đ');
 
                         let categoriesHtml = response.categories.map(category =>
                             `<a href="#">${category.name}</a>`
@@ -444,9 +443,16 @@
                         if (response.variants && response.variants.length > 0) {
                             let variantsHtml = '<div class="variant-buttons">';
                             variantsHtml += response.variants.map((variant, index) => {
-                                let attributesHtml = variant.attributes.map(attr =>
-                                    `${attr.attribute.name}: ${attr.value}`
-                                ).join('<br>');
+                                let shapeAttr = variant.attributes.find(attr => attr
+                                    .attribute?.name
+                                    .includes('Hình'));
+                                let weightAttr = variant.attributes.find(attr => attr
+                                    .attribute
+                                    ?.name.includes('Khối'));
+
+                                let variantName = [shapeAttr?.value, weightAttr?.value]
+                                    .filter(
+                                        Boolean).join(' ') || 'Không có thuộc tính';
 
                                 return `
                         <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
@@ -459,7 +465,7 @@
                             data-sale-price="${variant.sale_price}"
                             data-stock="${variant.stock}"
                             data-variant-index="${index}">
-                            ${attributesHtml ? attributesHtml + '<br>' : ''}
+                            ${variantName || 'Không có thuộc tính'}
                         </button>
                     `;
                             }).join('');
@@ -561,6 +567,7 @@
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
                         $("#cart-subtotal").text(response.subtotal);
+                        $('sup').text(response.cart_count);
 
                         Toastify({
                             text: "Sản phẩm đã được thêm vào giỏ hàng!",
@@ -582,7 +589,7 @@
         });
     </script>
 @endpush
-@push('styles')
+@push('css')
     <style>
         .toastify {
             padding: 12px 20px;
@@ -599,8 +606,14 @@
             background: linear-gradient(to right, #ff5f6d, #ffc371);
         }
 
-        .modal-product-variants {
-            margin: 15px 0;
+        .variant-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            /* tương đương gap-2 của Bootstrap */
+            margin-top: 0.5rem;
+            padding-bottom: 20px
+                /* tương đương mt-2 */
         }
     </style>
 @endpush

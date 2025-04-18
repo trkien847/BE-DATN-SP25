@@ -100,9 +100,21 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
   Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
   Route::post('/categories/{id}/toggle-active', [CategoryController::class, 'toggleActive']);
-  Route::get('/admin/categories/peding', [CategoryController::class, 'getPendingCategories'])->name('categories.pending');
+  Route::get('/admin/categories/pending', [CategoryController::class, 'getPendingCategories'])->name('categories.pending');
   Route::post('/category/{id}/accept', [CategoryController::class, 'acceptCategory'])->name('category.accept');
   Route::post('/category/{id}/reject', [CategoryController::class, 'rejectCategory'])->name('category.reject');
+  Route::post('/notifications/{id}/mark-as-read', function ($id) {
+    try {
+      $notification = \App\Models\Notification::find($id);
+      if ($notification) {
+        $notification->update(['is_read' => true]);
+        return response()->json(['success' => true]);
+      }
+      return response()->json(['success' => false, 'message' => 'Không tìm thấy thông báo'], 404);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+  })->middleware('auth')->name('notifications.markAsRead');
 
   Route::post('/categories/{id}/toggle-subcategory-active', [CategoryController::class, 'toggleSubcategoryActive'])->name('categories.toggleSubcategoryActive');
 
