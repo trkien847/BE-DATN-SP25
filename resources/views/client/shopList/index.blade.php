@@ -133,7 +133,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h2 class="product-title"><a
-                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2><h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
                                                     <div class="product-price">
                                                         @php
@@ -244,7 +244,7 @@
                                                     </ul> --}}
                                                 </div>
                                                 <h6><a
-                                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->name }}</a>
+                                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
                                                 </h6>
                                                 <div class="product-price">
                                                     @php
