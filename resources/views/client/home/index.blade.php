@@ -605,10 +605,10 @@
     <!-- ABOUT US AREA END -->
 
     <!-- COUNTDOWN AREA START -->
-    <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="img/bg/27.jpg">
+    <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="">
         <div class="container">
             <div class="row">
-                <div class="col-lg-7 col-md-6 col-sm-4">
+                <div class="http://127.0.0.1:8000/upload/.jpg">
                     <!-- <img src="{{ asset('client/img/banner/15.png') }}" alt="#"> -->
                 </div>
                 <div class="col-lg-5 col-md-6 col-sm-8">
