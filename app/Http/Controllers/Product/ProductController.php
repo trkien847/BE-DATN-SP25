@@ -51,13 +51,16 @@ class ProductController extends Controller
                 'categories',
                 'categoryTypes',
                 'variants.attributeValues.attribute',
-                'attributeValues.attribute'
+                'attributeValues.attribute',
+                'importProducts.import.user', 
+                'importProducts.importProductVariants.productVariant'
             ])
             ->where('is_active', 1)
             ->withSum('variants', 'stock')
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'LIKE', '%' . $search . '%');
             })
+            ->whereHas('importProducts.importProductVariants', function ($query) {})
             ->paginate(5);
 
         return view('admin.products.productList', compact('brands', 'categories', 'products'));
@@ -1292,7 +1295,24 @@ class ProductController extends Controller
         return response()->json($results);
     }
 
+    //
+    public function store(Request $request)
+    {
+        $request->validate([
+            'import_at' => 'required|date',
+            'products' => 'required|array',
+            'products.*' => 'exists:products,id',
+        ]);
 
+        foreach ($request->products as $productId) {
+            $product = Product::find($productId);
+            if ($product) {
+                $product->import_at = $request->import_at;
+                $product->save();
+            }
+        }
+    }
+    //
     public function importStore(Request $request)
     {
         $request->validate([
@@ -1360,7 +1380,6 @@ class ProductController extends Controller
         if ($isActive == 0) {
             $admins = User::where('role_id', 3)->get();
             if ($admins->isEmpty()) {
-                
             } else {
                 $confirmUrl = route('products.import.confirm', $import->id);
                 $rejectUrl = route('products.import.reject', $import->id);

@@ -33,4 +33,8 @@ class ImportProduct extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    public function importProductVariants()
+    {
+        return $this->hasMany(ImportProductVariant::class, 'import_product_id');
+    }
 }
