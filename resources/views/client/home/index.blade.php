@@ -654,6 +654,7 @@
                                 <a href="{{ route('products.productct', $product->product->id) }}">
                                     <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                         alt="{{ $product->name }} " width="250px" height="200px">
+                                        
                                 </a>
                                 <div class="product-badge">
                                     <ul>
@@ -666,6 +667,7 @@
                                                 );
                                             @endphp
                                             <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
+                                           
                                         @endif
                                     </ul>
                                 </div>
@@ -684,7 +686,7 @@
                             <div class="product-info">
                                 <h2 class="product-title">
                                     <a
-                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->name }}</a>
+                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
                                 </h2>
                                 <div class="product-price">
                                     @php

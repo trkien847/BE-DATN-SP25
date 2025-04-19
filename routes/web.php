@@ -53,7 +53,7 @@ Route::get('/Lien_he', function () {
   return view('client.home.Lien_he',compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics
+// /orders/statistics /cart/orderHistory
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -154,7 +154,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   // ===== ROUTES cho duyệt mã giảm giá =====
 
-  // Xem chi tiết mã giảm giá cần duyệt
+  // Xem chi tiết mã giảm giá cần duyệt /profile
   Route::get('/coupons/pending-update-detail/{id}', [CoupoController::class, 'pendingDetail'])->name('coupons.pending-update-detail');
 
 
