@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\CategoryService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -26,21 +28,21 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $categories = $this->categoryService->getAllCategories()->where('is_active', true);
-        $productBestSale = Product::selectRaw(
-            'products.*, 
-            (SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id) as min_price, 
-            (SELECT MIN(sale_price) FROM product_variants WHERE product_variants.product_id = products.id AND sale_price > 0) as min_sale_price'
-        )
-            ->havingRaw('min_sale_price IS NOT NULL AND min_sale_price < min_price')
-            ->orderByRaw('((min_price - min_sale_price) / min_price) DESC')
-            ->take(8)
+        $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
+        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $productBestSale = OrderItem::with('product.variants')
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->limit(8)
             ->get();
-        $productTop = Product::orderBy('views', 'desc')->take(8)->get();
+        $productTop = Product::orderBy('views', 'desc')->take(6)->get();
         $carts = Cart::where('user_id', auth()->id())->get();
         $subtotal = $carts->sum(function ($cart) {
-            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0 
-                ? $cart->productVariant->sale_price 
+            $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+                ? $cart->productVariant->sale_price
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });

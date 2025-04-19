@@ -7,17 +7,17 @@
     <!-- Utilize Mobile Menu Start -->
     @include('client.components.MobileMenuStart')
     <!-- Utilize Mobile Menu End -->
-    <div> 
-            <audio id="backgroundMusic" autoplay>
-                <source src="{{ asset('audio/amine.mp3') }}" type="audio/mpeg">
-            </audio>
+    <div>
+        <audio id="backgroundMusic" autoplay>
+            <source src="{{ asset('audio/amine.mp3') }}" type="audio/mpeg">
+        </audio>
 
-            <script>
+        <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const audio = document.getElementById('backgroundMusic');
                 audio.volume = 1;
                 let playPromise = audio.play();
-                
+
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
                         console.log("Autoplay was prevented");
@@ -29,7 +29,7 @@
                     }
                 });
             });
-            </script>
+        </script>
     </div>
     <style>
         .product-image {
@@ -651,9 +651,9 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
                             <div class="product-img">
-                                <a href="{{ route('products.productct', $product->id) }}">
-                                    <img src="{{ asset('upload/' . $product->thumbnail) }}" alt="{{ $product->name }} "
-                                        width="250px" height="200px">
+                                <a href="{{ route('products.productct', $product->product->id) }}">
+                                    <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
+                                        alt="{{ $product->name }} " width="250px" height="200px">
                                 </a>
                                 <div class="product-badge">
                                     <ul>
@@ -672,36 +672,29 @@
                                 <div class="product-hover-action">
                                     <ul>
                                         <li>
-                                            <a href="#" class="quick-view-btn" data-id="{{ $product->id }}"
-                                                title="Quick View" data-bs-toggle="modal"
-                                                data-bs-target="#quick_view_modal">
+                                            <a href="#" class="quick-view-btn"
+                                                data-id="{{ $product->product->id }}" title="Quick View"
+                                                data-bs-toggle="modal" data-bs-target="#quick_view_modal">
                                                 <i class="far fa-eye"></i>
                                             </a>
                                         </li>
-                                        {{-- <li>
-                                            <a href="#" class="add-to-cart-btn" data-id="{{ $product->id }}"
-                                                title="Thêm vào giỏ hàng">
-                                                <i class="fas fa-shopping-cart"></i>
-                                            </a>
-                                        </li> --}}
                                     </ul>
                                 </div>
                             </div>
                             <div class="product-info">
                                 <h2 class="product-title">
-                                    <a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                    <a
+                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->name }}</a>
                                 </h2>
                                 <div class="product-price">
                                     @php
-                                        $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
-                                        $regularPrice = $product->variants->min('price');
+                                        $variants = $product->product->variants ?? collect();
+                                        $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
+                                        $regularPrice = $variants->min('price');
                                     @endphp
-
                                     @if (!empty($salePrice) && $salePrice > 0)
-                                        <span class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }}
-                                            VND</span>
-                                        <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }}
-                                            VND</del>
+                                        <span>{{ number_format($salePrice) }}đ</span>
+                                        <del>{{ number_format($regularPrice) }}đ</del>
                                     @else
                                         <span>{{ number_format($regularPrice) }}đ</span>
                                     @endif

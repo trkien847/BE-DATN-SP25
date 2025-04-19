@@ -22,6 +22,7 @@ use App\Models\ImportProduct;
 use App\Models\ImportProductVariant;
 use App\Models\Notification;
 use App\Models\OrderImport;
+use App\Models\OrderItem;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -1194,17 +1195,36 @@ class ProductController extends Controller
             ->with('variants')
             ->limit(10)
             ->get();
-        $carts = Cart::where('user_id', $user->id)
-            ->with(['product', 'productVariant'])
-            ->get();
 
-        $subtotal = $carts->sum(function ($cart) {
-            $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
-                ? $cart->productVariant->sale_price
-                : $cart->productVariant->price;
-            return $cart->quantity * $price;
-        });
+        $carts = collect();
+        $subtotal = 0;
+        $cart_count = 0;
+
+        if ($user) {
+            $carts = Cart::where('user_id', $user->id)
+                ->with(['product', 'productVariant'])
+                ->get();
+
+            $subtotal = $carts->sum(function ($cart) {
+                $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
+                    ? $cart->productVariant->sale_price
+                    : $cart->productVariant->price;
+                return $cart->quantity * $price;
+            });
+
+            $cart_count = $carts->sum('quantity');
+        }
+
         $cart_count = $carts->sum('quantity');
+        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $productTop = OrderItem::with('product.variants')
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->limit(3)
+            ->get();
         return view('client.product.productct', compact(
             'product',
             'categories',
@@ -1216,7 +1236,8 @@ class ProductController extends Controller
             'subtotal',
             'relatedProducts',
             'min_variant_price',
-            'cart_count'
+            'cart_count',
+            'productTop'
         ));
     }
 
