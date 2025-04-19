@@ -192,7 +192,7 @@
                                             </li>
                                         </ul> --}}
                                     </li>
-                                    <li><a href="contact.html">Liên hệ</a></li>
+                                    <li><a href="{{ route('Lien_he') }}">Liên hệ</a></li>
                                 </ul>
                             </div>
                         </nav>

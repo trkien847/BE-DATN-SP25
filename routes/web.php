@@ -40,6 +40,18 @@ Route::middleware(['check.auth'])->group(function () {
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
+Route::get('/Lien_he', function () {
+  $carts = Cart::where('user_id', auth()->id())
+    ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+    ->get();
+  $subtotal = $carts->sum(function ($cart) {
+    $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+      ? $cart->productVariant->sale_price
+      : $cart->productVariant->price;
+    return $cart->quantity * $price;
+  });
+  return view('client.home.Lien_he',compact('carts', 'subtotal'));
+})->name('Lien_he');
 
 // /orders/statistics
 Route::get('/', [HomeController::class, 'index'])->name('index');
@@ -186,6 +198,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
+  //lien he
 
   // hủy đơn hàng
   Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
