@@ -379,7 +379,7 @@
                                 </div>
                             </div>
                             <div class="product-info">
-                                <h2 class="product-title"><a href="product-details.html">${product.name}</a></h2>
+                                <h2 class="product-title"><a href="/products/${product.id}/productct">${product.name}</a></h2>
                                 <div class="product-price">
                                     ${product.min_sale_price > 0 ? 
                                         `<span>${new Intl.NumberFormat().format(product.min_sale_price)}đ</span> 
