@@ -24,17 +24,17 @@ use App\Models\ProductImportDetail;
 use App\Models\User;
 
 
-Route::post('/login',                           [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout',                           [UserController::class, 'logout'])->name('logout');
-Route::get('/loginForm',                        [UserController::class, 'showLogin'])->name('login');
-Route::get('/registerForm',                     [UserController::class, 'showRegister'])->name('register');
-Route::post('/register',                        [UserController::class, 'register'])->name('register.submit');
-Route::get('/profile',                          [UserController::class, 'showProfile'])->name('profile');
-Route::put('/profile',                          [UserController::class, 'updateProfile'])->name('profile.update');
-Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])->name('password.email');
-Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password',                  [UserController::class, 'resetPassword'])->name('password.update');
+Route::post('/login', [UserController::class, 'login'])->name('login.submit');
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
+Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
+Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
+Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+Route::get('/forgot-password', [UserController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [UserController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
 Route::middleware(['check.auth'])->group(function () {
   Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
@@ -148,8 +148,21 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('coupons/{id}', [CoupoController::class, 'show'])->name('coupons.show');
 
   Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
-  Route::put('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
-  Route::put('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
+  Route::PATCH('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
+  Route::PATCH('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
+  // ===== ROUTES cho duyệt mã giảm giá =====
+
+  // Xem chi tiết mã giảm giá cần duyệt
+  Route::get('/coupons/pending-update-detail/{id}', [CoupoController::class, 'pendingDetail'])->name('coupons.pending-update-detail');
+
+
+  // Chấp nhận
+  Route::post('coupons/approve-pending/{id}', [CoupoController::class, 'approvePending'])->name('coupons.approve-pending');
+
+  // Hủy yêu cầu
+  Route::post('coupons/reject-pending/{id}', [CoupoController::class, 'rejectPending'])->name('coupons.reject-pending');
 
 
 

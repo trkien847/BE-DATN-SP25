@@ -147,7 +147,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="valid_products" class="form-label">Áp dụng cho sản phẩm</label>
-                                        <select class="form-control" id="choices-multiple-remove-button" data-choices
+                                        <select class="form-control" id="choices-multiple-remove-buttonsss" data-choices
                                             data-choices-removeItem name="valid_products[]" multiple>
                                             @foreach ($products as $product)
                                                 <option value="{{ $product->id }}">{{ $product->name }}</option>
