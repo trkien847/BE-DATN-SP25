@@ -7,30 +7,6 @@
     <!-- Utilize Mobile Menu Start -->
     @include('client.components.MobileMenuStart')
     <!-- Utilize Mobile Menu End -->
-    <div>
-        <audio id="backgroundMusic" autoplay>
-            <source src="{{ asset('audio/amine.mp3') }}" type="audio/mpeg">
-        </audio>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const audio = document.getElementById('backgroundMusic');
-                audio.volume = 1;
-                let playPromise = audio.play();
-
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log("Autoplay was prevented");
-                    });
-                }
-                document.addEventListener('visibilitychange', function() {
-                    if (!document.hidden && !audio.ended) {
-                        audio.play();
-                    }
-                });
-            });
-        </script>
-    </div>
     <style>
         .product-image {
             width: 250px;
@@ -255,6 +231,7 @@
             }
         }
     </style>
+    <div>
     <div class="ltn__utilize-overlay"></div>
 
     <!-- SLIDER AREA START (slider-3) -->
@@ -310,7 +287,7 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="http://127.0.0.1:8000/upload/baner1.jpg">
+                            data-bs-bg="http://127.0.0.1:8000/upload/image.jpg">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">
@@ -483,7 +460,7 @@
                                             <div class="col-lg-3 col-md-4 col-sm-6">
                                                 <div class="ltn__product-item ltn__product-item-3 text-center">
                                                     <div class="product-img">
-                                                        <a href="{{ route('products.productct', $product->id) }}">
+                                                        <a href="{{ route('products.productct', $product->id) }}" class="product-link">
                                                             <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                                 alt="{{ $product->name }}" class="product-image"
                                                                 width="250px" height="200px">
@@ -509,7 +486,7 @@
                                                                     <a href="#" class="quick-view-btn"
                                                                         data-id="{{ $product->id }}" title="Quick View"
                                                                         data-bs-toggle="modal"
-                                                                        data-bs-target="#quick_view_modal">
+                                                                        data-bs-target="#quick_view_modal" class="product-link">
                                                                         <i class="far fa-eye"></i>
                                                                     </a>
                                                                 </li>
@@ -519,7 +496,7 @@
                                                     <div class="product-info">
                                                         <h2 class="product-title">
                                                             <a
-                                                                href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                                href="{{ route('products.productct', $product->id) }}" class="product-link">{{ $product->name }}</a>
                                                         </h2>
                                                         <div class="product-price">
                                                             @php
@@ -651,7 +628,7 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
                             <div class="product-img">
-                                <a href="{{ route('products.productct', $product->product->id) }}">
+                                <a href="{{ route('products.productct', $product->id) }}">
                                     <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                         alt="{{ $product->name }} " width="250px" height="200px">
                                         
@@ -978,7 +955,10 @@
         </div>
     </div>
 
+    </div>
 
+   
+    
     <!-- CALL TO ACTION END -->
     <!-- MODAL AREA START (Quick View Modal) -->
     @include('client.components.QuickViewModal')
