@@ -628,7 +628,7 @@
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="ltn__product-item ltn__product-item-3 text-center">
                             <div class="product-img">
-                                <a href="{{ route('products.productct', $product->id) }}">
+                                <a href="{{ route('products.productct', $product->product->id) }}">
                                     <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                         alt="{{ $product->name }} " width="250px" height="200px">
                                         

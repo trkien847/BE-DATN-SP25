@@ -412,7 +412,7 @@
                             <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm ripple">
                                 <i class="bx bx-edit fs-16"></i>
                             </a>
-                            <a href="{{ route('products.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
+                            <a href="{{ route('productad.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
                                 <i class="bx bx-detail fs-16"></i>
                             </a>
                             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline delete-form">

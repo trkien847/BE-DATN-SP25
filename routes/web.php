@@ -62,6 +62,7 @@ Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, '
 Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
+Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
 
 Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
 Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
@@ -207,7 +208,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng products.approve-pending 
+  //lịch sử mua hàng /products/
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
