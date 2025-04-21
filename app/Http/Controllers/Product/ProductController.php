@@ -1727,41 +1727,10 @@ class ProductController extends Controller
                 ]);
 
                 DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Đơn nhập hàng đã được xác nhận',
-                    'data' => [
-                        'import_code' => $import->import_code,
-                        'confirmed_by' => $adminUser->fullname,
-                        'confirmed_at' => now()->format('H:i:s d/m/Y'),
-                    ],
-                    'notification' => [
-                        'title' => 'Thành công!',
-                        'icon' => 'success',
-                        'text' => "Đơn nhập hàng #{$import->import_code} đã được xác nhận thành công",
-                        'confirmButtonText' => 'Đồng ý',
-                        'timer' => 3000
-                    ]
-                ]);
+                return redirect()->back()->with('success', 'Yêu cầu nhập hàng đã được chấp nhận');
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Có lỗi xảy ra',
-                    'error' => [
-                        'type' => class_basename($e),
-                        'message' => $e->getMessage(),
-                        'file' => basename($e->getFile()),
-                        'line' => $e->getLine()
-                    ],
-                    'notification' => [
-                        'title' => 'Lỗi!',
-                        'icon' => 'error',
-                        'text' => 'Không thể xác nhận đơn hàng. Vui lòng thử lại sau.',
-                        'confirmButtonText' => 'Đóng',
-                        'showCancelButton' => false
-                    ]
-                ], 500);
+                return redirect()->back()->with('success', 'lol');
             }
         }
 

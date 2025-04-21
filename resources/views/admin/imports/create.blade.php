@@ -1334,6 +1334,7 @@
         const orderImportForm = document.getElementById('orderImportForm');
         const orderBatchSelect = document.getElementById('order-batch-select');
         const orderBatchDetails = document.getElementById('order-batch-details');
+        const importDateInput = document.getElementById('import-date');
 
         viewMoreBtn.addEventListener('click', () => {
             userDetails.classList.toggle('hidden');
@@ -1358,6 +1359,38 @@
                 document.getElementById('supplier-details').classList.add('hidden');
             }
         });
+
+        if (!importDateInput) {
+            console.error('Không tìm thấy input với ID "import-date"');
+            return;
+        }
+
+        function validateImportDate() {
+            const importDate = new Date(importDateInput.value);
+            const today = new Date();
+
+            importDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+
+            if (importDate > today) {
+                alert('Ngày nhập không được lớn hơn ngày hiện tại.');
+                importDateInput.value = today.toISOString().split('T')[0];
+                return false;
+            }
+
+            return true;
+        }
+
+        importDateInput.addEventListener('change', validateImportDate);
+
+        const form = importDateInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                if (!validateImportDate()) {
+                    event.preventDefault();
+                }
+            });
+        }
 
         addSupplierBtn.addEventListener('click', () => {
             modal.style.display = 'block';
@@ -1531,6 +1564,7 @@
             files.forEach(file => dataTransfer.items.add(file));
             fileInput.files = dataTransfer.files;
         }
+        
 
         addOrderBatchBtn.addEventListener('click', () => {
             orderImportModal.style.display = 'block';
@@ -1723,13 +1757,11 @@
 
             selectedVariants.forEach(variantCheckbox => {
                 const variantId = variantCheckbox.dataset.variantId;
-                
+
                 if (document.querySelector(`.selected-product-item[data-variant-id="${variantId}"]`)) {
                     console.log('Biến thể đã được thêm:', variantId);
                     return;
                 }
-
-                newProductsAdded++;
 
                 const productHtml = `
                     <div class="selected-product-item" data-product-id="${productId}" data-variant-id="${variantId}">
@@ -1762,18 +1794,73 @@
                         </div>
                     </div>
                 `;
-                
+
                 selectedProductsContainer.insertAdjacentHTML('beforeend', productHtml);
 
                 const newRemoveButton = selectedProductsContainer.querySelector(
                     `.remove-product[data-variant-id="${variantId}"]`
                 );
-                
                 if (newRemoveButton) {
                     newRemoveButton.addEventListener('click', function() {
                         removeProduct(this);
                     });
                 }
+
+                const formInputs = selectedProductsContainer.querySelector(
+                    `.selected-product-item[data-variant-id="${variantId}"] .selected-product-form`
+                );
+                const manufactureDateInput = formInputs.querySelector(`input[name="products[${productId}][variants][${variantId}][manufacture_date]"]`);
+                const expiryDateInput = formInputs.querySelector(`input[name="products[${productId}][variants][${variantId}][expiry_date]"]`);
+
+                manufactureDateInput.addEventListener('change', () => validateDates());
+                expiryDateInput.addEventListener('change', () => validateDates());
+
+                function validateDates() {
+                    let isValid = true;
+                    let errorMessage = '';
+
+                    const manufactureDate = new Date(manufactureDateInput.value);
+                    const expiryDate = new Date(expiryDateInput.value);
+                    const today = new Date();
+
+                    today.setHours(0, 0, 0, 0);
+                    manufactureDate.setHours(0, 0, 0, 0);
+                    expiryDate.setHours(0, 0, 0, 0);
+
+                    if (manufactureDate > today) {
+                        isValid = false;
+                        errorMessage += 'Ngày sản xuất không được lớn hơn ngày hiện tại.\n';
+                    }
+
+                    if (expiryDate < manufactureDate) {
+                        isValid = false;
+                        errorMessage += 'Ngày hết hạn không được nhỏ hơn ngày sản xuất.\n';
+                    }
+
+                    const oneYearFromManufacture = new Date(manufactureDate);
+                    oneYearFromManufacture.setFullYear(oneYearFromManufacture.getFullYear() + 1);
+                    if (expiryDate < oneYearFromManufacture) {
+                        isValid = false;
+                        errorMessage += 'Ngày hết hạn phải cách ngày sản xuất ít nhất 1 năm.\n';
+                    }
+
+                    if (!isValid) {
+                        alert(errorMessage);
+                        manufactureDateInput.value = '';
+                        expiryDateInput.value = '';
+                    }
+
+                    return isValid;
+                }
+
+                if (manufactureDateInput.value && expiryDateInput.value) {
+                    if (!validateDates()) {
+                        formInputs.closest('.selected-product-item').remove();
+                        return;
+                    }
+                }
+
+                newProductsAdded++;
             });
 
             selectedProductCount += newProductsAdded;
@@ -1789,7 +1876,7 @@
                 countElement.className = 'selected-product-count';
                 selectedProductsContainer.parentNode.insertBefore(countElement, selectedProductsContainer);
             }
-            
+
             countElement.innerHTML = `
                 <div class="count-badge">
                     <i class="fas fa-box"></i>

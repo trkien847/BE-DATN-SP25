@@ -53,7 +53,7 @@ Route::get('/Lien_he', function () {
   return view('client.home.Lien_he',compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics /cart/orderHistory
+// /orders/statistics /admin/imports/confirm/
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -231,7 +231,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //hoàn hàng
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
-  // thông kê /imports/create
+  // thông kê confirm
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
   //nhập  search 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
