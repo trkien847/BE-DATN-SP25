@@ -339,7 +339,7 @@
                 <tr>
                     <th scope="col">Mã SP</th>
                     <th scope="col">Tên Sản Phẩm</th>
-                    <th scope="col">Số lần nhập</th>
+                    <th scope="col">Ngày Nhập</th>
                     <th scope="col">Ảnh</th>
                     <th scope="col">Danh mục</th>
                     <th scope="col">Trạng Thái</th>
