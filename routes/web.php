@@ -24,24 +24,36 @@ use App\Models\ProductImportDetail;
 use App\Models\User;
 
 
-Route::post('/login',                           [UserController::class, 'login'])->name('login.submit');
-Route::get('/logout',                           [UserController::class, 'logout'])->name('logout');
-Route::get('/loginForm',                        [UserController::class, 'showLogin'])->name('login');
-Route::get('/registerForm',                     [UserController::class, 'showRegister'])->name('register');
-Route::post('/register',                        [UserController::class, 'register'])->name('register.submit');
-Route::get('/profile',                          [UserController::class, 'showProfile'])->name('profile');
-Route::put('/profile',                          [UserController::class, 'updateProfile'])->name('profile.update');
-Route::get('/forgot-password',                  [UserController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password',                 [UserController::class, 'sendResetLink'])->name('password.email');
-Route::get('/reset-password/{token}',           [UserController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password',                  [UserController::class, 'resetPassword'])->name('password.update');
+Route::post('/login', [UserController::class, 'login'])->name('login.submit');
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
+Route::get('/registerForm', [UserController::class, 'showRegister'])->name('register');
+Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
+Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+Route::get('/forgot-password', [UserController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [UserController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.update');
 Route::middleware(['check.auth'])->group(function () {
   Route::post('/profile/address', [UserController::class, 'storeAddress'])->name('profile.address.store');
   Route::put('/profile/address/{id}', [UserController::class, 'updateAddress']);
   Route::delete('/profile/address/{id}', [UserController::class, 'destroyAddress']);
 });
+Route::get('/Lien_he', function () {
+  $carts = Cart::where('user_id', auth()->id())
+    ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+    ->get();
+  $subtotal = $carts->sum(function ($cart) {
+    $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+      ? $cart->productVariant->sale_price
+      : $cart->productVariant->price;
+    return $cart->quantity * $price;
+  });
+  return view('client.home.Lien_he',compact('carts', 'subtotal'));
+})->name('Lien_he');
 
-// /orders/statistics
+// /orders/statistics /admin/imports/confirm/
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -50,6 +62,7 @@ Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, '
 Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
+Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
 
 Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
 Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
@@ -136,8 +149,21 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('coupons/{id}', [CoupoController::class, 'show'])->name('coupons.show');
 
   Route::put('coupons/{id}', [CoupoController::class, 'update'])->name('coupons.update');
-  Route::put('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
-  Route::put('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
+  Route::PATCH('coupons/{id}/approve', [CoupoController::class, 'approve'])->name('coupons.approve');
+  Route::PATCH('coupons/{id}/rejected', [CoupoController::class, 'reject'])->name('coupons.rejected');
+
+  // ===== ROUTES cho duyệt mã giảm giá =====
+
+  // Xem chi tiết mã giảm giá cần duyệt /profile
+  Route::get('/coupons/pending-update-detail/{id}', [CoupoController::class, 'pendingDetail'])->name('coupons.pending-update-detail');
+
+
+  // Chấp nhận
+  Route::post('coupons/approve-pending/{id}', [CoupoController::class, 'approvePending'])->name('coupons.approve-pending');
+
+  // Hủy yêu cầu
+  Route::post('coupons/reject-pending/{id}', [CoupoController::class, 'rejectPending'])->name('coupons.reject-pending');
 
 
 
@@ -182,10 +208,11 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng products.approve-pending 
+  //lịch sử mua hàng /products/
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
+  //lien he
 
   // hủy đơn hàng
   Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
@@ -204,7 +231,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //hoàn hàng
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
-  // thông kê /imports/create
+  // thông kê confirm
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
   //nhập  search 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');

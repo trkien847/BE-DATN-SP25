@@ -133,7 +133,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h2 class="product-title"><a
-                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2><h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
                                                     <div class="product-price">
                                                         @php
@@ -161,15 +161,7 @@
                     </div>
                     <div class="ltn__pagination-area text-center">
                         <div class="ltn__pagination">
-                            <ul>
-                                <li><a href="#"><i class="fas fa-angle-double-left"></i></a></li>
-                                <li><a href="#">1</a></li>
-                                <li class="active"><a href="#">2</a></li>
-                                <li><a href="#">3</a></li>
-                                <li><a href="#">...</a></li>
-                                <li><a href="#">10</a></li>
-                                <li><a href="#"><i class="fas fa-angle-double-right"></i></a></li>
-                            </ul>
+                            {{ $products->links() }}
                         </div>
                     </div>
                 </div>
@@ -237,8 +229,8 @@
                                     <li>
                                         <div class="top-rated-product-item clearfix">
                                             <div class="top-rated-product-img">
-                                                <a href="{{ route('products.productct', $product->id) }}"><img
-                                                        src="{{ asset('upload/' . $product->thumbnail) }}"
+                                                <a href="{{ route('products.productct', $product->product->id) }}"><img
+                                                        src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                                         alt="#"></a>
                                             </div>
                                             <div class="top-rated-product-info">
@@ -252,16 +244,16 @@
                                                     </ul> --}}
                                                 </div>
                                                 <h6><a
-                                                        href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
                                                 </h6>
                                                 <div class="product-price">
                                                     @php
-                                                        $salePrice = $product->variants
+                                                        $variants = $product->product->variants ?? collect();
+                                                        $salePrice = $variants
                                                             ->where('sale_price', '>', 0)
                                                             ->min('sale_price');
-                                                        $regularPrice = $product->variants->min('price');
+                                                        $regularPrice = $variants->min('price');
                                                     @endphp
-
                                                     @if (!empty($salePrice) && $salePrice > 0)
                                                         <span>{{ number_format($salePrice) }}đ</span>
                                                         <del>{{ number_format($regularPrice) }}đ</del>
@@ -387,11 +379,11 @@
                                 </div>
                             </div>
                             <div class="product-info">
-                                <h2 class="product-title"><a href="product-details.html">${product.name}</a></h2>
+                                <h2 class="product-title"><a href="/products/${product.id}/productct">${product.name}</a></h2>
                                 <div class="product-price">
                                     ${product.min_sale_price > 0 ? 
                                         `<span>${new Intl.NumberFormat().format(product.min_sale_price)}đ</span> 
-                                                            <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
+                                                                <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
                                         `<span>${new Intl.NumberFormat().format(product.min_price)}đ</span>`
                                     }
                                 </div>

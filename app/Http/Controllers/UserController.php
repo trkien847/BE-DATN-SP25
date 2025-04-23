@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -53,7 +54,7 @@ class UserController extends Controller
     public function showProfile()
     {
         $user = auth()->user();
-        $address = $user->address ? $user->address->address : null; // Hoặc để trống nếu chưa có
+        $address = $user->address ? $user->address->address : null; 
 
         $carts = Cart::where('user_id', $user->id)->get();
 
@@ -64,7 +65,17 @@ class UserController extends Controller
             return $cart->quantity * $price;
         });
 
-        return view('client.auth.profile', compact('carts', 'subtotal', 'user', 'address'));
+        $orders = Order::where('user_id', $user->id)
+            ->with([
+                'latestOrderStatus',
+                'items.product.importProducts' => function ($query) {
+                    $query->latest();
+                }
+            ])
+            ->latest()
+            ->get();
+
+        return view('client.auth.profile', compact('carts', 'subtotal', 'user', 'address', 'orders'));
     }
 
     public function updateProfile(ProfileUpdateRequest $request)
@@ -87,7 +98,7 @@ class UserController extends Controller
         if ($request->filled('birthday')) {
             $updateData['birthday'] = $request->birthday;
         }
-        
+
         if ($request->filled('gender')) {
             $updateData['gender'] = $request->gender;
         }

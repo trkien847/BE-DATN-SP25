@@ -7,7 +7,7 @@
     <!-- Utilize Mobile Menu Start -->
     @include('client.components.MobileMenuStart')
     <div class="ltn__utilize-overlay"></div>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- BREADCRUMB AREA START -->
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image " data-bs-bg="img/bg/14.jpg">
         <div class="container">
@@ -68,43 +68,205 @@
                                         <div class="tab-pane fade" id="liton_tab_1_2">
                                             <div class="ltn__myaccount-tab-content-inner">
                                                 <div class="table-responsive">
-                                                    <table class="table">
+                                                <div class="container">
+                                                    <h1>Lịch Sử Mua Hàng</h1>
+                                                    <table class="order-table" id="order-table">
                                                         <thead>
                                                             <tr>
-                                                                <th>Đơn hàng</th>
-                                                                <th>Ngày mua</th>
+                                                                <th>Mã đơn hàng</th>
+                                                                <th>Số lượng sản phẩm</th>
+                                                                <th>Tổng giá trị</th>
                                                                 <th>Trạng thái</th>
-                                                                <th>Tông tiền</th>
                                                                 <th>Hành động</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>1</td>
-                                                                <td>Jun 22, 2019</td>
-                                                                <td>Pending</td>
-                                                                <td>$3000</td>
-                                                                <td><a href="cart.html">Xem</a></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>2</td>
-                                                                <td>Nov 22, 2019</td>
-                                                                <td>Approved</td>
-                                                                <td>$200</td>
-                                                                <td><a href="cart.html">Xem</a></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>3</td>
-                                                                <td>Jan 12, 2020</td>
-                                                                <td>On Hold</td>
-                                                                <td>$990</td>
-                                                                <td><a href="cart.html">Xem</a></td>
-                                                            </tr>
+                                                        <tbody id="order-table-body">
+                                                            @foreach($orders as $order)
+                                                                <tr class="order-row" style="display: none;">
+                                                                    <td>{{ $order->code }}</td>
+                                                                    <td>{{ $order->items->sum('quantity') }}</td>
+                                                                    <td>{{ number_format($order->total_amount) }} VNĐ</td>
+                                                                    <td>
+                                                                        @php
+                                                                            $statusName = $order->latestOrderStatus->name ?? 'Chưa có trạng thái';
+                                                                        @endphp
+                                                                        <span class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
+                                                                            {{ $statusName }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Xem chi tiết">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
+                                                                            <a href="{{ route('order.cancel', $order->id) }}" class="action-icon" title="Hủy đơn hàng">
+                                                                                <i class="fas fa-times-circle"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành' && $order->completedStatusTimestamp() && \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
+                                                                            <a href="{{ route('order.return', $order->id) }}" class="action-icon" title="Hoàn hàng">
+                                                                                <i class="fas fa-undo"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
+                                                                            <a href="{{ route('order.refund.form', $order->id) }}" class="action-icon" title="Nhập thông tin tài khoản">
+                                                                                <i class="fas fa-money-check-alt"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
+                                                                            <a href="{{ route('order.refund.confirm', $order->id) }}" class="action-icon" title="Xác nhận nhận tiền">
+                                                                                <i class="fas fa-check-circle"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
                                                         </tbody>
                                                     </table>
+                                                    <div class="pagination" id="pagination-controls"></div>
+                                                    @foreach($orders as $order)
+                                                    <div id="order{{ $order->id }}" class="modal">
+                                                        <div class="modal-content">
+                                                            <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">×</button>
+                                                            <div class="order-details">
+                                                                <h3>Chi tiết đơn hàng {{ $order->code }} ( Designed by TG )</h3>
+                                                                <p><strong>Ngày mua:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
+                                                                <p><strong>Trạng thái:</strong> {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</p>
+                                                                <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
+                                                                @if($order->refund_proof_image)
+                                                                    <p>
+                                                                        <strong>Ảnh hoàn tiền:</strong> 
+                                                                        <img src="{{ asset('upload/'.$order->refund_proof_image) }}" 
+                                                                            class="img-thumbnail" 
+                                                                            alt="Ảnh chứng minh hoàn tiền" 
+                                                                            width="100px" 
+                                                                            height="100px"
+                                                                            onclick="showFullImage('{{ asset('upload/'.$order->refund_proof_image) }}')"
+                                                                            style="cursor: pointer;">
+                                                                    </p>
+                                                                @endif
+
+                                                                <h4>Thông tin sản phẩm:</h4>
+                                                                <ul>
+                                                                    @foreach($order->items as $item)
+                                                                    <li>
+                                                                        <strong><a href="{{ route('products.productct', $item->id) }}">Sản phẩm:</a></strong> {{ $item->name }} <br>
+                                                                        <strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }}
+                                                                        @if($item->attributes_variant)
+                                                                        ({{ $item->attributes_variant }})
+                                                                        @endif <br>
+                                                                        <strong>Giá:</strong> {{ number_format($item->price_variant ?? $item->price) }} VNĐ <br>
+                                                                        <strong>Số lượng:</strong> {{ $item->quantity }} <br>
+                                                                        @if($item->product && $item->product->importProducts->isNotEmpty())
+                                                                            <strong>Ngày sản xuất:</strong> 
+                                                                            {{ $item->product->importProducts->first()->manufacture_date ? 
+                                                                            \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y') : 
+                                                                            'Không có' }} <br>
+                                                                            <strong>Hạn sử dụng:</strong> 
+                                                                            @php
+                                                                                $expiryDate = $item->product->importProducts->first()->expiry_date;
+                                                                                $daysUntilExpiry = $expiryDate ? \Carbon\Carbon::parse($expiryDate)->diffInDays(now()) : null;
+                                                                            @endphp
+                                                                            <span class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                                                                {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                                                                @if($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                                                                    (Còn {{ $daysUntilExpiry }} ngày)
+                                                                                @endif
+                                                                            </span>
+                                                                        @else
+                                                                            <strong>Ngày sản xuất:</strong> Không có <br>
+                                                                            <strong>Hạn sử dụng:</strong> Không có
+                                                                        @endif
+                                                                    </li>
+                                                                    @endforeach
+                                                                </ul>
+
+                                                                @if($order->coupon_code)
+                                                                <p><strong>Mã giảm giá:</strong> {{ $order->coupon_code }}
+                                                                    (Giảm {{ $order->coupon_discount_value }}
+                                                                    {{ $order->coupon_discount_type === 'percent' ? '%' : 'VNĐ' }})
+                                                                </p>
+                                                                @endif
+                                                                <p><strong>Tổng cộng:</strong> {{ number_format($order->total_amount) }} VNĐ</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <script>
+                                            function showModal(modalId) {
+                                                const modal = document.getElementById(modalId);
+                                                modal.style.display = 'flex';
+                                            }
+
+                                            function hideModal(modalId) {
+                                                const modal = document.getElementById(modalId);
+                                                modal.style.display = 'none';
+                                            }
+
+                                            window.onclick = function(event) {
+                                                const modals = document.getElementsByClassName('modal');
+                                                for (let i = 0; i < modals.length; i++) {
+                                                    if (event.target === modals[i]) {
+                                                        modals[i].style.display = 'none';
+                                                    }
+                                                }
+                                            }
+
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                const tableBody = document.getElementById('order-table-body');
+                                                const rows = Array.from(document.querySelectorAll('.order-row'));
+                                                const paginationControls = document.getElementById('pagination-controls');
+                                                const rowsPerPage = 10; 
+                                                let currentPage = 1;
+
+                                                
+                                                function displayRows() {
+                                                    const start = (currentPage - 1) * rowsPerPage;
+                                                    const end = start + rowsPerPage;
+                                                    rows.forEach(row => (row.style.display = 'none')); 
+                                                    rows.slice(start, end).forEach(row => (row.style.display = ''));
+
+                                                   
+                                                    updatePagination();
+                                                }
+
+                                               
+                                                function updatePagination() {
+                                                    const totalPages = Math.ceil(rows.length / rowsPerPage);
+                                                    let paginationHTML = '';
+
+                                                    
+                                                    paginationHTML += `
+                                                        <a href="#" class="page-link ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">Previous</a>
+                                                    `;
+
+                                                    for (let i = 1; i <= totalPages; i++) {
+                                                        paginationHTML += `
+                                                            <a href="#" class="page-link ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</a>
+                                                        `;
+                                                    }
+
+                                                    paginationHTML += `
+                                                        <a href="#" class="page-link ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">Next</a>
+                                                    `;
+
+                                                    paginationControls.innerHTML = paginationHTML;
+                                                }
+
+                                                window.changePage = function (page) {
+                                                    if (page < 1 || page > Math.ceil(rows.length / rowsPerPage)) return;
+                                                    currentPage = page;
+                                                    displayRows();
+                                                };
+
+                                                displayRows();
+                                            });
+                                        </script>
                                         <div class="tab-pane fade" id="liton_tab_1_4">
                                             <div class="ltn__myaccount-tab-content-inner">
                                                 <p>Các địa chỉ sau sẽ được sử dụng trên trang thanh toán theo mặc định.</p>
@@ -666,5 +828,222 @@
             font-size: 13px;
             display: none;
         }
+
+
+
+         /* Table Styles */
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .order-details ul li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        line-height: 1.6;
+    }
+    .order-table th,
+    .order-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .order-table th {
+        background-color:rgb(0, 157, 115);
+        color: white;
+        font-weight: 600;
+    }
+
+    .order-table tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .detail-btn,
+    .cancel-btn,
+    .return-btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-right: 5px;
+    }
+
+    .detail-btn {
+        background-color:rgb(0, 157, 115);
+        color: white;
+    }
+
+    .detail-btn:hover {
+        background-color: rgb(0, 157, 115);
+    }
+
+    .cancel-btn {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #da190b;
+    }
+
+    .return-btn {
+        background-color: #ff9800;
+        color: white;
+    }
+
+    .return-btn:hover {
+        background-color: #e68a00;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        color: #888;
+        cursor: pointer;
+        border: none;
+        background: none;
+    }
+
+    .close-btn:hover {
+        color: #333;
+    }
+
+    .order-details h3 {
+        color: #4CAF50;
+        margin-bottom: 15px;
+    }
+
+    .order-details p {
+        margin: 8px 0;
+        font-size: 16px;
+    }
+
+    .order-details ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .order-details ul li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-details ul li:last-child {
+        border-bottom: none;
+    }
+
+    .status-cancelled {
+        color: #ff0000;
+    }
+    .status-pending-cancel {
+        color: #ffc107; 
+    }
+    .status-default {
+        color: #28a745; 
+    }
+
+    .order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.order-table th, .order-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.order-table th {
+    background-color:rgb(0, 0, 0);
+}
+
+.action-icon {
+    margin: 0 5px;
+    color: #333;    
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.action-icon:hover {
+    color: #007bff;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-link {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ddd;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.pagination .page-link:hover {
+    background-color:rgb(0, 0, 0);
+}
+
+.pagination .page-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination .page-link.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
     </style>
 @endpush

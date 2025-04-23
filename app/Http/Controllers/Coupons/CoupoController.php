@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Coupons;
 
-use App\Http\Requests\CouponRequest;
-use App\Models\Category;
+use App\Models\User;
 use App\Models\Coupon;
 use App\Models\Product;
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Models\CouponRestriction;
+use App\Models\Category;
 use App\Models\CouponUser;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use App\Models\CouponRestriction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CouponRequest;
 use App\Notifications\CouponCreatedNotification;
 
 
@@ -32,7 +33,7 @@ class CoupoController extends Controller
                 ->orWhere('description', 'LIKE', "%$search%");
         }
 
-        $coupons = $query->where('status', 'pending')->orderBy('created_at', 'desc')->paginate(10);
+        $coupons = $query->where('status', 'approved')->orderBy('created_at', 'desc')->paginate(10);
         // status	enum('pending', 'approved', 'rejected')	utf8mb4_unicode_ci	
         // Lấy tên sản phẩm và danh mục theo valid_products & valid_categories
         foreach ($coupons as $coupon) {
@@ -68,9 +69,11 @@ class CoupoController extends Controller
      */
     public function store(CouponRequest $request)
     {
+
         DB::beginTransaction();
-    
+
         try {
+
             // Tạo mã giảm giá
             $coupon = Coupon::create([
                 'code' => $request->code,
@@ -84,11 +87,11 @@ class CoupoController extends Controller
                 'end_date' => $request->end_date ?? null,
                 'status' => 'pending',
             ]);
-   
+
             // Tạo CouponRestriction
 
             try {
-               CouponRestriction::create([
+                $maGiamGia = CouponRestriction::create([
 
                     'coupon_id' => $coupon->id,
                     'min_order_value' => $request->filled('min_order_value') ? $request->min_order_value : 1000,
@@ -96,31 +99,49 @@ class CoupoController extends Controller
                     'valid_categories' => json_encode(array_map('intval', (array) ($request->valid_categories ?? []))),
                     'valid_products' => json_encode(array_map('intval', (array) ($request->valid_products ?? []))),
                 ]);
-               
+
             } catch (\Exception $e) {
                 Log::error("Lỗi khi tạo CouponRestriction: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             }
-            
-         
-    
+
+
+
             //Gửi thông báo đến Admin bằng Notification
-            // $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 3 là Admin
-            
-            // foreach ($adminUsers as $admin) {
-               
-            //     $admin->notify(new CouponCreatedNotification($coupon));
-            
-            // }
-    
+            $adminUsers = User::where('role_id', 3)->get(); // Giả sử role_id = 3 là Admin
+            $user = auth()->user();
+
+            foreach ($adminUsers as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => "Nhân viên {$user->fullname} đã yêu cầu thêm mã giảm giá",
+                    'content' => "Tên mã giảm giá: {$request->title} {$request->code}",
+                    'type' => 'coupon_pending_create',
+                    'data' => json_encode([
+                        'pending_id' => $coupon->id,
+                        'requester_id' => $user->id,
+                        'requester_name' => $user->fullname,
+                        'coupon_name' => $request->title,
+                        'actions' => [
+                            'view_details' => route('coupons.pending-update-detail', $coupon->id),
+                            'approve_request' => route('coupons.approve', $coupon->id),
+                            'reject_request' => route('coupons.rejected', $coupon->id),
+                        ],
+
+                    ]),
+                    'is_read' => 0,
+                ]);
+            }
+
             DB::commit();
             Log::info("Mã giảm giá '{$coupon->code}' đã được tạo thành công.");
-    
+
             return redirect()->route('coupons.list')->with('success', 'Thêm mã giảm giá thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
-    
+            // Log::error("Lỗi khi thêm mã giảm giá: " . $e->getMessage());
+            echo $e->getMessage();
+
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
@@ -264,30 +285,44 @@ class CoupoController extends Controller
         }
     }
 
-    public function approve($id)
+    public function approve(Request $request , $id)
     {
         $coupon = Coupon::findOrFail($id);
-        // echo $coupon;
+        $notificationId = $request->input('notification_id');
+        // echo $notificationId;
         // die();
+        if ($notificationId) {
+            $notification = Notification::find($notificationId);
+            if ($notification) {
+                $notification->update(['is_read' => 1]);
+            }
+        }
+       
         $coupon->status = 'approved';
         $coupon->save();
 
         return redirect()->back()->with('success', 'Mã giảm giá đã được duyệt!');
     }
 
-    public function reject($id)
+    public function reject(Request $request , $id)
     {
         $coupon = Coupon::findOrFail($id);
-        // echo $coupon;
-        // die();
+        $notificationId = $request->input('notification_id');
+        if ($notificationId) {
+            $notification = Notification::find($notificationId);
+            if ($notification) {
+                $notification->update(['is_read' => 1]);
+            }
+        }
+       
         $coupon->status = 'rejected';
         $coupon->save();
 
         return redirect()->back()->with('error', 'Mã giảm giá đã bị từ chối.');
     }
 
-    
-    
+
+
 
 
 }

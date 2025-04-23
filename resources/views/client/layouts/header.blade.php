@@ -153,7 +153,7 @@
                                         </ul>
                                     </li> --}}
                                     <li><a href="{{ route('category.show') }}">Sản phẩm</a>
-                                    <li><a href="{{ route('orderHistory') }}">Lịch sử mua hàng</a></li>
+                                    <li><a href="{{ route('orderHistory') }}">Bài Viết</a></li>
                                     {{-- <li class="menu-icon"><a href="#">Pages</a>
                                         <ul class="mega-menu">
                                             <li><a href="#">Inner Pages</a>
@@ -192,7 +192,7 @@
                                             </li>
                                         </ul> --}}
                                     </li>
-                                    <li><a href="contact.html">Liên hệ</a></li>
+                                    <li><a href="{{ route('Lien_he') }}">Liên hệ</a></li>
                                 </ul>
                             </div>
                         </nav>

@@ -24,6 +24,7 @@ class ImportPendingNotification extends Notification
 
     public function toArray($notifiable)
     {
+        dd($this->import);
         return [
             'message' => 'Bạn đang có một đơn hàng chờ xác nhận.',
             'import_id' => $this->import->id,

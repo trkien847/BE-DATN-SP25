@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\CategoryType;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\CategoryService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ShopListController extends Controller
@@ -19,7 +21,15 @@ class ShopListController extends Controller
     public function show($categoryId = null, $subcategoryId = null)
     {
         $categories = $this->categoryService->getAllCategories();
-        $productTop = Product::orderBy('views', 'desc')->take(3)->get();
+        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $productTop = OrderItem::with('product.variants')
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->limit(3)
+            ->get();
         $carts = Cart::where('user_id', auth()->id())->get();
 
         $subtotal = $carts->sum(function ($cart) {
@@ -56,7 +66,7 @@ class ShopListController extends Controller
             return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
         }
 
-        $products = $productsQuery->get();
+        $products = $productsQuery->paginate(12);
         $brands = $products->pluck('brand')->unique()->filter();
         return view('client.shopList.index', compact('products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
     }
