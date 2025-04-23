@@ -287,7 +287,7 @@
                     <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
                         <!-- ltn__slide-item -->
                         <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="http://127.0.0.1:8000/upload/image.jpg">
+                            data-bs-bg="http://127.0.0.1:8000/upload/baner1.jpg">
                             <div class="ltn__slide-item-inner">
                                 <div class="container">
                                     <div class="row">

@@ -440,7 +440,7 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 let isUpdate = $('#attribute-id').val() !== '';
-                $('#overlay-title').text(isUpdate ? 'Sửa Thuộc Tính ( Designed by TG )' : 'Thêm Thuộc Tính ( Designed by TG )');
+                $('#overlay-title').text(isUpdate ? 'Sửa Thuộc Tính ' : 'Thêm Thuộc Tính ');
                 $('#attribute-form').attr('action', isUpdate ? '{{ route('attributes.update', '') }}/' + $('#attribute-id').val() : '{{ route('attributes.store') }}');
                 $('#name').val('{{ old('name') }}');
                 $('#value').val('{{ old('value', 'viên') }}');
@@ -562,7 +562,7 @@ $(document).ready(function() {
         const attributeName = $(this).data('name');
         const attributeId = $(this).data('id');
         
-        $('#variant-overlay-title').text(`Thêm giá trị cho ${attributeName} ( Designed by TG )`);
+        $('#variant-overlay-title').text(`Thêm giá trị cho ${attributeName} `);
         $('#variant-value-form')
             .attr('action', '{{ route('attribute-values.store') }}')
             .trigger('reset');

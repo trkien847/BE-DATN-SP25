@@ -305,7 +305,7 @@
 <div id="loading-overlay" class="loading-overlay">
     <div class="loading-content">
         <div class="loading-text">
-            <span>D</span><span>e</span><span>s</span><span>i</span><span>g</span><span>n</span><span>e</span><span>d</span><span>&nbsp;</span><span>b</span><span>y</span><span>&nbsp;</span><span>T</span><span>G</span>
+            <span>B</span><span>e</span><span>e</span><span>P</span><span>h</span><span>a</span><span>r</span><span>m</span><span>a</span><span>c</span><span>y</span>
         </div>
     </div>
 </div>

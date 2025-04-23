@@ -469,7 +469,7 @@
                         <div class="text-center py-3 footer-bg">
                             <div class="overlay"></div>
                             <a class="btn btn-sm custom-btn" style="color: white;">
-                                Được thiết kế bởi TG VN
+                                BEEPHARMACY
                             </a>
                         </div>
                     </div>
