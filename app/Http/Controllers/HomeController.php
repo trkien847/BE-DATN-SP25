@@ -29,7 +29,7 @@ class HomeController extends Controller
     public function index()
     {
         $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $sevenDaysAgo = Carbon::now()->subDays(30);
         $productBestSale = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -38,8 +38,16 @@ class HomeController extends Controller
             ->orderByDesc('total_sold')
             ->limit(8)
             ->get();
+            
         $productTop = Product::orderBy('views', 'desc')->take(6)->get();
-        $carts = Cart::where('user_id', auth()->id())->get();
+        $carts = Cart::with([
+            'product.brand',
+            'product.categories',
+            'product.categoryTypes',
+            'product.variants.attributeValues.attribute',
+            'product.attributeValues.attribute',
+            'productVariant.attributeValues.attribute',
+        ])->where('user_id', auth()->id())->get();
         $subtotal = $carts->sum(function ($cart) {
             $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
                 ? $cart->productVariant->sale_price

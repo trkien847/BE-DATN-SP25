@@ -419,6 +419,39 @@
                                                     cầu</button>
                                             </form>
                                         </div>
+                                    @elseif($notification->type === 'category_pending_create' || $notification->type === 'category_pending_update')
+                                        <div class="d-flex gap-2">
+                                            <form action="{{ $notification->data['actions']['approve_request'] }}"
+                                                method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="hidden" name="notification_id"
+                                                    value="{{ $notification->id }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i
+                                                        class="fas fa-check me-1"></i>{{ $notification->type === 'category_pending_create' ? 'Phê duyệt' : 'Chấp nhận thay đổi' }}
+                                                </button>
+                                            </form>
+                                            <form action="{{ $notification->data['actions']['reject_request'] }}"
+                                                method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="hidden" name="notification_id"
+                                                    value="{{ $notification->id }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i
+                                                        class="fas fa-times me-1"></i>{{ $notification->type === 'category_pending_create' ? 'Từ chối' : 'Từ chối thay đổi' }}
+                                                </button>
+                                            </form>
+                                            <form action="${notification.data.actions.view_details}" method="GET"
+                                                class="view-details-form" style="display:inline;">
+                                                <input type="hidden" name="notification_id"
+                                                    value="${notification.id}">
+                                                <button type="submit" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </button>
+                                            </form>
+                                        </div>
                                     @elseif($notification->type === 'coupon_pending_create')
                                         @php
                                             $data = is_array($notification->data)
@@ -670,7 +703,7 @@
                                                 <button type="submit" class="btn btn-sm btn-danger">Hủy yêu cầu</button>
                                             </form>
                                         `;
-                             
+
                                 case 'coupon_pending_create':
                                     let data = notification.data;
                                     if (typeof data === 'string') {
@@ -705,6 +738,29 @@
                                         console.error('Missing actions in notification data for coupon_pending_create:', data);
                                         return `<div class="text-danger">Không có hành động khả dụng cho thông báo này.</div>`;
                                     }
+                                case 'category_pending_create':
+                                    return `
+                                            <div class="d-flex gap-2">
+                                                <form action="${notification.data.actions.approve_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Phê duyệt
+                                                    </button>
+                                                </form>
+                                                <form action="${notification.data.actions.reject_request}" method="POST" class="notification-form" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                                    <input type="hidden" name="notification_id" value="${notification.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times me-1"></i>Từ chối
+                                                    </button>
+                                                </form>
+                                                <a href="${notification.data.actions.view_details}" class="btn btn-sm btn-info mark-as-read" 
+                                                data-notification-id="${notification.id}">
+                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                </a>
+                                            </div>
+                                        `;
                                 default:
                                     return '';
                             }
@@ -713,8 +769,117 @@
                         setInterval(fetchNotifications, 3000);
                     });
                 </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const notificationList = document.getElementById('notification-list');
 
-              
+                        // Add form submission handler
+                        notificationList.addEventListener('submit', async function(e) {
+                            e.preventDefault();
+                            const form = e.target;
+
+                            try {
+                                const response = await fetch(form.action, {
+                                    method: form.method,
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                            .content,
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    // Remove the notification item from UI
+                                    const notificationItem = form.closest('.notification-item');
+                                    if (notificationItem) {
+                                        notificationItem.style.animation = 'fadeOut 0.3s ease-out';
+                                        setTimeout(() => {
+                                            notificationItem.remove();
+
+                                            // Update notification count
+                                            const countSpan = document.querySelector(
+                                                '#notification-count .count');
+                                            const currentCount = parseInt(countSpan.textContent) - 1;
+                                            countSpan.textContent = currentCount;
+
+                                            // Show empty message if no notifications left
+                                            if (currentCount === 0) {
+                                                notificationList.innerHTML = `
+                                                    <div class="notification-empty">
+                                                        <i class="fas fa-bell-slash fa-2x mb-2 text-gray-400"></i>
+                                                        <p>Không có thông báo nào</p>
+                                                    </div>
+                                                `;
+                                            }
+                                        }, 300);
+                                    }
+
+                                    // Show success message
+                                    if (data.notification) {
+                                        await Swal.fire({
+                                            title: data.notification.title,
+                                            text: data.notification.text,
+                                            icon: data.notification.icon,
+                                            confirmButtonText: data.notification.confirmButtonText,
+                                            timer: data.notification.timer,
+                                            showConfirmButton: !data.notification.timer,
+                                            timerProgressBar: true,
+                                            customClass: {
+                                                popup: 'custom-swal-popup',
+                                                title: 'custom-swal-title',
+                                                confirmButton: 'custom-swal-confirm'
+                                            }
+                                        });
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Lỗi!',
+                                    text: 'Có lỗi xảy ra khi xử lý yêu cầu',
+                                    icon: 'error',
+                                    confirmButtonText: 'Đóng'
+                                });
+                            }
+                        });
+                    });
+                    // Thêm event listener cho nút mark-as-read
+                    document.addEventListener('click', async function(e) {
+                        if (e.target.closest('.mark-as-read')) {
+                            e.preventDefault();
+                            const link = e.target.closest('.mark-as-read');
+                            const notificationId = link.dataset.notificationId;
+
+                            try {
+                                // Đánh dấu đã đọc
+                                const response = await fetch('/notifications/' + notificationId + '/mark-as-read', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                        'Accept': 'application/json'
+                                    }
+                                });
+
+                                if (response.ok) {
+                                    // Cập nhật UI
+                                    const countSpan = document.querySelector('#notification-count .count');
+                                    const currentCount = parseInt(countSpan.textContent) - 1;
+                                    countSpan.textContent = currentCount;
+
+                                    // Chuyển hướng đến trang chi tiết
+                                    window.location.href = link.href;
+                                }
+                            } catch (error) {
+                                console.error('Error marking notification as read:', error);
+                            }
+                        }
+                    });
+                </script>
+
 
                 <div class="topbar-item d-none d-md-flex">
                     <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas"
@@ -742,7 +907,8 @@
                     <div class="dropdown-menu dropdown-menu-end">
 
                         <h6 class="dropdown-header">Xin chào <span
-                                class="text-black fw-bold">{{ auth()->user()->fullname }}</span> !</h6>
+                                class="text-black fw-bold">{{ auth()->user()->fullname }}
+                                ({{ auth()->user()->role->name }})</span> !</h6>
 
                         {{-- <a class="dropdown-item" href="apps-chat.html">
                             <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span

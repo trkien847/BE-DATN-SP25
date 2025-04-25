@@ -197,13 +197,40 @@
                 </a>
             </li>
             <li class="nav-item">
-    <a class="nav-link" href="{{ route('notifications.index') }}">
-        <span class="nav-icon">
-            <iconify-icon icon="mdi:bell-outline" width="24" height="24"></iconify-icon>
-        </span>
-        <span class="nav-text"> Các thông báo </span>
-    </a>
-</li>
+                <a class="nav-link" href="{{ route('notifications.index') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="mdi:bell-outline" width="24" height="24"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> Các thông báo </span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('notifications.index') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="mdi:bell-outline" width="24" height="24"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> Các thông báo </span>
+                </a>
+            </li>
+            <!-- Replace the existing comment menu item with this: -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.comments.index') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="material-symbols:comment-outline" width="24"
+                            height="24"></iconify-icon>
+                    </span>
+                    <span class="nav-text">
+                        Bình Luận
+                        @php
+                            $commentCount = \App\Models\Comment::where('is_approved', 0)->count();
+                        @endphp
+
+                        @if ($commentCount > 0)
+                            <span class="badge bg-danger rounded-pill ms-2">{{ $commentCount }}</span>
+                        @endif
+                    </span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>
@@ -214,6 +241,31 @@
             e.preventDefault();
             const menu = this.nextElementSibling;
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+            encrypted: true
+        });
+
+        const channel = pusher.subscribe('comments');
+
+        channel.bind('App\\Events\\CommentPosted', function(data) {
+            // Cập nhật badge số lượng bình luận
+            const badge = document.querySelector('.nav-text .badge');
+            const currentCount = badge ? parseInt(badge.textContent) + 1 : 1;
+
+            if (badge) {
+                badge.textContent = currentCount;
+            } else {
+                // Tạo badge mới nếu chưa có
+                const navText = document.querySelector('.nav-text');
+                const newBadge = document.createElement('span');
+                newBadge.className = 'badge bg-danger rounded-pill ms-2';
+                newBadge.textContent = currentCount;
+                navText.appendChild(newBadge);
+            }
         });
     });
 </script>

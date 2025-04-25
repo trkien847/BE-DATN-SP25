@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\File;
 use App\Models\CategoryProduct;
 use App\Models\CategoryType;
 use App\Models\CategoryTypeProduct;
+use App\Models\Comment;
 use App\Models\Import;
 use App\Models\ImportProduct;
 use App\Models\ImportProductVariant;
@@ -52,7 +53,7 @@ class ProductController extends Controller
                 'categoryTypes',
                 'variants.attributeValues.attribute',
                 'attributeValues.attribute',
-                'importProducts.import.user', 
+                'importProducts.import.user',
                 'importProducts.importProductVariants.productVariant'
             ])
             ->where('is_active', 1)
@@ -1204,9 +1205,14 @@ class ProductController extends Controller
         $cart_count = 0;
 
         if ($user) {
-            $carts = Cart::where('user_id', $user->id)
-                ->with(['product', 'productVariant'])
-                ->get();
+            $carts = Cart::with([
+                'product.brand',
+                'product.categories',
+                'product.categoryTypes',
+                'product.variants.attributeValues.attribute',
+                'product.attributeValues.attribute',
+                'productVariant.attributeValues.attribute',
+            ])->where('user_id', auth()->id())->get();
 
             $subtotal = $carts->sum(function ($cart) {
                 $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
@@ -1228,6 +1234,12 @@ class ProductController extends Controller
             ->orderByDesc('total_sold')
             ->limit(3)
             ->get();
+        $comments = Comment::with(['user', 'replies.user'])
+            ->where('product_id', $product->id)
+            ->whereNull('parent_id')
+            ->where('is_approved', true)
+            ->latest()
+            ->get();
         return view('client.product.productct', compact(
             'product',
             'categories',
@@ -1240,7 +1252,8 @@ class ProductController extends Controller
             'relatedProducts',
             'min_variant_price',
             'cart_count',
-            'productTop'
+            'productTop',
+            'comments'
         ));
     }
 

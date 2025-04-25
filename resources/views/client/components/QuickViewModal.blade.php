@@ -18,16 +18,6 @@
                                 </div>
                                 <div class="col-lg-6 col-12">
                                     <div class="modal-product-info">
-                                        <div class="product-ratting">
-                                            <ul>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                                <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                                <li><a href="#"><i class="far fa-star"></i></a></li>
-                                                <li class="review-total"> <a href="#"> ( 95 đánh giá )</a></li>
-                                            </ul>
-                                        </div>
                                         <h3>Ống nghe kỹ thuật số</h3>
                                         <div class="product-price">
                                             <span>3.490.000đ</span>

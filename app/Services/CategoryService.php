@@ -125,20 +125,34 @@ class CategoryService
     public function toggleActive($id, $isActive)
     {
         $category = $this->categoryRepository->find($id);
+
+        // Check if category has any products
+        if ($isActive == 0 && $category->products()->count() > 0) {
+            throw new \Exception('Không thể vô hiệu hóa danh mục này vì đang có sản phẩm thuộc danh mục.');
+        }
+
         $category->is_active = $isActive;
         $category->save();
+
+        // If deactivating parent category, deactivate all subcategories
         if ($isActive == 0 && $category->categoryTypes()->count() > 0) {
             $category->categoryTypes()->update(['is_active' => 0]);
         }
+
         return $category;
     }
     public function toggleSubcategoryActive($id, $isActive)
     {
         $subcategory = CategoryType::find($id);
 
-        // Kiểm tra nếu danh mục cha đang tắt -> Không cho bật danh mục con
-        if ($subcategory->parent && $subcategory->parent->is_active == 0) {
-            return false;
+        // Check if parent category is inactive
+        if ($subcategory->category && $subcategory->category->is_active == 0) {
+            throw new \Exception('Không thể kích hoạt danh mục con khi danh mục cha đang bị vô hiệu hóa.');
+        }
+
+        // Check if subcategory has any products
+        if ($isActive == 0 && $subcategory->products()->count() > 0) {
+            throw new \Exception('Không thể vô hiệu hóa danh mục này vì đang có sản phẩm thuộc danh mục.');
         }
 
         $subcategory->is_active = $isActive;
