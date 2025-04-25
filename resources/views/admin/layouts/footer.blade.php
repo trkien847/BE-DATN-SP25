@@ -4,11 +4,11 @@
             <div class="col-12 text-center">
               <script>
                   document.write(new Date().getFullYear())
-              </script> &copy; ( Designed by TG ) <iconify-icon
+              </script> &copy; <iconify-icon
                   icon="solar:hearts-bold-duotone"
                   class="fs-18 align-middle text-danger"></iconify-icon> <a
                   href="" class="fw-bold footer-text"
-                  target="_blank">BeePharmacy Designed by TG</a>
+                  target="_blank">BeePharmacy</a>
           </div>
       </div>
   </div>

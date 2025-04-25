@@ -246,9 +246,10 @@
                             </div>
                             <div class="ltn__category-menu-toggle ltn__one-line-active">
                                 <ul>
-                                    @foreach ($categories as $category)
+                                    @foreach ($categories as $key => $category)
                                         @if ($category->is_active)
-                                            <li class="ltn__category-menu-item ltn__category-menu-drop">
+                                            <li
+                                                class="ltn__category-menu-item ltn__category-menu-drop {{ $key >= 8 ? 'ltn__category-menu-more-item' : '' }}">
                                                 <a href="{{ route('category.show', ['categoryId' => $category->id]) }}">
                                                     <i class="icon-shopping-bags"></i> {{ $category->name }}
                                                 </a>
@@ -268,16 +269,18 @@
                                             </li>
                                         @endif
                                     @endforeach
-                                    <!-- Submenu Column - 4 -->
-                                    <li class="ltn__category-menu-more-item-parent">
-                                        <a class="rx-default">
-                                            Danh mục khác <span class="cat-thumb  icon-plus"></span>
-                                        </a>
-                                        <a class="rx-show">
-                                            Đóng danh mục <span class="cat-thumb  icon-remove"></span>
-                                        </a>
-                                    </li>
-                                    <!-- Single menu end -->
+
+                                    <!-- Nút hiển thị thêm danh mục -->
+                                    @if ($categories->where('is_active', true)->count() > 8)
+                                        <li class="ltn__category-menu-more-item-parent">
+                                            <a class="rx-default">
+                                                Danh mục khác <span class="cat-thumb icon-plus"></span>
+                                            </a>
+                                            <a class="rx-show">
+                                                Đóng danh mục <span class="cat-thumb icon-remove"></span>
+                                            </a>
+                                        </li>
+                                    @endif
                                 </ul>
                             </div>
                         </div>
@@ -293,25 +296,25 @@
                                         <div class="row">
 
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                <div class="slide-item-info">
-                                                                    <div class="slide-item-info-inner ltn__slide-animation">
-                                                                        <h5
-                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                            Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                                        <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
-                                                                        </h1>
-                                                                        <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
-                                                                        <div class="slide-brief animated d-none">
-                                                                            <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
-                                                                                phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                        <div class="slide-item-info">
+                                                                            <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                <h5
+                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                    Giảm giá đến 50% chỉ hôm nay!</h5>
+                                                                                <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
+                                                                                </h1>
+                                                                                <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
+                                                                                <div class="slide-brief animated d-none">
+                                                                                    <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                                                        phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                                </div>
+                                                                                <div class="btn-wrapper  animated">
+                                                                                    <a href="{{ route('category.show') }}"
+                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div class="btn-wrapper  animated">
-                                                                            <a href="{{ route('category.show') }}"
-                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div> -->
+                                                                    </div> -->
 
 
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
@@ -330,26 +333,26 @@
                                     <div class="container">
                                         <div class="row">
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                <div class="slide-item-info">
-                                                                    <div class="slide-item-info-inner ltn__slide-animation">
-                                                                        <h4
-                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                            Chào mừng đến với cửa hàng của chúng tôi</h4>
-                                                                        <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
-                                                                        </h1>
-                                                                        <div class="slide-brief animated d-none">
-                                                                            <p>Predictive analytics is drastically changing the real
-                                                                                estate industry. In the past, providing data for quick
-                                                                            </p>
+                                                                        <div class="slide-item-info">
+                                                                            <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                <h4
+                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                    Chào mừng đến với cửa hàng của chúng tôi</h4>
+                                                                                <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                                                </h1>
+                                                                                <div class="slide-brief animated d-none">
+                                                                                    <p>Predictive analytics is drastically changing the real
+                                                                                        estate industry. In the past, providing data for quick
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div class="btn-wrapper  animated">
+                                                                                    <a href="shop.html"
+                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
+                                                                                        now</a>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div class="btn-wrapper  animated">
-                                                                            <a href="shop.html"
-                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                                                now</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div> -->
+                                                                    </div> -->
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                                 <div class="slide-item-img">
                                                     <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
@@ -978,6 +981,7 @@
 @endsection
 
 @push('js')
+
     @if (session('no_access'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -1003,6 +1007,22 @@
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const moreBtn = document.querySelector('.ltn__category-menu-more-item-parent');
+            const hiddenItems = document.querySelectorAll('.ltn__category-menu-more-item');
+            const defaultBtn = document.querySelector('.rx-default');
+            const showBtn = document.querySelector('.rx-show');
+
+            if (moreBtn) {
+                moreBtn.addEventListener('click', function() {
+                    hiddenItems.forEach(item => {
+                        item.classList.toggle('show');
+                    });
+                    defaultBtn.classList.toggle('hide');
+                    showBtn.classList.toggle('show');
+                });
+            }
+        });
         let selectedVariantId = null; // Biến lưu ID biến thể đã chọn
 
         $(document).on('click', '.quick-view-btn', function(e) {
@@ -1327,6 +1347,26 @@
             width: 100%;
             padding: 0;
             overflow: hidden;
+        }
+
+        .ltn__category-menu-more-item {
+            display: none;
+        }
+
+        .ltn__category-menu-more-item.show {
+            display: block;
+        }
+
+        .rx-show {
+            display: none;
+        }
+
+        .rx-default.hide {
+            display: none;
+        }
+
+        .rx-show.show {
+            display: block;
         }
     </style>
 @endpush

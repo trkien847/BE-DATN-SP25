@@ -54,7 +54,7 @@ Route::get('/Lien_he', function () {
   return view('client.home.Lien_he', compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics /cart/orderHistory
+// /orders/statistics /admin/imports/confirm/
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -63,6 +63,7 @@ Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, '
 Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
+Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -213,7 +214,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
 
   Route::post('/admin/order-imports', [ProductController::class, 'storeOrder'])->name('admin.order-imports.store');
   Route::get('/admin/order-imports/{id}', [ProductController::class, 'showOrder'])->name('admin.order-imports.show');
-  //lịch sử mua hàng products.approve-pending 
+  //lịch sử mua hàng /products/
   Route::get('/cart/orderHistory', [CartController::class, 'orderHistory'])->name('orderHistory');
 
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
@@ -236,7 +237,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   //hoàn hàng
   Route::match(['get', 'post'], '/order/{orderId}/return', [CartController::class, 'returnOrder'])->name('order.return');
 
-  // thông kê /imports/create
+  // thông kê confirm
   Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
   //nhập  search 
   Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');

@@ -225,11 +225,11 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ltn__breadcrumb-inner">
-                        <h1 class="page-title">Contact Us</h1>
+                        <h1 class="page-title">Liên Hệ</h1>
                         <div class="ltn__breadcrumb-list">
                             <ul>
-                                <li><a href="index.html"><span class="ltn__secondary-color"><i class="fas fa-home"></i></span> Home</a></li>
-                                <li>Contact</li>
+                                <li><a href="{{ route('index') }}"><span class="ltn__secondary-color"><i class="fas fa-home"></i></span> Trang Chủ</a></li>
+                                <li>Liên Hệ</li>
                             </ul>
                         </div>
                     </div>

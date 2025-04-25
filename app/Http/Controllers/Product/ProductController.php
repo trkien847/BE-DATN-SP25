@@ -440,25 +440,12 @@ class ProductController extends Controller
             'sku' => 'required|max:100',
             'brand_id' => 'required',
             'thumbnail' => 'nullable',
-            'variant_prices' => 'required|array',
-            'variant_prices.*.price' => 'required|numeric|min:0',
-            'variant_prices.*.sale_price' => 'nullable|numeric|min:0',
-            'variant_prices.*.sale_start_at' => 'required_with:variant_prices.*.sale_price',
-            'variant_prices.*.sale_end_at' => 'required_with:variant_prices.*.sale_price|after:variant_prices.*.sale_start_at',
         ], [
             'category_id.required' => 'Vui lòng chọn danh mục cha.',
             'category_type_id.required' => 'Vui lòng chọn danh mục con.',
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'sku.required' => 'Vui lòng nhập mã sản phẩm.',
             'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'variants.required' => 'Vui lòng chọn ít nhất một biến thể',
-            'variants.*.price.required' => 'Giá bán là bắt buộc cho mỗi biến thể',
-            'variants.*.price.numeric' => 'Giá bán phải là số',
-            'variants.*.price.min' => 'Giá bán phải lớn hơn 0',
-            'variants.*.sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán',
-            'variants.*.sale_start_at.required_with' => 'Ngày bắt đầu khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variants.*.sale_end_at.required_with' => 'Ngày kết thúc khuyến mãi là bắt buộc khi có giá khuyến mãi',
-            'variants.*.sale_end_at.after' => 'Ngày kết thúc phải sau ngày bắt đầu khuyến mãi',
         ]);
 
         if ($validator->fails()) {
@@ -1165,6 +1152,38 @@ class ProductController extends Controller
 
 
     // client
+    public function productctad($id){
+        $product = Product::query()
+            ->with([
+                'brand',
+                'categories',
+                'categoryTypes',
+                'variants.attributeValues.attribute',
+                'attributeValues.attribute',
+                'importProducts.import.user', 
+                'importProducts.import.supplier',
+                'importProducts.importProductVariants.productVariant'
+            ])->withSum('variants', 'stock')
+            ->where('id', $id)->first();
+        
+            $productGallery = ProductGalleries::where('product_id', $id)->get();
+
+            $images = [
+                [
+                    'src' => $product->thumbnail,
+                    'alt' => $product->thumbnail_alt ?? 'Main product image',
+                ],
+            ];
+        
+            foreach ($productGallery as $galleryImage) {
+                $images[] = [
+                    'src' => $galleryImage->image,
+                    'alt' => $galleryImage->alt ?? 'Gallery image',
+                ];
+            }
+
+    return view('admin.products.chitiet', compact('product', 'productGallery', 'images'));
+    }
     public function productct($id)
     {
         $user = auth()->user();
@@ -1721,41 +1740,10 @@ class ProductController extends Controller
                 ]);
 
                 DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Đơn nhập hàng đã được xác nhận',
-                    'data' => [
-                        'import_code' => $import->import_code,
-                        'confirmed_by' => $adminUser->fullname,
-                        'confirmed_at' => now()->format('H:i:s d/m/Y'),
-                    ],
-                    'notification' => [
-                        'title' => 'Thành công!',
-                        'icon' => 'success',
-                        'text' => "Đơn nhập hàng #{$import->import_code} đã được xác nhận thành công",
-                        'confirmButtonText' => 'Đồng ý',
-                        'timer' => 3000
-                    ]
-                ]);
+                return redirect()->back()->with('success', 'Yêu cầu nhập hàng đã được chấp nhận');
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Có lỗi xảy ra',
-                    'error' => [
-                        'type' => class_basename($e),
-                        'message' => $e->getMessage(),
-                        'file' => basename($e->getFile()),
-                        'line' => $e->getLine()
-                    ],
-                    'notification' => [
-                        'title' => 'Lỗi!',
-                        'icon' => 'error',
-                        'text' => 'Không thể xác nhận đơn hàng. Vui lòng thử lại sau.',
-                        'confirmButtonText' => 'Đóng',
-                        'showCancelButton' => false
-                    ]
-                ], 500);
+                return redirect()->back()->with('success', 'lol');
             }
         }
 

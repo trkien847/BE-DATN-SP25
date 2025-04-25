@@ -305,7 +305,7 @@
 <div id="loading-overlay" class="loading-overlay">
     <div class="loading-content">
         <div class="loading-text">
-            <span>D</span><span>e</span><span>s</span><span>i</span><span>g</span><span>n</span><span>e</span><span>d</span><span>&nbsp;</span><span>b</span><span>y</span><span>&nbsp;</span><span>T</span><span>G</span>
+            <span>B</span><span>e</span><span>e</span><span>P</span><span>h</span><span>a</span><span>r</span><span>m</span><span>a</span><span>c</span><span>y</span>
         </div>
     </div>
 </div>
@@ -339,7 +339,7 @@
                 <tr>
                     <th scope="col">Mã SP</th>
                     <th scope="col">Tên Sản Phẩm</th>
-                    <th scope="col">Số lần nhập</th>
+                    <th scope="col">Ngày Nhập</th>
                     <th scope="col">Ảnh</th>
                     <th scope="col">Danh mục</th>
                     <th scope="col">Trạng Thái</th>
@@ -412,7 +412,7 @@
                             <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm ripple">
                                 <i class="bx bx-edit fs-16"></i>
                             </a>
-                            <a href="{{ route('products.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
+                            <a href="{{ route('productad.productct', $product->id) }}" class="btn btn-info btn-sm" title="Chi tiết sản phẩm">
                                 <i class="bx bx-detail fs-16"></i>
                             </a>
                             <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline delete-form">

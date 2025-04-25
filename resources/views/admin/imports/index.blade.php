@@ -450,7 +450,7 @@ async function showImportDetail(importId) {
         if (data.success) {
             let html = `
                 <div class="import-info">
-                    <h4>Thông tin phiếu nhập ( Designed by TG )</h4>
+                    <h4>Thông tin phiếu nhập</h4>
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Mã nhập:</strong> ${data.import.import_code}</p>
