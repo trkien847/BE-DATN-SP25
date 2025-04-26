@@ -187,7 +187,8 @@
                     <div class="form-check form-switch">
                         <input class="form-check-input toggle-status" type="checkbox" role="switch"
                             data-id="{{ $user->id }}"
-                            {{ $user->status === 'Online' ? 'checked' : '' }}>
+                            {{ $user->status === 'Online' ? 'checked' : '' }}
+                            {{ $user->role_id == 3 ? 'disabled style=opacity:0.5;' : '' }}>
                     </div>
                 </div>
             </td>
@@ -195,9 +196,11 @@
           
           
             <td>
-              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success btn-sm ripple">
-                <i class="bx bx-edit fs-16"></i>
-            </a>            
+              <a href="{{ $user->role_id != 3 ? route('admin.users.edit', $user->id) : '#' }}" 
+                class="btn btn-success btn-sm ripple {{ $user->role_id == 3 ? 'disabled' : '' }}" 
+                {{ $user->role_id == 3 ? 'style=opacity:0.5;pointer-events:none;' : '' }}>
+                 <i class="bx bx-edit fs-16"></i>
+             </a>          
                 <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-primary btn-sm" title="Chi tiết người dùng">
                     <i class="bx bx-detail fs-16"></i>
                 </a>
