@@ -125,6 +125,7 @@
     </div>
 @endsection
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // document.addEventListener('DOMContentLoaded', function() {
 
@@ -186,55 +187,93 @@
                 checkbox.addEventListener("change", function() {
                     let categoryId = this.getAttribute("data-id");
                     let isActive = this.checked ? 1 : 0;
-                    let isParent = this.getAttribute("data-parent-id") ===
-                        null; // Kiểm tra danh mục cha/con
+                    let isParent = this.getAttribute("data-parent-id") === null;
+                    let checkboxElement = this;
 
-                    let url = isParent ?
-                        `/categories/${categoryId}/toggle-active` :
-                        `/categories/${categoryId}/toggle-subcategory-active`;
+                    // Confirm before changing status
+                    Swal.fire({
+                        title: 'Xác nhận thay đổi',
+                        text: `Bạn có chắc chắn muốn ${isActive ? 'kích hoạt' : 'vô hiệu hóa'} danh mục này?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Đồng ý',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            let url = isParent ?
+                                `/categories/${categoryId}/toggle-active` :
+                                `/categories/${categoryId}/toggle-subcategory-active`;
 
-                    fetch(url, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": csrfToken
-                            },
-                            body: JSON.stringify({
-                                is_active: isActive
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log("Cập nhật trạng thái thành công!");
-
-                                if (isParent) {
-                                    let subcategories = document.querySelectorAll(
-                                        `[data-parent-id="${categoryId}"]`);
-                                    subcategories.forEach(subcategory => {
-                                        let subCheckbox = subcategory.querySelector(
-                                            ".toggle-active");
-                                        if (subCheckbox) {
-                                            subCheckbox.disabled = isActive ===
-                                                0; // Nếu cha tắt, vô hiệu hóa danh mục con
-                                            if (isActive === 0) {
-                                                subCheckbox.checked =
-                                                    false;
-                                            }
+                            fetch(url, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": csrfToken
+                                    },
+                                    body: JSON.stringify({
+                                        is_active: isActive
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === 'success') {
+                                        // Success handling
+                                        if (isParent) {
+                                            let subcategories = document
+                                                .querySelectorAll(
+                                                    `[data-parent-id="${categoryId}"]`);
+                                            subcategories.forEach(subcategory => {
+                                                let subCheckbox = subcategory
+                                                    .querySelector(
+                                                        ".toggle-active");
+                                                if (subCheckbox) {
+                                                    subCheckbox.disabled =
+                                                        isActive === 0;
+                                                    if (isActive === 0) {
+                                                        subCheckbox.checked =
+                                                            false;
+                                                    }
+                                                }
+                                                subcategory.style.display =
+                                                    isActive === 1 ?
+                                                    "table-row" : "none";
+                                            });
                                         }
-                                        subcategory.style.display = isActive === 1 ?
-                                            "table-row" :
-                                            "none";
+
+                                        // Show success message
+                                        Swal.fire({
+                                            title: 'Thành công!',
+                                            text: 'Trạng thái danh mục đã được cập nhật',
+                                            icon: 'success',
+                                            timer: 1500
+                                        });
+                                    } else {
+                                        // Error handling
+                                        checkboxElement.checked = !isActive;
+                                        Swal.fire({
+                                            title: 'Lỗi!',
+                                            text: data.message ||
+                                                'Không thể thay đổi trạng thái danh mục!',
+                                            icon: 'error'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Lỗi:", error);
+                                    checkboxElement.checked = !isActive;
+                                    Swal.fire({
+                                        title: 'Lỗi!',
+                                        text: 'Đã xảy ra lỗi khi cập nhật trạng thái!',
+                                        icon: 'error'
                                     });
-                                }
-                            } else {
-                                console.error(
-                                    "Không thể bật danh mục con nếu danh mục cha đang tắt.");
-                                this.checked = !
-                                    isActive;
-                            }
-                        })
-                        .catch(error => console.error("Lỗi:", error));
+                                });
+                        } else {
+                            // If user cancels, revert checkbox state
+                            checkboxElement.checked = !isActive;
+                        }
+                    });
                 });
             });
         });

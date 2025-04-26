@@ -1,50 +1,100 @@
 <?php
 
+namespace App\Http\Controllers;
+
+use App\Events\CommentPosted;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'content' => 'required',
-            'guest_name' => 'nullable|string|max:255',
-            'guest_email' => 'nullable|email',
-        ]);
-    
-        Comment::create([
-            'product_id' => $request->product_id,
-            'user_id' => auth()->check() ? auth()->user()->id : null,
-            'guest_name' => $request->guest_name,
-            'guest_email' => $request->guest_email,
-            'content' => $request->content,
-        ]);
-    
-        return redirect()->back()->with('success', 'Bình luận đã được gửi.');
+        try {
+            $request->validate([
+                'content' => 'required',
+            ], [
+                'content.required' => 'Vui lòng nhập bình luận',
+            ]);
+
+            $comment = Comment::create([
+                'product_id' => $request->product_id,
+                'user_id' => auth()->id(),
+                'content' => strip_tags($request->content),
+            ]);
+
+            // Load relationships before broadcasting
+            $comment->load(['user', 'product']);
+
+            broadcast(new CommentPosted($comment))->toOthers();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Bình luận đã được gửi thành công',
+                'comment' => [
+                    'id' => $comment->id,
+                    'content' => $comment->content,
+                    'user_name' => $comment->user->name,
+                    'created_at' => $comment->created_at->diffForHumans(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Comment broadcast error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra khi gửi bình luận'
+            ], 500);
+        }
+    }
+    public function index()
+    {
+        $comments = Comment::with(['user', 'product'])->where('is_approved', '0')->latest()->paginate(10);
+
+        return view('admin.comments.index', compact('comments'));
     }
 
 
-    public function update(Request $request, Comment $comment)
+    // Xóa bình luận
+    public function destroy($id)
     {
-        $this->authorize('update', $comment);
-
-        $request->validate([
-            'content' => 'required',
-        ]);
-
-        $comment->update(['content' => $request->content]);
-
-        return back()->with('success', 'Đã cập nhật bình luận');
-    }
-
-    public function destroy(Comment $comment)
-    {
-        $this->authorize('delete', $comment);
+        $comment = Comment::findOrFail($id);
         $comment->delete();
 
-        return back()->with('success', 'Đã xóa bình luận');
+        return response()->json([
+            'success' => true,
+            'message' => 'Bình luận đã được xóa thành công',
+        ]);
+    }
+
+    // Trả lời bình luận (nếu cần thiết)
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'reply' => 'required|min:2',
+        ], [
+            'reply.required' => 'Vui lòng nhập nội dung trả lời',
+            'reply.min' => 'Nội dung trả lời quá ngắn',
+        ]);
+        $user = auth()->user();
+        $parentComment = Comment::findOrFail($id);
+
+        $parentComment->update([
+            'is_approved' => true
+        ]);
+
+        $reply = Comment::create([
+            'product_id' => $parentComment->product_id,
+            'user_id' => $user->id,
+            'content' => strip_tags($request->reply),
+            'parent_id' => $parentComment->id,
+            'is_approved' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Trả lời bình luận thành công',
+        ]);
     }
 }
-

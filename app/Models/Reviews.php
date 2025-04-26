@@ -10,13 +10,22 @@ class Reviews extends Model
     use HasFactory;
     protected $fillable = [
         'product_id',
-        'order_id',
         'user_id',
-        'rating',
+        'parent_id',
         'review_text',
-        'reason',
         'is_active',
-        'created_at',
-        'updated_at',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    public function parent()
+    {
+        return $this->belongsTo(Reviews::class, 'parent_id');
+    }
 }

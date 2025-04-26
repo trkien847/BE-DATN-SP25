@@ -6,6 +6,7 @@ use App\Http\Controllers\AiTgCtroller;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Coupons\CoupoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
@@ -50,7 +51,7 @@ Route::get('/Lien_he', function () {
       : $cart->productVariant->price;
     return $cart->quantity * $price;
   });
-  return view('client.home.Lien_he',compact('carts', 'subtotal'));
+  return view('client.home.Lien_he', compact('carts', 'subtotal'));
 })->name('Lien_he');
 
 // /orders/statistics /admin/imports/confirm/
@@ -64,32 +65,37 @@ Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name(
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
 
-Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
-Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
-Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
-Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::middleware(['auth'])->group(function () {
+
+  Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+
+  Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
+  Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
+  Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+  Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+  Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+  Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 
 
-Route::post('/checkout', [CartController::class, 'showCheckout'])->name('checkout');
-Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.get');
+  Route::post('/checkout', [CartController::class, 'showCheckout'])->name('checkout');
+  Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.get');
 
-Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('checkout.process');
-Route::get('/thank-you', function () {
-  $carts = Cart::where('user_id', auth()->id())
-    ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
-    ->get();
-  $subtotal = $carts->sum(function ($cart) {
-    $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
-      ? $cart->productVariant->sale_price
-      : $cart->productVariant->price;
-    return $cart->quantity * $price;
-  });
-  return view('client.cart.thank-you', compact('carts', 'subtotal'));
-})->name('thank-you');
+  Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('checkout.process');
+  Route::get('/thank-you', function () {
+    $carts = Cart::where('user_id', auth()->id())
+      ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+      ->get();
+    $subtotal = $carts->sum(function ($cart) {
+      $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+        ? $cart->productVariant->sale_price
+        : $cart->productVariant->price;
+      return $cart->quantity * $price;
+    });
+    return view('client.cart.thank-you', compact('carts', 'subtotal'));
+  })->name('thank-you');
 
-Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
+  Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
+});
 
 
 // Ai thích hợp products.store
@@ -270,10 +276,12 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
   Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
 
+  // Quản lý bình luận
+  Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments.index');
+  Route::post('/admin/comments/{id}/approve', [CommentController::class, 'approve'])->name('comments.approve');
+  Route::delete('/admin/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+  Route::post('/admin/comments/{id}/reply', [CommentController::class, 'reply'])->name('comments.reply');
 
-  Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
-  Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
-  Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
   Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     // Quản lý người dùng

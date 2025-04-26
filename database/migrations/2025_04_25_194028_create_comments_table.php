@@ -13,12 +13,21 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
+
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('parent_id')->nullable(); 
+
             $table->text('content');
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->boolean('is_approved')->default(false);
+
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('parent_id')->references('id')->on('comments')->onDelete('cascade');
         });
     }
 
