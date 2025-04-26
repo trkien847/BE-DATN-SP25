@@ -81,11 +81,11 @@
         <!-- FOOTER AREA END -->
     </div>
     <!-- Body main wrapper end -->
-    <div class="video-overlay" id="video-overlay">
+    <!-- <div class="video-overlay" id="video-overlay">
         <video id="transition-video" preload="auto" muted>
             <source src="{{ asset('videos/ashe.mp4') }}" type="video/mp4">
         </video>
-    </div>
+    </div> -->
     <!-- preloader area start -->
     <div class="preloader d-none" id="preloader">
         <div class="preloader-inner">
@@ -101,60 +101,60 @@
     <script>
          document.addEventListener('DOMContentLoaded', function () {
             const productLinks = document.querySelectorAll('.product-link');
-            const videoOverlay = document.getElementById('video-overlay');
-            const transitionVideo = document.getElementById('transition-video');
+            // const videoOverlay = document.getElementById('video-overlay');
+            // const transitionVideo = document.getElementById('transition-video');
             const mainContent = document.getElementById('main-content');
 
-            productLinks.forEach(link => {
-                link.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const targetUrl = this.getAttribute('href');
-                    console.log('Product link clicked, target URL:', targetUrl);
+            // productLinks.forEach(link => {
+            //     link.addEventListener('click', function (event) {
+            //         event.preventDefault();
+            //         event.stopPropagation();
+            //         const targetUrl = this.getAttribute('href');
+            //         console.log('Product link clicked, target URL:', targetUrl);
 
-                    // Ẩn toàn bộ body
-                    mainContent.classList.add('hidden-content');
+            //         // Ẩn toàn bộ body
+            //         mainContent.classList.add('hidden-content');
 
-                    // Hiển thị video overlay
-                    videoOverlay.style.display = 'flex';
-                    console.log('Video overlay set to display: flex');
+            //         // Hiển thị video overlay
+            //         videoOverlay.style.display = 'flex';
+            //         console.log('Video overlay set to display: flex');
 
-                    // Phát video
-                    transitionVideo.play().then(() => {
-                        console.log('Video started playing');
-                    }).catch(error => {
-                        console.error('Video playback failed:', error);
-                    });
+            //         // Phát video
+            //         transitionVideo.play().then(() => {
+            //             console.log('Video started playing');
+            //         }).catch(error => {
+            //             console.error('Video playback failed:', error);
+            //         });
 
-                   // Hiệu ứng mờ dần và chuyển hướng khi video kết thúc
-                   transitionVideo.onended = function () {
-                        console.log('Video ended, starting fade-out');
-                        videoOverlay.style.opacity = '0'; // Kích hoạt mờ dần
-                        setTimeout(() => {
-                            console.log('Fade-out complete, redirecting to:', targetUrl);
-                            window.location.href = targetUrl;
-                        }, 1000); // Chờ 1 giây (khớp với transition)
-                    };
+            //        // Hiệu ứng mờ dần và chuyển hướng khi video kết thúc
+            //        transitionVideo.onended = function () {
+            //             console.log('Video ended, starting fade-out');
+            //             videoOverlay.style.opacity = '0'; // Kích hoạt mờ dần
+            //             setTimeout(() => {
+            //                 console.log('Fade-out complete, redirecting to:', targetUrl);
+            //                 window.location.href = targetUrl;
+            //             }, 1000); // Chờ 1 giây (khớp với transition)
+            //         };
 
-                    // Dự phòng: Chuyển hướng sau 10 giây nếu video không phát
-                    setTimeout(() => {
-                        if (videoOverlay.style.display === 'flex') {
-                            console.warn('Video timeout, forcing redirect');
-                            window.location.href = targetUrl;
-                        }
-                    }, 10000);
+            //         // Dự phòng: Chuyển hướng sau 10 giây nếu video không phát
+            //         setTimeout(() => {
+            //             if (videoOverlay.style.display === 'flex') {
+            //                 console.warn('Video timeout, forcing redirect');
+            //                 window.location.href = targetUrl;
+            //             }
+            //         }, 10000);
 
-                    // Xử lý lỗi video
-                    transitionVideo.onerror = function () {
-                        console.error('Video failed to load');
-                    };
+            //         // Xử lý lỗi video
+            //         transitionVideo.onerror = function () {
+            //             console.error('Video failed to load');
+            //         };
 
-                    // Kiểm tra xem video có hiển thị không
-                    transitionVideo.onloadeddata = function () {
-                        console.log('Video data loaded, should be visible');
-                    };
-                });
-            });
+            //         // Kiểm tra xem video có hiển thị không
+            //         transitionVideo.onloadeddata = function () {
+            //             console.log('Video data loaded, should be visible');
+            //         };
+            //     });
+            // });
 
             // Reset trạng thái khi trang được hiển thị lại
             window.addEventListener('pageshow', function () {
