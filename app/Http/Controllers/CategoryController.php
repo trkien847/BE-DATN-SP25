@@ -36,7 +36,7 @@ class CategoryController extends Controller
     }
     public function store(CategoryRequest $request)
     {
-        
+
         $this->categoryService->createCategory($request->all());
         Alert::success('Thành công', 'Danh mục đã được tạo thành công!');
         return redirect()->route('categories.list')->with('success', 'Danh mục đã được tạo thành công!');
@@ -63,22 +63,35 @@ class CategoryController extends Controller
     }
     public function toggleActive(Request $request, $id)
     {
-        $category = $this->categoryService->toggleActive($id, $request->is_active);
-
-        return response()->json([
-            'success' => true,
-            'is_active' => $category->is_active,
-            'is_parent' => $category->categoryTypes->count() > 0
-        ]);
+        try {
+            $category = $this->categoryService->toggleActive($id, $request->is_active);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Cập nhật trạng thái thành công',
+                'data' => $category
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
     public function toggleSubcategoryActive(Request $request, $id)
     {
-        $subcategory = $this->categoryService->toggleSubcategoryActive($id, $request->is_active);
-
-        return response()->json([
-            'success' => $subcategory !== false,
-            'is_active' => $subcategory ? $subcategory->is_active : 0
-        ]);
+        try {
+            $subcategory = $this->categoryService->toggleSubcategoryActive($id, $request->is_active);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Cập nhật trạng thái thành công',
+                'data' => $subcategory
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
     public function getPendingCategories()
     {
@@ -92,17 +105,16 @@ class CategoryController extends Controller
             $adminId = auth()->id();
             $notification = Notification::find(request('notification_id'));
             $this->categoryService->approveCategory($id, $adminId);
-            if($notification) {
+            if ($notification) {
                 $notification->update(['is_read' => true]);
             }
-            if(response()->json()){
+            if (response()->json()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Danh mục đã được duyệt thành công'
                 ]);
             }
             return redirect()->back()->with('success', 'Danh mục đã được duyệt thành công');
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -111,13 +123,13 @@ class CategoryController extends Controller
         }
     }
 
-    public function rejectCategory( $id)
+    public function rejectCategory($id)
     {
         try {
             $adminId = auth()->id();
             $notification = Notification::find(request('notification_id'));
             $this->categoryService->rejectCategory($id, $adminId);
-            if($notification) {
+            if ($notification) {
                 $notification->update(['is_read' => true]);
             }
             return response()->json([

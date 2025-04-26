@@ -12,7 +12,9 @@ class Comment extends Model
     protected $fillable = [
         'product_id',
         'user_id',
+        'parent_id',
         'content',
+        'is_approved',
     ];
 
     public function user()
@@ -26,8 +28,13 @@ class Comment extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function parent()
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+
     public function replies()
     {
-        return $this->hasMany(CommentReply::class);
+        return $this->hasMany(Comment::class, 'parent_id')->where('is_approved', true);
     }
 }

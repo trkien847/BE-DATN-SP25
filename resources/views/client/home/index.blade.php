@@ -232,127 +232,131 @@
         }
     </style>
     <div>
-    <div class="ltn__utilize-overlay"></div>
+        <div class="ltn__utilize-overlay"></div>
 
-    <!-- SLIDER AREA START (slider-3) -->
-    <div class="ltn__slider-area ltn__slider-3---  section-bg-1--- mt-30">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3">
-                    <!-- CATEGORY-MENU-LIST START -->
-                    <div class="ltn__category-menu-wrap">
-                        <div class="ltn__category-menu-title">
-                            <h2 class="section-bg-1 ltn__secondary-bg text-color-white">DANH MỤC</h2>
-                        </div>
-                        <div class="ltn__category-menu-toggle ltn__one-line-active">
-                            <ul>
-                                @foreach ($categories as $category)
-                                    @if ($category->is_active)
-                                        <li class="ltn__category-menu-item ltn__category-menu-drop">
-                                            <a href="{{ route('category.show', ['categoryId' => $category->id]) }}">
-                                                <i class="icon-shopping-bags"></i> {{ $category->name }}
+        <!-- SLIDER AREA START (slider-3) -->
+        <div class="ltn__slider-area ltn__slider-3---  section-bg-1--- mt-30">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <!-- CATEGORY-MENU-LIST START -->
+                        <div class="ltn__category-menu-wrap">
+                            <div class="ltn__category-menu-title">
+                                <h2 class="section-bg-1 ltn__secondary-bg text-color-white">DANH MỤC</h2>
+                            </div>
+                            <div class="ltn__category-menu-toggle ltn__one-line-active">
+                                <ul>
+                                    @foreach ($categories as $key => $category)
+                                        @if ($category->is_active)
+                                            <li
+                                                class="ltn__category-menu-item ltn__category-menu-drop {{ $key >= 8 ? 'ltn__category-menu-more-item' : '' }}">
+                                                <a href="{{ route('category.show', ['categoryId' => $category->id]) }}">
+                                                    <i class="icon-shopping-bags"></i> {{ $category->name }}
+                                                </a>
+
+                                                @if ($category->categoryTypes->where('is_active', true)->isNotEmpty())
+                                                    <ul class="ltn__category-submenu ltn__category-column-5">
+                                                        @foreach ($category->categoryTypes->where('is_active', true) as $type)
+                                                            <li class="ltn__category-submenu-title ltn__category-menu-drop">
+                                                                <a
+                                                                    href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
+                                                                    {{ $type->name }}
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @endif
+                                            </li>
+                                        @endif
+                                    @endforeach
+
+                                    <!-- Nút hiển thị thêm danh mục -->
+                                    @if ($categories->where('is_active', true)->count() > 8)
+                                        <li class="ltn__category-menu-more-item-parent">
+                                            <a class="rx-default">
+                                                Danh mục khác <span class="cat-thumb icon-plus"></span>
                                             </a>
-
-                                            @if ($category->categoryTypes->where('is_active', true)->isNotEmpty())
-                                                <ul class="ltn__category-submenu ltn__category-column-5">
-                                                    @foreach ($category->categoryTypes->where('is_active', true) as $type)
-                                                        <li class="ltn__category-submenu-title ltn__category-menu-drop">
-                                                            <a
-                                                                href="{{ route('category.show', ['categoryId' => $category->id, 'subcategoryId' => $type->id]) }}">
-                                                                {{ $type->name }}
-                                                            </a>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
+                                            <a class="rx-show">
+                                                Đóng danh mục <span class="cat-thumb icon-remove"></span>
+                                            </a>
                                         </li>
                                     @endif
-                                @endforeach
-                                <!-- Submenu Column - 4 -->
-                                <li class="ltn__category-menu-more-item-parent">
-                                    <a class="rx-default">
-                                        Danh mục khác <span class="cat-thumb  icon-plus"></span>
-                                    </a>
-                                    <a class="rx-show">
-                                        Đóng danh mục <span class="cat-thumb  icon-remove"></span>
-                                    </a>
-                                </li>
-                                <!-- Single menu end -->
-                            </ul>
+                                </ul>
+                            </div>
                         </div>
+                        <!-- END CATEGORY-MENU-LIST -->
                     </div>
-                    <!-- END CATEGORY-MENU-LIST -->
-                </div>
-                <div class="col-lg-9">
-                    <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
-                        <!-- ltn__slide-item -->
-                        <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="http://127.0.0.1:8000/upload/baner1.jpg">
-                            <div class="ltn__slide-item-inner">
-                                <div class="container">
-                                    <div class="row">
+                    <div class="col-lg-9">
+                        <div class="ltn__slide-active-2 slick-slide-arrow-1 slick-slide-dots-1">
+                            <!-- ltn__slide-item -->
+                            <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
+                                data-bs-bg="http://127.0.0.1:8000/upload/image.jpg">
+                                <div class="ltn__slide-item-inner">
+                                    <div class="container">
+                                        <div class="row">
 
-                                        <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                            <div class="slide-item-info">
-                                                <div class="slide-item-info-inner ltn__slide-animation">
-                                                    <h5
-                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                        Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                    <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
-                                                    </h1>
-                                                    <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
-                                                    <div class="slide-brief animated d-none">
-                                                        <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
-                                                            phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
-                                                    </div>
-                                                    <div class="btn-wrapper  animated">
-                                                        <a href="{{ route('category.show') }}"
-                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
-                                                    </div>
+                                            <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
+                                                                        <div class="slide-item-info">
+                                                                            <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                <h5
+                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                    Giảm giá đến 50% chỉ hôm nay!</h5>
+                                                                                <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
+                                                                                </h1>
+                                                                                <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
+                                                                                <div class="slide-brief animated d-none">
+                                                                                    <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                                                        phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                                </div>
+                                                                                <div class="btn-wrapper  animated">
+                                                                                    <a href="{{ route('category.show') }}"
+                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div> -->
+
+
+                                            <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
+                                                <div class="slide-item-img">
+                                                    <!-- <a href="shop.html"><img src="{{ asset('client/img/product/1.png') }}" alt="Image"></a> -->
                                                 </div>
-                                            </div>
-                                        </div> -->
-
-
-                                        <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
-                                            <div class="slide-item-img">
-                                                <!-- <a href="shop.html"><img src="{{ asset('client/img/product/1.png') }}" alt="Image"></a> -->
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- ltn__slide-item -->
-                        <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
-                            data-bs-bg="http://127.0.0.1:8000/upload/baner2.jpg">
-                            <div class="ltn__slide-item-inner">
-                                <div class="container">
-                                    <div class="row">
-                                        <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                            <div class="slide-item-info">
-                                                <div class="slide-item-info-inner ltn__slide-animation">
-                                                    <h4
-                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                        Chào mừng đến với cửa hàng của chúng tôi</h4>
-                                                    <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
-                                                    </h1>
-                                                    <div class="slide-brief animated d-none">
-                                                        <p>Predictive analytics is drastically changing the real
-                                                            estate industry. In the past, providing data for quick
-                                                        </p>
-                                                    </div>
-                                                    <div class="btn-wrapper  animated">
-                                                        <a href="shop.html"
-                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                            now</a>
-                                                    </div>
+                            <!-- ltn__slide-item -->
+                            <div class="ltn__slide-item ltn__slide-item-10 section-bg-1 bg-image"
+                                data-bs-bg="http://127.0.0.1:8000/upload/baner2.jpg">
+                                <div class="ltn__slide-item-inner">
+                                    <div class="container">
+                                        <div class="row">
+                                            <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
+                                                                        <div class="slide-item-info">
+                                                                            <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                <h4
+                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                    Chào mừng đến với cửa hàng của chúng tôi</h4>
+                                                                                <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                                                </h1>
+                                                                                <div class="slide-brief animated d-none">
+                                                                                    <p>Predictive analytics is drastically changing the real
+                                                                                        estate industry. In the past, providing data for quick
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div class="btn-wrapper  animated">
+                                                                                    <a href="shop.html"
+                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
+                                                                                        now</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div> -->
+                                            <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
+                                                <div class="slide-item-img">
+                                                    <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
                                                 </div>
-                                            </div>
-                                        </div> -->
-                                        <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
-                                            <div class="slide-item-img">
-                                                <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
                                             </div>
                                         </div>
                                     </div>
@@ -363,25 +367,24 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!-- SLIDER AREA END -->
+        <!-- SLIDER AREA END -->
 
-    <!-- FEATURE AREA START ( Feature - 3) -->
-    <div class="ltn__feature-area mt-35 mt--65---">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="ltn__feature-item-box-wrap ltn__feature-item-box-wrap-2 ltn__border section-bg-1">
-                        <div class="ltn__feature-item ltn__feature-item-8">
-                            <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/8-t') }}rolley.svg" alt="Icon vận chuyển">
+        <!-- FEATURE AREA START ( Feature - 3) -->
+        <div class="ltn__feature-area mt-35 mt--65---">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ltn__feature-item-box-wrap ltn__feature-item-box-wrap-2 ltn__border section-bg-1">
+                            <div class="ltn__feature-item ltn__feature-item-8">
+                                <div class="ltn__feature-icon">
+                                    <img src="{{ asset('client/img/icons/svg/8-t') }}rolley.svg" alt="Icon vận chuyển">
+                                </div>
+                                <div class="ltn__feature-info">
+                                    <h4>Miễn phí vận chuyển</h4>
+                                    <p>Cho tất cả các đơn hàng trên 49,000</p>
+                                </div>
                             </div>
-                            <div class="ltn__feature-info">
-                                <h4>Miễn phí vận chuyển</h4>
-                                <p>Cho tất cả các đơn hàng trên 49,000</p>
-                            </div>
-                        </div>
-                        {{-- <div class="ltn__feature-item ltn__feature-item-8">
+                            {{-- <div class="ltn__feature-item ltn__feature-item-8">
                             <div class="ltn__feature-icon">
                                 <img src="{{ asset('client/img/icons/svg/9-m') }}oney.svg" alt="Icon hoàn tiền">
                             </div>
@@ -390,539 +393,544 @@
                                 <p>Đảm bảo hoàn tiền</p>
                             </div>
                         </div> --}}
-                        <div class="ltn__feature-item ltn__feature-item-8">
-                            <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="Icon quà tặng">
+                            <div class="ltn__feature-item ltn__feature-item-8">
+                                <div class="ltn__feature-icon">
+                                    <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="Icon quà tặng">
+                                </div>
+                                <div class="ltn__feature-info">
+                                    <h4>Thanh toán nhanh</h4>
+                                    <p>Liên kết toàn bộ ngân hàng trên cả nước</p>
+                                </div>
                             </div>
-                            <div class="ltn__feature-info">
-                                <h4>Thanh toán nhanh</h4>
-                                <p>Liên kết toàn bộ ngân hàng trên cả nước</p>
+                            <div class="ltn__feature-item ltn__feature-item-8">
+                                <div class="ltn__feature-icon">
+                                    <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="#">
+                                </div>
+                                <div class="ltn__feature-info">
+                                    <h4>Ưu đãi & quà tặng</h4>
+                                    <p>Cho tất cả các đơn hàng trên 99,000</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="ltn__feature-item ltn__feature-item-8">
-                            <div class="ltn__feature-icon">
-                                <img src="{{ asset('client/img/icons/svg/11-') }}gift-card.svg" alt="#">
-                            </div>
-                            <div class="ltn__feature-info">
-                                <h4>Ưu đãi & quà tặng</h4>
-                                <p>Cho tất cả các đơn hàng trên 99,000</p>
-                            </div>
-                        </div>
-                    </div>
 
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- FEATURE AREA END -->
+        <!-- FEATURE AREA END -->
 
-    <!-- PRODUCT TAB AREA START (product-item-3) -->
-    <div class="ltn__product-tab-area ltn__product-gutter pt-115 pb-70">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title-area ltn__section-title-2--- text-center">
-                        <!-- <h6 class="section-subtitle ltn__secondary-color">// Cars</h6> -->
-                        <h1 class="section-title">
-                            <span class="char">S</span><span class="char">ả</span><span class="char">n</span>
-                            <span class="char"> </span>
-                            <span class="char">p</span><span class="char">h</span><span class="char">ẩ</span><span
-                                class="char">m</span>
-                            <span class="char"> </span>
-                            <span class="char">c</span><span class="char">ủ</span><span class="char">a</span>
-                            <span class="char"> </span>
-                            <span class="char">c</span><span class="char">h</span><span class="char">ú</span><span
-                                class="char">n</span><span class="char">g</span>
-                            <span class="char"> </span>
-                            <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
-                        </h1>
-                        <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
-                    </div>
-                    <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
-                        <div class="nav">
-                            @foreach ($categories->take(5) as $index => $category)
-                                <a data-bs-toggle="tab" href="#liton_tab_3_{{ $index + 1 }}"
-                                    class="{{ $loop->first ? 'active show' : '' }}">
-                                    {{ $category->name }}
-                                </a>
-                            @endforeach
+        <!-- PRODUCT TAB AREA START (product-item-3) -->
+        <div class="ltn__product-tab-area ltn__product-gutter pt-115 pb-70">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title-area ltn__section-title-2--- text-center">
+                            <!-- <h6 class="section-subtitle ltn__secondary-color">// Cars</h6> -->
+                            <h1 class="section-title">
+                                <span class="char">S</span><span class="char">ả</span><span class="char">n</span>
+                                <span class="char"> </span>
+                                <span class="char">p</span><span class="char">h</span><span class="char">ẩ</span><span
+                                    class="char">m</span>
+                                <span class="char"> </span>
+                                <span class="char">c</span><span class="char">ủ</span><span class="char">a</span>
+                                <span class="char"> </span>
+                                <span class="char">c</span><span class="char">h</span><span
+                                    class="char">ú</span><span class="char">n</span><span class="char">g</span>
+                                <span class="char"> </span>
+                                <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
+                            </h1>
+                            <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
                         </div>
-                    </div>
+                        <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
+                            <div class="nav">
+                                @foreach ($categories->take(5) as $index => $category)
+                                    <a data-bs-toggle="tab" href="#liton_tab_3_{{ $index + 1 }}"
+                                        class="{{ $loop->first ? 'active show' : '' }}">
+                                        {{ $category->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
 
-                    <div class="tab-content">
-                        @foreach ($categories->take(5) as $index => $category)
-                            <div class="tab-pane fade {{ $loop->first ? 'active show' : '' }}"
-                                id="liton_tab_3_{{ $index + 1 }}">
-                                <div class="ltn__product-tab-content-inner">
-                                    <div class="row ltn__tab-product-slider-one-active slick-arrow-1">
+                        <div class="tab-content">
+                            @foreach ($categories->take(5) as $index => $category)
+                                <div class="tab-pane fade {{ $loop->first ? 'active show' : '' }}"
+                                    id="liton_tab_3_{{ $index + 1 }}">
+                                    <div class="ltn__product-tab-content-inner">
+                                        <div class="row ltn__tab-product-slider-one-active slick-arrow-1">
+                                            @foreach ($category->products as $product)
+                                                @php
+                                                    // Get variants with stock > 0
+                                                    $availableVariants = $product->variants->filter(function (
+                                                        $variant,
+                                                    ) {
+                                                        return $variant->stock > 0;
+                                                    });
 
-                                        @foreach ($category->products as $product)
-                                            <div class="col-lg-3 col-md-4 col-sm-6">
-                                                <div class="ltn__product-item ltn__product-item-3 text-center">
-                                                    <div class="product-img">
-                                                        <a href="{{ route('products.productct', $product->id) }}" class="product-link">
-                                                            <img src="{{ asset('upload/' . $product->thumbnail) }}"
-                                                                alt="{{ $product->name }}" class="product-image"
-                                                                width="250px" height="200px">
-                                                        </a>
-                                                        <div class="product-badge">
-                                                            <ul>
+                                                    // Only proceed if product has variants with stock
+                                                    if ($availableVariants->isEmpty()) {
+                                                        continue;
+                                                    }
+
+                                                    $salePrice = $availableVariants
+                                                        ->where('sale_price', '>', 0)
+                                                        ->min('sale_price');
+                                                    $regularPrice = $availableVariants->min('price');
+                                                @endphp
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                                    <div class="ltn__product-item ltn__product-item-3 text-center">
+                                                        <div class="product-img">
+                                                            <a href="{{ route('products.productct', $product->id) }}"
+                                                                class="product-link">
+                                                                <img src="{{ asset('upload/' . $product->thumbnail) }}"
+                                                                    alt="{{ $product->name }}" class="product-image"
+                                                                    width="250px" height="200px">
+                                                            </a>
+                                                            <div class="product-badge">
+                                                                <ul>
+                                                                    @if (!empty($salePrice) && $salePrice > 0)
+                                                                        @php
+                                                                            $discount = round(
+                                                                                (($regularPrice - $salePrice) /
+                                                                                    $regularPrice) *
+                                                                                    100,
+                                                                            );
+                                                                        @endphp
+                                                                        <li class="sale-badge bg-danger rounded-1">
+                                                                            -{{ $discount }}%</li>
+                                                                    @endif
+                                                                </ul>
+                                                            </div>
+                                                            <div class="product-hover-action">
+                                                                <ul>
+                                                                    <li>
+                                                                        <a href="#" class="quick-view-btn"
+                                                                            data-id="{{ $product->id }}"
+                                                                            title="Quick View" data-bs-toggle="modal"
+                                                                            data-bs-target="#quick_view_modal">
+                                                                            <i class="far fa-eye"></i>
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class="product-info">
+                                                            <h2 class="product-title">
+                                                                <a href="{{ route('products.productct', $product->id) }}"
+                                                                    class="product-link">{{ $product->name }}</a>
+                                                            </h2>
+                                                            <div class="product-price">
                                                                 @if (!empty($salePrice) && $salePrice > 0)
-                                                                    @php
-                                                                        $discount = round(
-                                                                            (($regularPrice - $salePrice) /
-                                                                                $regularPrice) *
-                                                                                100,
-                                                                        );
-                                                                    @endphp
-                                                                    <li class="sale-badge bg-danger rounded-1">-
-                                                                        {{ $discount }}%</li>
+                                                                    <del class="text-danger fs-6 d-block mb-2">
+                                                                        {{ number_format($regularPrice) }} VND
+                                                                    </del>
+                                                                    <span class="text-success fs-6 d-block mb-2">
+                                                                        {{ number_format($salePrice) }} VND
+                                                                    </span>
+                                                                @else
+                                                                    <span>{{ number_format($regularPrice) }}đ</span>
                                                                 @endif
-                                                            </ul>
-                                                        </div>
-                                                        <div class="product-hover-action">
-                                                            <ul>
-                                                                <li>
-                                                                    <a href="#" class="quick-view-btn"
-                                                                        data-id="{{ $product->id }}" title="Quick View"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#quick_view_modal" class="product-link">
-                                                                        <i class="far fa-eye"></i>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <h2 class="product-title">
-                                                            <a
-                                                                href="{{ route('products.productct', $product->id) }}" class="product-link">{{ $product->name }}</a>
-                                                        </h2>
-                                                        <div class="product-price">
-                                                            @php
-                                                                $salePrice = $product->variants
-                                                                    ->where('sale_price', '>', 0)
-                                                                    ->min('sale_price');
-                                                                $regularPrice = $product->variants->min('price');
-                                                            @endphp
-
-                                                            @if (!empty($salePrice) && $salePrice > 0)
-                                                                <del class="text-danger fs-6 d-block mb-2">{{ number_format($regularPrice) }}
-                                                                    VND</del>
-                                                                <span
-                                                                    class="text-success fs-6 d-block mb-2">{{ number_format($salePrice) }}
-                                                                    VND</span>
-                                                            @else
-                                                                <span>{{ number_format($regularPrice) }}đ</span>
-                                                            @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- PRODUCT TAB AREA END -->
 
+        <!-- ABOUT US AREA START -->
+        <div class="ltn__about-us-area bg-image pt-115 pb-110 d-none" data-bs-bg="img/bg/26.jpg">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6 align-self-center">
+                        <div class="about-us-img-wrap about-img-left">
+                            <!-- <img src="{{ asset('client/img/others/7.png"') }} alt="About Us Image"> -->
+                        </div>
+                    </div>
+                    <div class="col-lg-6 align-self-center">
+                        <div class="about-us-info-wrap">
+                            <div class="section-title-area ltn__section-title-2--- mb-20">
+                                <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">N95 Facial
+                                    Covering Mask</h6>
+                                <h1 class="section-title">Grade A Safety Masks
+                                    For Sale. Haurry Up!</h1>
+                                <p>Over 39,000 people work for us in more than 70 countries all over the
+                                    This breadth of global coverage, combined with specialist services</p>
+                            </div>
+                            <ul class="ltn__list-item-half clearfix">
+                                <li>
+                                    <i class="flaticon-home-2"></i>
+                                    Activated Carbon
+                                </li>
+                                <li>
+                                    <i class="flaticon-mountain"></i>
+                                    Breathing Valve
+                                </li>
+                                <li>
+                                    <i class="flaticon-heart"></i>
+                                    6 Layer Filteration
+                                </li>
+                                <li>
+                                    <i class="flaticon-secure"></i>
+                                    Rewashes & Reusable
+                                </li>
+                            </ul>
+                            <div class="btn-wrapper animated">
+                                <a href="service.html"
+                                    class="ltn__secondary-color text-uppercase text-decoration-underline">View
+                                    Products</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ABOUT US AREA END -->
+
+        <!-- COUNTDOWN AREA START -->
+        <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="">
+            <div class="container">
+                <div class="row">
+                    <div class="http://127.0.0.1:8000/upload/.jpg">
+                        <!-- <img src="{{ asset('client/img/banner/15.png') }}" alt="#"> -->
+                    </div>
+                    <div class="col-lg-5 col-md-6 col-sm-8">
+                        <div class="call-to-action-inner text-color-white--- text-center---">
+                            <div class="section-title-area ltn__section-title-2--- text-center---">
+                                <h6 class="ltn__secondary-color">Ưu đãi hot hôm nay</h6>
+                                <h1 class="section-title">Mua thuốc với<br>giá giảm 50%</h1>
+                                <p>Nhận thêm tiền hoàn lại với các ưu đãi và giảm giá đặc biệt</p>
+                            </div>
+                            <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
+                            </div>
+                            <div class="btn-wrapper animated">
+                                <a href="{{ route('category.show') }}"
+                                    class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua
+                                    ngay</a>
+                                <a href="{{ route('category.show') }}"
+                                    class="ltn__secondary-color text-decoration-underline">Ưu đãi
+                                    trong ngày</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- COUNTDOWN AREA END -->
+
+        <!-- PRODUCT AREA START (product-item-3) -->
+        <div class="ltn__product-area ltn__product-gutter pt-115 pb-70">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title-area ltn__section-title-2 text-center">
+                            <h1 class="section-title">SẢN PHẨM BÁN CHẠY</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row ltn__tab-product-slider-one-active--- slick-arrow-1">
+                    <!-- ltn__product-item -->
+                    @foreach ($productBestSale as $product)
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="ltn__product-item ltn__product-item-3 text-center">
+                                <div class="product-img">
+                                    <a href="{{ route('products.productct', $product->product->id) }}">
+                                        <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
+                                            alt="{{ $product->name }} " width="250px" height="200px">
+
+                                    </a>
+                                    <div class="product-badge">
+                                        <ul>
+                                            @if (!empty($product->sale_price) && $product->sale_price > 0)
+                                                @php
+                                                    $discount = round(
+                                                        (($product->sell_price - $product->sale_price) /
+                                                            $product->sell_price) *
+                                                            100,
+                                                    );
+                                                @endphp
+                                                <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                    <div class="product-hover-action">
+                                        <ul>
+                                            <li>
+                                                <a href="#" class="quick-view-btn"
+                                                    data-id="{{ $product->product->id }}" title="Quick View"
+                                                    data-bs-toggle="modal" data-bs-target="#quick_view_modal">
+                                                    <i class="far fa-eye"></i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="product-info">
+                                    <h2 class="product-title">
+                                        <a
+                                            href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
+                                    </h2>
+                                    <div class="product-price">
+                                        @php
+                                            $variants = $product->product->variants ?? collect();
+                                            $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
+                                            $regularPrice = $variants->min('price');
+                                        @endphp
+                                        @if (!empty($salePrice) && $salePrice > 0)
+                                            <span>{{ number_format($salePrice) }}đ</span>
+                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                        @else
+                                            <span>{{ number_format($regularPrice) }}đ</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
+                    <!--  -->
                 </div>
             </div>
         </div>
-    </div>
-    <!-- PRODUCT TAB AREA END -->
+        <!-- PRODUCT AREA END -->
 
-    <!-- ABOUT US AREA START -->
-    <div class="ltn__about-us-area bg-image pt-115 pb-110 d-none" data-bs-bg="img/bg/26.jpg">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 align-self-center">
-                    <div class="about-us-img-wrap about-img-left">
-                        <!-- <img src="{{ asset('client/img/others/7.png"') }} alt="About Us Image"> -->
-                    </div>
-                </div>
-                <div class="col-lg-6 align-self-center">
-                    <div class="about-us-info-wrap">
-                        <div class="section-title-area ltn__section-title-2--- mb-20">
-                            <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">N95 Facial
-                                Covering Mask</h6>
-                            <h1 class="section-title">Grade A Safety Masks
-                                For Sale. Haurry Up!</h1>
-                            <p>Over 39,000 people work for us in more than 70 countries all over the
-                                This breadth of global coverage, combined with specialist services</p>
-                        </div>
-                        <ul class="ltn__list-item-half clearfix">
-                            <li>
-                                <i class="flaticon-home-2"></i>
-                                Activated Carbon
-                            </li>
-                            <li>
-                                <i class="flaticon-mountain"></i>
-                                Breathing Valve
-                            </li>
-                            <li>
-                                <i class="flaticon-heart"></i>
-                                6 Layer Filteration
-                            </li>
-                            <li>
-                                <i class="flaticon-secure"></i>
-                                Rewashes & Reusable
-                            </li>
-                        </ul>
-                        <div class="btn-wrapper animated">
-                            <a href="service.html"
-                                class="ltn__secondary-color text-uppercase text-decoration-underline">View
-                                Products</a>
+        <!-- SMALL PRODUCT LIST AREA START -->
+        <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-70 mb-100">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title-area ltn__section-title-2 text-center">
+                            <h1 class="section-title">SẢN PHẨM NỔI BẬT</h1>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <!-- ABOUT US AREA END -->
+                <div class="row">
+                    <!-- small-product-item -->
+                    @foreach ($productTop as $product)
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <div class="ltn__small-product-item">
+                                <div class="small-product-item-img">
+                                    <a href="{{ route('products.productct', $product->id) }}"><img
+                                            src="{{ asset('upload/' . $product->thumbnail) }}" alt="Image"
+                                            width="250px" height="100px"></a>
+                                </div>
+                                <div class="small-product-item-info">
+                                    <h2 class="product-title"><a
+                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                    </h2>
+                                    <div class="product-price">
+                                        @php
+                                            $salePrice = $product->variants
+                                                ->where('sale_price', '>', 0)
+                                                ->min('sale_price');
+                                            $regularPrice = $product->variants->min('price');
+                                        @endphp
 
-    <!-- COUNTDOWN AREA START -->
-    <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="">
-        <div class="container">
-            <div class="row">
-                <div class="http://127.0.0.1:8000/upload/.jpg">
-                    <!-- <img src="{{ asset('client/img/banner/15.png') }}" alt="#"> -->
-                </div>
-                <div class="col-lg-5 col-md-6 col-sm-8">
-                    <div class="call-to-action-inner text-color-white--- text-center---">
-                        <div class="section-title-area ltn__section-title-2--- text-center---">
-                            <h6 class="ltn__secondary-color">Ưu đãi hot hôm nay</h6>
-                            <h1 class="section-title">Mua thuốc với<br>giá giảm 50%</h1>
-                            <p>Nhận thêm tiền hoàn lại với các ưu đãi và giảm giá đặc biệt</p>
-                        </div>
-                        <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
-                        </div>
-                        <div class="btn-wrapper animated">
-                            <a href="{{ route('category.show') }}"
-                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua
-                                ngay</a>
-                            <a href="{{ route('category.show') }}"
-                                class="ltn__secondary-color text-decoration-underline">Ưu đãi
-                                trong ngày</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- COUNTDOWN AREA END -->
-
-    <!-- PRODUCT AREA START (product-item-3) -->
-    <div class="ltn__product-area ltn__product-gutter pt-115 pb-70">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">SẢN PHẨM BÁN CHẠY</h1>
-                    </div>
-                </div>
-            </div>
-            <div class="row ltn__tab-product-slider-one-active--- slick-arrow-1">
-                <!-- ltn__product-item -->
-                @foreach ($productBestSale as $product)
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="ltn__product-item ltn__product-item-3 text-center">
-                            <div class="product-img">
-                                <a href="{{ route('products.productct', $product->product->id) }}">
-                                    <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
-                                        alt="{{ $product->name }} " width="250px" height="200px">
-                                        
-                                </a>
-                                <div class="product-badge">
-                                    <ul>
-                                        @if (!empty($product->sale_price) && $product->sale_price > 0)
-                                            @php
-                                                $discount = round(
-                                                    (($product->sell_price - $product->sale_price) /
-                                                        $product->sell_price) *
-                                                        100,
-                                                );
-                                            @endphp
-                                            <li class="sale-badge bg-danger rounded-1">- {{ $discount }}%</li>
-                                           
+                                        @if (!empty($salePrice) && $salePrice > 0)
+                                            <span>{{ number_format($salePrice) }}đ</span>
+                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                        @else
+                                            <span>{{ number_format($regularPrice) }}đ</span>
                                         @endif
-                                    </ul>
-                                </div>
-                                <div class="product-hover-action">
-                                    <ul>
-                                        <li>
-                                            <a href="#" class="quick-view-btn"
-                                                data-id="{{ $product->product->id }}" title="Quick View"
-                                                data-bs-toggle="modal" data-bs-target="#quick_view_modal">
-                                                <i class="far fa-eye"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="product-info">
-                                <h2 class="product-title">
-                                    <a
-                                        href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
-                                </h2>
-                                <div class="product-price">
-                                    @php
-                                        $variants = $product->product->variants ?? collect();
-                                        $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
-                                        $regularPrice = $variants->min('price');
-                                    @endphp
-                                    @if (!empty($salePrice) && $salePrice > 0)
-                                        <span>{{ number_format($salePrice) }}đ</span>
-                                        <del>{{ number_format($regularPrice) }}đ</del>
-                                    @else
-                                        <span>{{ number_format($regularPrice) }}đ</span>
-                                    @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
-                <!--  -->
+                    @endforeach
+                    <!--  -->
+                </div>
             </div>
         </div>
-    </div>
-    <!-- PRODUCT AREA END -->
+        <!-- SMALL PRODUCT LIST AREA END -->
 
-    <!-- SMALL PRODUCT LIST AREA START -->
-    <div class="ltn__small-product-list-area section-bg-1 pt-115 pb-70 mb-100">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title-area ltn__section-title-2 text-center">
-                        <h1 class="section-title">SẢN PHẨM NỔI BẬT</h1>
+        <!-- TESTIMONIAL AREA START (testimonial-4) -->
+        <div class="ltn__testimonial-area section-bg-1 pt-290 pb-70">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title-area ltn__section-title-2 text-center">
+                            <h6 class="section-subtitle ltn__secondary-color">Các Thông Tin Bài ViếtViết</h6>
+                            <h1 class="section-title">Bài Viết Nổi Bật<span>.</span></h1>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <!-- small-product-item -->
-                @foreach ($productTop as $product)
-                    <div class="col-lg-4 col-md-6 col-12">
-                        <div class="ltn__small-product-item">
-                            <div class="small-product-item-img">
-                                <a href="{{ route('products.productct', $product->id) }}"><img
-                                        src="{{ asset('upload/' . $product->thumbnail) }}" alt="Image" width="250px"
-                                        height="100px"></a>
+                <div class="row ltn__testimonial-slider-3-active slick-arrow-1 slick-arrow-1-inner">
+                    <div class="col-lg-12">
+                        <div class="ltn__testimonial-item ltn__testimonial-item-4">
+                            <div class="ltn__testimoni-img">
+                                <img src="{{ asset('client/img/testimonial/6') }}.jpg" alt="Ảnh khách hàng">
                             </div>
-                            <div class="small-product-item-info">
-                                <div class="product-ratting">
-                                    <ul>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                        <li><a href="#"><i class="far fa-star"></i></a></li>
-                                    </ul>
-                                </div>
-                                <h2 class="product-title"><a
-                                        href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
-                                </h2>
-                                <div class="product-price">
-                                    @php
-                                        $salePrice = $product->variants->where('sale_price', '>', 0)->min('sale_price');
-                                        $regularPrice = $product->variants->min('price');
-                                    @endphp
-
-                                    @if (!empty($salePrice) && $salePrice > 0)
-                                        <span>{{ number_format($salePrice) }}đ</span>
-                                        <del>{{ number_format($regularPrice) }}đ</del>
-                                    @else
-                                        <span>{{ number_format($regularPrice) }}đ</span>
-                                    @endif
-                                </div>
+                            <div class="ltn__testimoni-info">
+                                <p>Tôi rất hài lòng với chất lượng sản phẩm và dịch vụ. Đội ngũ nhân viên nhiệt tình,
+                                    tư vấn chuyên nghiệp giúp tôi chọn được sản phẩm phù hợp.</p>
+                                <h4>Nguyễn Thị Hương</h4>
+                                <h6>Khách hàng thân thiết</h6>
+                            </div>
+                            <div class="ltn__testimoni-bg-icon">
+                                <i class="far fa-comments"></i>
                             </div>
                         </div>
                     </div>
-                @endforeach
-                <!--  -->
-            </div>
-        </div>
-    </div>
-    <!-- SMALL PRODUCT LIST AREA END -->
-
-    <!-- TESTIMONIAL AREA START (testimonial-4) -->
-    <div class="ltn__testimonial-area section-bg-1 pt-290 pb-70">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title-area ltn__section-title-2 text-center">
-                        <h6 class="section-subtitle ltn__secondary-color">Các Thông Tin Bài ViếtViết</h6>
-                        <h1 class="section-title">Bài Viết Nổi Bật<span>.</span></h1>
-                    </div>
-                </div>
-            </div>
-            <div class="row ltn__testimonial-slider-3-active slick-arrow-1 slick-arrow-1-inner">
-                <div class="col-lg-12">
-                    <div class="ltn__testimonial-item ltn__testimonial-item-4">
-                        <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/6') }}.jpg" alt="Ảnh khách hàng">
-                        </div>
-                        <div class="ltn__testimoni-info">
-                            <p>Tôi rất hài lòng với chất lượng sản phẩm và dịch vụ. Đội ngũ nhân viên nhiệt tình,
-                                tư vấn chuyên nghiệp giúp tôi chọn được sản phẩm phù hợp.</p>
-                            <h4>Nguyễn Thị Hương</h4>
-                            <h6>Khách hàng thân thiết</h6>
-                        </div>
-                        <div class="ltn__testimoni-bg-icon">
-                            <i class="far fa-comments"></i>
+                    <div class="col-lg-12">
+                        <div class="ltn__testimonial-item ltn__testimonial-item-4">
+                            <div class="ltn__testimoni-img">
+                                <img src="{{ asset('client/img/testimonial/7') }}.jpg" alt="Ảnh khách hàng">
+                            </div>
+                            <div class="ltn__testimoni-info">
+                                <p>Sản phẩm chính hãng, giá cả hợp lý. Đặc biệt ấn tượng với chính sách bảo hành và
+                                    chăm sóc khách hàng sau bán hàng rất tốt.</p>
+                                <h4>Trần Văn Nam</h4>
+                                <h6>Khách hàng thường xuyên</h6>
+                            </div>
+                            <div class="ltn__testimoni-bg-icon">
+                                <i class="far fa-comments"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="ltn__testimonial-item ltn__testimonial-item-4">
-                        <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/7') }}.jpg" alt="Ảnh khách hàng">
-                        </div>
-                        <div class="ltn__testimoni-info">
-                            <p>Sản phẩm chính hãng, giá cả hợp lý. Đặc biệt ấn tượng với chính sách bảo hành và
-                                chăm sóc khách hàng sau bán hàng rất tốt.</p>
-                            <h4>Trần Văn Nam</h4>
-                            <h6>Khách hàng thường xuyên</h6>
-                        </div>
-                        <div class="ltn__testimoni-bg-icon">
-                            <i class="far fa-comments"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="ltn__testimonial-item ltn__testimonial-item-4">
-                        <div class="ltn__testimoni-img">
-                            <img src="{{ asset('client/img/testimonial/1') }}.jpg" alt="Ảnh khách hàng">
-                        </div>
-                        <div class="ltn__testimoni-info">
-                            <p>Mua hàng online rất thuận tiện, giao hàng nhanh chóng. Nhân viên tư vấn nhiệt tình,
-                                giải đáp mọi thắc mắc của tôi.</p>
-                            <h4>Lê Thị Minh</h4>
-                            <h6>Khách hàng mới</h6>
-                        </div>
-                        <div class="ltn__testimoni-bg-icon">
-                            <i class="far fa-comments"></i>
+                    <div class="col-lg-12">
+                        <div class="ltn__testimonial-item ltn__testimonial-item-4">
+                            <div class="ltn__testimoni-img">
+                                <img src="{{ asset('client/img/testimonial/1') }}.jpg" alt="Ảnh khách hàng">
+                            </div>
+                            <div class="ltn__testimoni-info">
+                                <p>Mua hàng online rất thuận tiện, giao hàng nhanh chóng. Nhân viên tư vấn nhiệt tình,
+                                    giải đáp mọi thắc mắc của tôi.</p>
+                                <h4>Lê Thị Minh</h4>
+                                <h6>Khách hàng mới</h6>
+                            </div>
+                            <div class="ltn__testimoni-bg-icon">
+                                <i class="far fa-comments"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- TESTIMONIAL AREA END -->
+        <!-- TESTIMONIAL AREA END -->
 
-    <!-- BLOG AREA START (blog-3) -->
-    <div class="ltn__blog-area pt-115 pb-70">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title-area ltn__section-title-2--- text-center">
-                        <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">Tin tức & Bài viết</h6>
-                        <h1 class="section-title">Bài viết mới nhất</h1>
+        <!-- BLOG AREA START (blog-3) -->
+        <div class="ltn__blog-area pt-115 pb-70">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title-area ltn__section-title-2--- text-center">
+                            <h6 class="section-subtitle section-subtitle-2--- ltn__secondary-color">Tin tức & Bài viết</h6>
+                            <h1 class="section-title">Bài viết mới nhất</h1>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row ltn__blog-slider-one-active slick-arrow-1 ltn__blog-item-3-normal">
-                <!-- Blog Item -->
-                <div class="col-lg-12">
-                    <div class="ltn__blog-item ltn__blog-item-3">
-                        <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
-                                    alt="Ảnh bài viết"></a>
-                        </div>
-                        <div class="ltn__blog-brief">
-                            <div class="ltn__blog-meta">
-                                <ul>
-                                    <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
-                                    </li>
-                                    <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
-                                    </li>
-                                </ul>
+                <div class="row ltn__blog-slider-one-active slick-arrow-1 ltn__blog-item-3-normal">
+                    <!-- Blog Item -->
+                    <div class="col-lg-12">
+                        <div class="ltn__blog-item ltn__blog-item-3">
+                            <div class="ltn__blog-img">
+                                <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                        alt="Ảnh bài viết"></a>
                             </div>
-                            <h3 class="ltn__blog-title">
-                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
-                            </h3>
-                            <div class="ltn__blog-meta-btn">
+                            <div class="ltn__blog-brief">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date">
-                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        <li class="ltn__blog-author">
+                                            <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
+                                        </li>
+                                        <li class="ltn__blog-tags">
+                                            <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                         </li>
                                     </ul>
                                 </div>
-                                <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Xem thêm</a>
+                                <h3 class="ltn__blog-title">
+                                    <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                                </h3>
+                                <div class="ltn__blog-meta-btn">
+                                    <div class="ltn__blog-meta">
+                                        <ul>
+                                            <li class="ltn__blog-date">
+                                                <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="ltn__blog-btn">
+                                        <a href="blog-details.html">Xem thêm</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Thêm các blog item khác tương tự -->
-                <div class="col-lg-12">
-                    <div class="ltn__blog-item ltn__blog-item-3">
-                        <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
-                                    alt="Ảnh bài viết"></a>
-                        </div>
-                        <div class="ltn__blog-brief">
-                            <div class="ltn__blog-meta">
-                                <ul>
-                                    <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
-                                    </li>
-                                    <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
-                                    </li>
-                                </ul>
+                    <!-- Thêm các blog item khác tương tự -->
+                    <div class="col-lg-12">
+                        <div class="ltn__blog-item ltn__blog-item-3">
+                            <div class="ltn__blog-img">
+                                <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                        alt="Ảnh bài viết"></a>
                             </div>
-                            <h3 class="ltn__blog-title">
-                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
-                            </h3>
-                            <div class="ltn__blog-meta-btn">
+                            <div class="ltn__blog-brief">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date">
-                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        <li class="ltn__blog-author">
+                                            <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
+                                        </li>
+                                        <li class="ltn__blog-tags">
+                                            <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                         </li>
                                     </ul>
                                 </div>
-                                <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Xem thêm</a>
+                                <h3 class="ltn__blog-title">
+                                    <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                                </h3>
+                                <div class="ltn__blog-meta-btn">
+                                    <div class="ltn__blog-meta">
+                                        <ul>
+                                            <li class="ltn__blog-date">
+                                                <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="ltn__blog-btn">
+                                        <a href="blog-details.html">Xem thêm</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="ltn__blog-item ltn__blog-item-3">
-                        <div class="ltn__blog-img">
-                            <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
-                                    alt="Ảnh bài viết"></a>
-                        </div>
-                        <div class="ltn__blog-brief">
-                            <div class="ltn__blog-meta">
-                                <ul>
-                                    <li class="ltn__blog-author">
-                                        <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
-                                    </li>
-                                    <li class="ltn__blog-tags">
-                                        <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
-                                    </li>
-                                </ul>
+                    <div class="col-lg-12">
+                        <div class="ltn__blog-item ltn__blog-item-3">
+                            <div class="ltn__blog-img">
+                                <a href="blog-details.html"><img src="{{ asset('client/img/blog/1.jpg') }}"
+                                        alt="Ảnh bài viết"></a>
                             </div>
-                            <h3 class="ltn__blog-title">
-                                <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
-                            </h3>
-                            <div class="ltn__blog-meta-btn">
+                            <div class="ltn__blog-brief">
                                 <div class="ltn__blog-meta">
                                     <ul>
-                                        <li class="ltn__blog-date">
-                                            <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                        <li class="ltn__blog-author">
+                                            <a href="#"><i class="far fa-user"></i>Đăng bởi: Quản trị viên</a>
+                                        </li>
+                                        <li class="ltn__blog-tags">
+                                            <a href="#"><i class="fas fa-tags"></i>Sức khỏe</a>
                                         </li>
                                     </ul>
                                 </div>
-                                <div class="ltn__blog-btn">
-                                    <a href="blog-details.html">Xem thêm</a>
+                                <h3 class="ltn__blog-title">
+                                    <a href="blog-details.html">10 Cách hiệu quả để bảo vệ sức khỏe mỗi ngày</a>
+                                </h3>
+                                <div class="ltn__blog-meta-btn">
+                                    <div class="ltn__blog-meta">
+                                        <ul>
+                                            <li class="ltn__blog-date">
+                                                <i class="far fa-calendar-alt"></i>24 Tháng 6, 2024
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="ltn__blog-btn">
+                                        <a href="blog-details.html">Xem thêm</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -930,35 +938,34 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!-- BLOG AREA END -->
+        <!-- BLOG AREA END -->
 
-    <!-- CALL TO ACTION START (call-to-action-6) -->
-    <div class="ltn__call-to-action-area call-to-action-6 before-bg-bottom" data-bs-bg="img/1.jpg--">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div
-                        class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
-                        <div class="coll-to-info text-color-white">
-                            <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
-                        </div>
-                        <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">
-                                Khám phá sản phẩm <i class="icon-next"></i>
-                            </a>
-                        </div>
+        <!-- CALL TO ACTION START (call-to-action-6) -->
+        <div class="ltn__call-to-action-area call-to-action-6 before-bg-bottom" data-bs-bg="img/1.jpg--">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div
+                            class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
+                            <div class="coll-to-info text-color-white">
+                                <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
+                            </div>
+                            <div class="btn-wrapper">
+                                <a class="btn btn-effect-3 btn-white" href="shop.html">
+                                    Khám phá sản phẩm <i class="icon-next"></i>
+                                </a>
+                            </div>
 
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     </div>
 
-   
-    
+
+
     <!-- CALL TO ACTION END -->
     <!-- MODAL AREA START (Quick View Modal) -->
     @include('client.components.QuickViewModal')
@@ -974,6 +981,7 @@
 @endsection
 
 @push('js')
+
     @if (session('no_access'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -999,6 +1007,22 @@
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const moreBtn = document.querySelector('.ltn__category-menu-more-item-parent');
+            const hiddenItems = document.querySelectorAll('.ltn__category-menu-more-item');
+            const defaultBtn = document.querySelector('.rx-default');
+            const showBtn = document.querySelector('.rx-show');
+
+            if (moreBtn) {
+                moreBtn.addEventListener('click', function() {
+                    hiddenItems.forEach(item => {
+                        item.classList.toggle('show');
+                    });
+                    defaultBtn.classList.toggle('hide');
+                    showBtn.classList.toggle('show');
+                });
+            }
+        });
         let selectedVariantId = null; // Biến lưu ID biến thể đã chọn
 
         $(document).on('click', '.quick-view-btn', function(e) {
@@ -1107,7 +1131,23 @@
 
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();
-
+            @if (!auth()->check())
+                Toastify({
+                    text: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ff4444",
+                        color: "white"
+                    },
+                    onClick: function() {
+                        window.location.href = '{{ route('login') }}';
+                    }
+                }).showToast();
+                return;
+            @endif
             let selectedButton = $('.variant-btn.active'); // Lấy nút biến thể được chọn
             let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
                 'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
@@ -1133,18 +1173,19 @@
                                 parseFloat(item.product.sell_price);
 
                             cartHtml += `
-                        <div class="mini-cart-item clearfix">
-                            <div class="mini-cart-img">
-                                <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
-                            </div>
-                            <div class="mini-cart-info">
-                                <h6><a href="#">${item.product.name}</a></h6>
-                                <span class="mini-cart-quantity">
-                                    ${item.quantity} x 
-                                    <span class="mini-cart-price">${price.toLocaleString('vi-VN')}đ</span>
-                                </span>
-                            </div>
-                        </div>`;
+                                    <div class="mini-cart-item clearfix">
+                                        <div class="mini-cart-img">
+                                            <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
+                                        </div>
+                                        <div class="mini-cart-info">
+                                            <h6><a href="#">${item.product.name}</a></h6>
+                                            <span class="mini-cart-variant">${item.variant_name || 'Mặc định'}</span><br>
+                                            <span class="mini-cart-quantity">
+                                                ${item.quantity} x 
+                                                <span class="mini-cart-price">${price.toLocaleString('vi-VN')}đ</span>
+                                            </span>
+                                        </div>
+                                    </div>`;
                         });
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
@@ -1157,18 +1198,69 @@
                             close: true,
                             gravity: "top",
                             position: "right",
-                            backgroundColor: "#4caf50",
+                            style: {
+                                background: "#4caf50"
+                            },
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
                     }
                 },
                 error: function(xhr) {
-                    alert("Có lỗi xảy ra, vui lòng thử lại!");
+                    Toastify({
+                        text: "Có lỗi xảy ra, vui lòng thử lại!",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#ff4444",
+                            color: "white"
+                        }
+                    }).showToast();
+
                     console.error(xhr.responseText);
                 }
             });
         });
+        // Add this to your main JS file or where you handle cart operations
+        function handleCartOperation(url, data = {}, method = 'POST') {
+            fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        // Show error toast
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: data.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+
+                        if (data.message === 'Vui lòng đăng nhập để tiếp tục') {
+                            setTimeout(() => {
+                                window.location.href = '/loginForm';
+                            }, 2000);
+                        }
+                    } else {
+                        // Handle success
+                        // Update cart UI, show success message, etc.
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     </script>
 @endpush
 @push('css')
@@ -1255,6 +1347,26 @@
             width: 100%;
             padding: 0;
             overflow: hidden;
+        }
+
+        .ltn__category-menu-more-item {
+            display: none;
+        }
+
+        .ltn__category-menu-more-item.show {
+            display: block;
+        }
+
+        .rx-show {
+            display: none;
+        }
+
+        .rx-default.hide {
+            display: none;
+        }
+
+        .rx-show.show {
+            display: block;
         }
     </style>
 @endpush

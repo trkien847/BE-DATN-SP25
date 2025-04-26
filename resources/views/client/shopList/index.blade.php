@@ -93,12 +93,28 @@
                             <div class="ltn__product-tab-content-inner ltn__product-grid-view">
                                 <div id="product-list" class="row">
                                     @foreach ($products as $product)
+                                        @php
+                                            // Lọc các biến thể còn hàng
+                                            $availableVariants = $product->variants->filter(function ($variant) {
+                                                return $variant->stock > 0;
+                                            });
+
+                                            // Nếu không có biến thể còn hàng thì bỏ qua sản phẩm này
+                                            if ($availableVariants->isEmpty()) {
+                                                continue;
+                                            }
+
+                                            $salePrice = $availableVariants
+                                                ->where('sale_price', '>', 0)
+                                                ->min('sale_price');
+                                            $regularPrice = $availableVariants->min('price');
+                                        @endphp
+
                                         <div class="col-xl-4 col-sm-6 col-6">
                                             <div class="ltn__product-item ltn__product-item-3 text-center"
                                                 style="height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
-                                                {{-- fix tràn ô  --}}
                                                 <div class="product-img">
-                                                    <a href="#">
+                                                    <a href="{{ route('products.productct', $product->id) }}">
                                                         <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                             alt="{{ $product->name }}"
                                                             style="width: 250px; height: 200px; object-fit: cover;">
@@ -106,11 +122,10 @@
 
                                                     <div class="product-badge">
                                                         <ul>
-                                                            @if (!empty($product->sale_price) && $product->sale_price > 0)
+                                                            @if (!empty($salePrice) && $salePrice > 0)
                                                                 @php
                                                                     $discount = round(
-                                                                        (($product->sell_price - $product->sale_price) /
-                                                                            $product->sell_price) *
+                                                                        (($regularPrice - $salePrice) / $regularPrice) *
                                                                             100,
                                                                     );
                                                                 @endphp
@@ -118,6 +133,7 @@
                                                             @endif
                                                         </ul>
                                                     </div>
+
                                                     <div class="product-hover-action">
                                                         <ul>
                                                             <li>
@@ -132,17 +148,11 @@
                                                     </div>
                                                 </div>
                                                 <div class="product-info">
-                                                    <h2 class="product-title"><a
-                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a></h2><h2 class="product-title"><a href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                                    <h2 class="product-title">
+                                                        <a
+                                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
                                                     <div class="product-price">
-                                                        @php
-                                                            $salePrice = $product->variants
-                                                                ->where('sale_price', '>', 0)
-                                                                ->min('sale_price');
-                                                            $regularPrice = $product->variants->min('price');
-                                                        @endphp
-
                                                         @if (!empty($salePrice) && $salePrice > 0)
                                                             <span>{{ number_format($salePrice) }}đ</span>
                                                             <del>{{ number_format($regularPrice) }}đ</del>
@@ -383,7 +393,7 @@
                                 <div class="product-price">
                                     ${product.min_sale_price > 0 ? 
                                         `<span>${new Intl.NumberFormat().format(product.min_sale_price)}đ</span> 
-                                                                <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
+                                                                                            <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
                                         `<span>${new Intl.NumberFormat().format(product.min_price)}đ</span>`
                                     }
                                 </div>
@@ -408,7 +418,6 @@
                     url: `/get-product/${productId}`,
                     method: 'GET',
                     success: function(response) {
-                        console.log(response);
                         $('#quick_view_modal').attr('data-product-id', response
                             .id);
                         $('#quick_view_modal .modal-product-img').html(`
@@ -516,7 +525,23 @@
         });
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();
-
+            @if (!auth()->check())
+                Toastify({
+                    text: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ff4444",
+                        color: "white"
+                    },
+                    onClick: function() {
+                        window.location.href = '{{ route('login') }}';
+                    }
+                }).showToast();
+                return;
+            @endif
             let selectedButton = $('.variant-btn.active'); // Lấy nút biến thể được chọn
             let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
                 'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
@@ -534,7 +559,6 @@
                 },
                 success: function(response) {
                     if (response.status === "success") {
-                        console.log(response.cart_items);
                         $(".mini-cart-quantity").text(response.cart_count);
                         let cartHtml = "";
                         response.cart_items.forEach(item => {
@@ -543,18 +567,19 @@
                                 parseFloat(item.product.sell_price);
 
                             cartHtml += `
-                        <div class="mini-cart-item clearfix">
-                            <div class="mini-cart-img">
-                                <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
-                            </div>
-                            <div class="mini-cart-info">
-                                <h6><a href="#">${item.product.name}</a></h6>
-                                <span class="mini-cart-quantity">
-                                    ${item.quantity} x 
-                                    <span class="mini-cart-price">${price.toLocaleString('vi-VN')}đ</span>
-                                </span>
-                            </div>
-                        </div>`;
+                                    <div class="mini-cart-item clearfix">
+                                        <div class="mini-cart-img">
+                                            <a href="#"><img src="${item.product.thumbnail}" alt="${item.product.name}"></a>
+                                        </div>
+                                        <div class="mini-cart-info">
+                                            <h6><a href="#">${item.product.name}</a></h6>
+                                            <span class="mini-cart-variant">${item.variant_name || 'Mặc định'}</span><br>
+                                            <span class="mini-cart-quantity">
+                                                ${item.quantity} x 
+                                                <span class="mini-cart-price">${price.toLocaleString('vi-VN')}đ</span>
+                                            </span>
+                                        </div>
+                                    </div>`;
                         });
                         $(".mini-cart-list").html(cartHtml);
                         $(".mini-cart-sub-total span").text(response.subtotal);
@@ -567,14 +592,27 @@
                             close: true,
                             gravity: "top",
                             position: "right",
-                            backgroundColor: "#4caf50",
+                            style: {
+                                background: "#4caf50"
+                            },
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
                     }
                 },
                 error: function(xhr) {
-                    alert("Có lỗi xảy ra, vui lòng thử lại!");
+                    Toastify({
+                        text: "Có lỗi xảy ra, vui lòng thử lại!",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#ff4444",
+                            color: "white"
+                        }
+                    }).showToast();
+
                     console.error(xhr.responseText);
                 }
             });

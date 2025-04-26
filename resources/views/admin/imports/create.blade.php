@@ -1777,11 +1777,11 @@
                         <div class="selected-product-form">
                             <div class="form-input">
                                 <label>Giá nhập</label>
-                                <input type="number" name="products[${productId}][variants][${variantId}][price]" required min="0">
+                                <input type="text" name="products[${productId}][variants][${variantId}][price]" required min="0">
                             </div>
                             <div class="form-input">
                                 <label>Số lượng</label>
-                                <input type="number" name="products[${productId}][variants][${variantId}][quantity]" required min="1">
+                                <input type="text" name="products[${productId}][variants][${variantId}][quantity]" required min="1">
                             </div>
                             <div class="form-input">
                                 <label>Ngày sản xuất</label>
