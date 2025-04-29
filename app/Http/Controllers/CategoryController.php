@@ -23,9 +23,14 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $categories = $this->categoryService->getAllCategories();
+        $keyword = $request->get('search');
+        $categories = $this->categoryService->searchCategories($keyword);
+
+        if ($request->ajax()) {
+            return view('admin.categories.category-list-partial', compact('categories'))->render();
+        }
 
         return view('admin.categories.list', compact('categories'));
     }

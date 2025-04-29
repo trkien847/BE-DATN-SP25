@@ -37,4 +37,8 @@ class Comment extends Model
     {
         return $this->hasMany(Comment::class, 'parent_id')->where('is_approved', true);
     }
+    public function pendingComments()
+    {
+        return $this->hasMany(Comment::class)->where('is_approved', false);
+    }
 }

@@ -23,10 +23,14 @@ class CategoryService
     public function createCategory($data)
     {
         $userId = auth()->user()->id;
+        $isAdmin = auth()->user()->role_id === 3;
+
         $category = $this->categoryRepository->create([
             'name' => $data['name'],
-            'status' => 'pending',
-            'created_by' => $userId
+            'status' => $isAdmin ? 'approved' : 'pending',
+            'created_by' => $userId,
+            'approved_by' => $isAdmin ? $userId : null,
+            'approved_at' => $isAdmin ? now() : null
         ]);
 
         if (!empty($data['subcategories'])) {
@@ -35,37 +39,62 @@ class CategoryService
                     $this->categoryTypeRepository->create([
                         'category_id' => $category->id,
                         'name' => $subcategoryName,
-                        'status' => 'pending',
-                        'created_by' => $userId
+                        'status' => $isAdmin ? 'approved' : 'pending',
+                        'created_by' => $userId,
+                        'approved_by' => $isAdmin ? $userId : null,
+                        'approved_at' => $isAdmin ? now() : null
                     ]);
                 }
             }
         }
-        $admins = User::where('role_id', 3)->get();
-        foreach ($admins as $admin) {
-            Notification::create([
-                'user_id' => $admin->id,
-                'title' => 'Yêu cầu tạo danh mục mới',
-                'content' => "Người dùng yêu cầu tạo danh mục: {$data['name']}",
-                'type' => 'category_pending_create',
-                'data' => [
-                    'category_id' => $category->id,
-                    'requester_id' => $userId,
-                    'actions' => [
-                        'view_details' => route('categories.pending'),
-                        'approve_request' => route('category.accept', $category->id),
-                        'reject_request' => route('category.reject', $category->id)
-                    ]
-                ],
-                'is_read' => false
-            ]);
+
+        if (!$isAdmin) {
+            $admins = User::where('role_id', 3)->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => 'Yêu cầu tạo danh mục mới',
+                    'content' => "Người dùng yêu cầu tạo danh mục: {$data['name']}",
+                    'type' => 'category_pending_create',
+                    'data' => [
+                        'category_id' => $category->id,
+                        'requester_id' => $userId,
+                        'actions' => [
+                            'view_details' => route('categories.pending'),
+                            'approve_request' => route('category.accept', $category->id),
+                            'reject_request' => route('category.reject', $category->id)
+                        ]
+                    ],
+                    'is_read' => false
+                ]);
+            }
         }
+
         return $category;
     }
 
-    public function getAllCategories()
+    public function getAllCategories($status = 'approved')
     {
-        return $this->categoryRepository->query()->where('status', 'approved')->with('categoryTypes')->paginate(10);
+        return $this->categoryRepository->query()
+            ->where('status', $status)
+            ->with('categoryTypes')
+            ->paginate(10);
+    }
+    public function getAllCategoriesForClient()
+    {
+        return $this->categoryRepository->query()
+            ->where('is_active', 1)
+            ->where('status', 'approved')
+            ->with('categoryTypes')
+            ->get();
+    }
+
+    public function searchCategories($keyword, $status = 'approved')
+    {
+        if (empty($keyword)) {
+            return $this->getAllCategories();
+        }
+        return $this->categoryRepository->searchCategories($keyword, $status);
     }
     public function getCategoryById($id)
     {

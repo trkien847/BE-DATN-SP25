@@ -47,7 +47,7 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class, 'product_id');
     }
-    
+
     public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'product_id');
@@ -75,4 +75,13 @@ class Product extends Model
     }
     use SoftDeletes;
     protected $dates = ['deleted_at'];
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    public function pendingComments()
+    {
+        return $this->hasMany(Comment::class)->where('is_approved', false);
+    }
 }

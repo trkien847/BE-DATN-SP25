@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\CommentPosted;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -51,8 +52,9 @@ class CommentController extends Controller
     public function index()
     {
         $comments = Comment::with(['user', 'product'])->where('is_approved', '0')->latest()->paginate(10);
+        $pendingCount = Comment::where('is_approved', 0)->count();
 
-        return view('admin.comments.index', compact('comments'));
+        return view('admin.comments.index', compact('comments', 'pendingCount'));
     }
 
 
@@ -96,5 +98,43 @@ class CommentController extends Controller
             'success' => true,
             'message' => 'Trả lời bình luận thành công',
         ]);
+    }
+    public function productComments(Request $request, $productId)
+    {
+        $product = Product::findOrFail($productId);
+
+        $comments = Comment::with(['user', 'parent'])
+            ->where('product_id', $productId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.comments.product-comments', compact('product', 'comments'));
+    }
+    public function productsList(Request $request)
+    {
+        $query = Product::withCount(['comments', 'pendingComments'])
+            ->orderBy('comments_count', 'desc');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhereHas('categories', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('categoryTypes', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $products = $query->paginate(10);
+        $pendingCount = Comment::where('is_approved', 0)->count();
+        if ($request->ajax()) {
+            return view('admin.comments.product-list-partial', compact('products'))->render();
+        }
+
+        return view('admin.comments.product-list', compact('products', 'pendingCount'));
     }
 }

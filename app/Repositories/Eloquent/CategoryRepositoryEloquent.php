@@ -25,7 +25,7 @@ class CategoryRepositoryEloquent extends BaseRepository implements CategoryRepos
         return Category::class;
     }
 
-    
+
 
     /**
      * Boot up the repository, pushing criteria
@@ -34,5 +34,12 @@ class CategoryRepositoryEloquent extends BaseRepository implements CategoryRepos
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+    public function searchCategories($keyword, $status = 'approved')
+    {
+        return $this->query()
+            ->where('status', $status)
+            ->where('name', 'LIKE', "%{$keyword}%")
+            ->with('categoryTypes')
+            ->paginate(10);
+    }
 }
