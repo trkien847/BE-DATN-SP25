@@ -292,6 +292,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     Route::get('/admin/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
     Route::put('/admin/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
     Route::delete('/admin/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    Route::post('/admin/users/update-role', [UserManagementController::class, 'updateRole'])->name('users.updateRole');
 
     // Quản lý phân quyền
     Route::get('/admin/roles', [UserManagementController::class, 'rolesList'])->name('roles.list');

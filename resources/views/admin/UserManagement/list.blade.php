@@ -172,46 +172,69 @@
       </thead>
       <tbody>
         @foreach($users as $user)
-        <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $user->fullname }}</td>
-            <td>{{ $user->email }}</td>
-            <td>{{ $user->phone_number }}</td>
-            <td>
-                {{ $user->role->name }}
-                {{-- Debug giá trị role --}}
-            </td>
-            
-              <td>
-                <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input toggle-status" type="checkbox" role="switch"
-                            data-id="{{ $user->id }}"
-                            {{ $user->status === 'Online' ? 'checked' : '' }}>
-                    </div>
-                </div>
-            </td>
-          
-          
-          
-            <td>
-              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success btn-sm ripple">
-                <i class="bx bx-edit fs-16"></i>
-            </a>            
-                <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-primary btn-sm" title="Chi tiết người dùng">
-                    <i class="bx bx-detail fs-16"></i>
-                </a>
-                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
-                  @csrf
-                  @method('DELETE')
-                  <button type="button" class="btn btn-danger btn-sm delete-button" data-id="{{ $user->id }}">
-                      <i class="bx bx-hide fs-16"></i>
-                  </button>
-              </form>              
-            </td>
-           
-            
-        @endforeach
+    <tr>
+        <td>{{ $loop->iteration }}</td>
+        <td>{{ $user->fullname }}</td>
+        <td>{{ $user->email }}</td>
+        <td>{{ $user->phone_number }}</td>
+        <td>
+          @if ($user->role_id == 3)
+              <select class="form-control" disabled>
+                  @foreach ($roles as $role)
+                      <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                          {{ $role->name }}
+                      </option>
+                  @endforeach
+              </select>
+          @else
+              <select class="form-control role-select" data-id="{{ $user->id }}">
+                  @foreach ($roles as $role)
+                      <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                          {{ $role->name }}
+                      </option>
+                  @endforeach
+              </select>
+          @endif
+      </td>
+
+      <td>
+        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+            <div class="form-check form-switch">
+                <input class="form-check-input toggle-status" type="checkbox" role="switch"
+                    data-id="{{ $user->id }}"
+                    {{ $user->status === 'Online' ? 'checked' : '' }}
+                    {{ $user->role_id == 3 ? 'disabled style=opacity:0.5;' : '' }}>
+            </div>
+        </div>
+    </td>
+
+    <td>
+      <a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn-primary btn-sm mt-2" title="Chi tiết người dùng">
+          <i class="bx bx-detail fs-16"></i>
+      </a>
+
+      <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
+        @csrf
+        @method('DELETE')
+    
+        @if (
+            ($user->role_id == 2 && $user->role_id != 1) ||  // User chỉ được xóa Staff
+            ($user->role_id == 3 && $user->role_id == 3)     // Admin không được xóa Admin
+        )
+            <!-- Nếu điều kiện trên đúng thì khóa nút xóa -->
+            <button type="button" class="btn btn-danger btn-sm delete-button mt-2" disabled title="Không thể xóa người này">
+                <i class="bx bx-hide fs-16"></i>
+            </button>
+        @else
+            <!-- Nếu không thì cho phép xóa -->
+            <button type="button" class="btn btn-danger btn-sm delete-button mt-2" data-id="{{ $user->id }}">
+                <i class="bx bx-hide fs-16"></i>
+            </button>
+        @endif
+    </form>
+  </td>
+@endforeach
+
     </tbody>
     </table>
   </div>
@@ -267,6 +290,41 @@
 });
 
   </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+        $('.role-select').on('change', function() {
+            var userId = $(this).data('id');  // lấy ID người dùng
+            var roleId = $(this).val();        // lấy vai trò mới
+    
+            // Hiển thị hộp thoại xác nhận
+            if (confirm('Bạn có chắc chắn muốn thay đổi vai trò người dùng này không?')) {
+                $.ajax({
+                    url: '{{ route('admin.users.updateRole') }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        user_id: userId,
+                        role_id: roleId
+                    },
+                    success: function(response) {
+                        alert('Cập nhật vai trò thành công!');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                        alert('Cập nhật thất bại!');
+                    }
+                });
+            } else {
+                // Nếu chọn Cancel thì reload lại combobox về giá trị cũ
+                location.reload();
+            }
+        });
+    });
+    </script>
+    
+  
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
