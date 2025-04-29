@@ -70,6 +70,23 @@
                                                 <div class="table-responsive">
                                                 <div class="container">
                                                     <h1>Lịch Sử Mua Hàng</h1>
+
+                                                    <div class="filter-container">
+                        <h5>Lọc theo trạng thái</h5>
+                        <div class="status-filters">
+                            <div class="status-filter all-filter active" data-status="all">Tất cả</div>
+                            <div class="status-filter" data-status="Chờ xác nhận">Chờ xác nhận</div>
+                            <div class="status-filter" data-status="Chờ giao hàng">Chờ giao hàng</div>
+                            <div class="status-filter" data-status="Đang giao hàng">Đang giao hàng</div>
+                            <div class="status-filter" data-status="Đã giao hàng">Đã giao hàng</div>
+                            <div class="status-filter" data-status="Hoàn thành">Hoàn thành</div>
+                            <div class="status-filter" data-status="Đã hủy">Đã hủy</div>
+                            <div class="status-filter" data-status="Chờ hủy">Chờ hủy</div>
+                            <div class="status-filter" data-status="Chờ hoàn tiền">Chờ hoàn tiền</div>
+                            <div class="status-filter" data-status="Chuyển khoản thành công">Chuyển khoản thành công</div>
+                        </div>
+                    </div>
+
                                                     <table class="order-table" id="order-table">
                                                         <thead>
                                                             <tr>
@@ -77,6 +94,7 @@
                                                                 <th>Số lượng sản phẩm</th>
                                                                 <th>Tổng giá trị</th>
                                                                 <th>Trạng thái</th>
+                                                                <th>Tên sản phẩm</th>
                                                                 <th>Hành động</th>
                                                             </tr>
                                                         </thead>
@@ -93,6 +111,11 @@
                                                                         <span class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
                                                                             {{ $statusName }}
                                                                         </span>
+                                                                    </td>
+                                                                    <td>
+                                                                    @foreach($order->items as $item)
+                                                                    {{ $item->name }}
+                                                                    @endforeach
                                                                     </td>
                                                                     <td>
                                                                         <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Xem chi tiết">
@@ -123,6 +146,8 @@
                                                             @endforeach
                                                         </tbody>
                                                     </table>
+
+
                                                     <div class="pagination" id="pagination-controls"></div>
                                                     @foreach($orders as $order)
                                                     <div id="order{{ $order->id }}" class="modal">
@@ -198,6 +223,43 @@
                                         </div>
 
                                         <script>
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Hiển thị tất cả đơn hàng ban đầu
+    const orderRows = document.querySelectorAll('.order-row');
+    orderRows.forEach(row => {
+        row.style.display = 'table-row';
+    });
+    
+    // Xử lý sự kiện click cho các nút lọc
+    const statusFilters = document.querySelectorAll('.status-filter');
+    statusFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            // Xóa trạng thái active từ tất cả các bộ lọc
+            statusFilters.forEach(f => f.classList.remove('active'));
+            
+            // Đặt trạng thái active cho bộ lọc được chọn
+            this.classList.add('active');
+            
+            // Lấy trạng thái cần lọc
+            const statusToFilter = this.getAttribute('data-status');
+            
+            // Lọc các đơn hàng
+            orderRows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(4) span');
+                const statusText = statusCell.textContent.trim();
+                
+                if (statusToFilter === 'all') {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = statusText === statusToFilter ? 'table-row' : 'none';
+                }
+            });
+        });
+    });
+});
+
                                             function showModal(modalId) {
                                                 const modal = document.getElementById(modalId);
                                                 modal.style.display = 'flex';
@@ -1045,5 +1107,40 @@
     color: #ccc;
     cursor: not-allowed;
 }
+
+.filter-container {
+        margin-bottom: 20px;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .status-filter {
+        padding: 8px 15px;
+        border-radius: 20px;
+        background-color: #e9ecef;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .status-filter:hover {
+        background-color: #dae0e5;
+    }
+    .status-filter.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .all-filter {
+        font-weight: bold;
+    }
+    @media (max-width: 768px) {
+        .status-filters {
+            flex-direction: column;
+        }
+    }
     </style>
 @endpush
