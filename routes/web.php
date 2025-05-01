@@ -287,6 +287,8 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/admin/comments/{id}/approve', [CommentController::class, 'approve'])->name('comments.approve');
   Route::delete('/admin/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
   Route::post('/admin/comments/{id}/reply', [CommentController::class, 'reply'])->name('comments.reply');
+  Route::get('/admin/products/{id}/comments', [CommentController::class, 'productComments'])->name('admin.products.comments');
+  Route::get('/admin/products/comments', [CommentController::class, 'productsList'])->name('admin.products.comments.list');
 
   Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');

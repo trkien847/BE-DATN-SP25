@@ -5,66 +5,122 @@
         <div class="col">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">Quản lý bình luận</h4>
+                    <h4 class="card-title">
+                        Bình luận sản phẩm:
+                        <a href="{{ route('products.productct', $product->id) }}" target="_blank" class="text-primary">
+                            {{ $product->name }}
+                        </a>
+                    </h4>
                     <a href="{{ route('admin.products.comments.list') }}" class="btn btn-secondary btn-sm">
                         <i class="bx bx-arrow-back"></i> Quay lại
                     </a>
                 </div>
                 <div class="card-body">
-
-
                     <div class="table-responsive">
-                        <table class="table table-centered table-hover" id="commentsTable">
+                        <table class="table table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width: 50px;">ID</th>
                                     <th style="width: 150px;">Người dùng</th>
-                                    <th style="width: 200px;">Sản phẩm</th>
                                     <th>Nội dung</th>
                                     <th style="width: 150px;">Thời gian</th>
-                                    <th class="text-center" style="width: 150px;">Thao tác</th>
+                                    <th style="width: 100px;">Trạng thái</th>
+                                    <th style="width: 120px">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($comments as $comment)
-                                    <tr data-comment-id="{{ $comment->id }}">
-                                        <td class="text-center">{{ $comment->id }}</td>
+                                @forelse ($comments->whereNull('parent_id') as $parentComment)
+                                    {{-- Parent comment row --}}
+                                    <tr data-comment-id="{{ $parentComment->id }}" class="parent-comment">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $comment->user->avatar ?? asset('images/default-avatar.png') }}"
+                                                <img src="{{ $parentComment->user->avatar ?? asset('images/default-avatar.png') }}"
                                                     class="rounded-circle me-2" width="32">
                                                 <div>
-                                                    <h6 class="mb-0">{{ $comment->user->fullname ?? 'Ẩn danh' }}</h6>
-                                                    <small class="text-muted">{{ $comment->user->email ?? '' }}</small>
+                                                    <h6 class="mb-0">{{ $parentComment->user->fullname ?? 'Ẩn danh' }}
+                                                    </h6>
+                                                    <small
+                                                        class="text-muted">{{ $parentComment->user->email ?? '' }}</small>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="{{ route('products.productct', $comment->product_id) }}"
-                                                class="text-body" target="_blank">
-                                                {{ Str::limit($comment->product->name, 30) }}
-                                            </a>
+                                            <div class="comment-content">
+                                                {{ $parentComment->content }}
+                                            </div>
                                         </td>
-                                        <td>{{ $comment->content }}</td>
-                                        <td>{{ $comment->created_at->format('H:i, d/m/Y') }}</td>
-                                        <td class="text-center">
+                                        <td>{{ $parentComment->created_at->format('H:i, d/m/Y') }}</td>
+                                        <td>
+                                            <span
+                                                class="badge bg-{{ $parentComment->is_approved ? 'success' : 'warning' }}">
+                                                {{ $parentComment->is_approved ? 'Đã duyệt' : 'Chờ duyệt' }}
+                                            </span>
+                                        </td>
+                                        <td>
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-soft-primary btn-sm reply-btn"
                                                     data-bs-toggle="modal" data-bs-target="#replyModal"
-                                                    data-comment-id="{{ $comment->id }}"
-                                                    data-comment-content="{{ $comment->content }}">
+                                                    data-comment-id="{{ $parentComment->id }}"
+                                                    data-comment-content="{{ $parentComment->content }}">
                                                     <i class="bx bx-reply"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-soft-danger btn-sm delete-btn"
-                                                    data-comment-id="{{ $comment->id }}">
+                                                    data-comment-id="{{ $parentComment->id }}">
                                                     <i class="bx bx-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
+
+                                    {{-- Child comments --}}
+                                    @foreach ($comments->where('parent_id', $parentComment->id) as $childComment)
+                                        <tr data-comment-id="{{ $childComment->id }}" class="child-comment">
+                                            <td class="border-0">
+                                                <div class="d-flex align-items-center ms-4">
+                                                    <img src="{{ $childComment->user->avatar ?? asset('images/default-avatar.png') }}"
+                                                        class="rounded-circle me-2" width="28">
+                                                    <div>
+                                                        <h6 class="mb-0">{{ $childComment->user->fullname ?? 'Ẩn danh' }}
+                                                        </h6>
+                                                        <small
+                                                            class="text-muted">{{ $childComment->user->email ?? '' }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="border-0">
+                                                <div class="comment-content ms-4">
+                                                    <div class="reply-indicator text-muted small mb-1">
+                                                        <i class="bx bx-reply"></i> Trả lời bình luận của
+                                                        {{ $parentComment->user->fullname ?? 'Ẩn danh' }}
+                                                    </div>
+                                                    {{ $childComment->content }}
+                                                </div>
+                                            </td>
+                                            <td class="border-0">{{ $childComment->created_at->format('H:i, d/m/Y') }}</td>
+                                            <td class="border-0">
+                                                <span
+                                                    class="badge bg-{{ $childComment->is_approved ? 'success' : 'warning' }}">
+                                                    {{ $childComment->is_approved ? 'Đã duyệt' : 'Chờ duyệt' }}
+                                                </span>
+                                            </td>
+                                            <td class="border-0">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-soft-primary btn-sm reply-btn"
+                                                        data-bs-toggle="modal" data-bs-target="#replyModal"
+                                                        data-comment-id="{{ $childComment->id }}"
+                                                        data-comment-content="{{ $childComment->content }}">
+                                                        <i class="bx bx-reply"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-soft-danger btn-sm delete-btn"
+                                                        data-comment-id="{{ $childComment->id }}">
+                                                        <i class="bx bx-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">Không có bình luận nào</td>
+                                        <td colspan="5" class="text-center">Chưa có bình luận nào</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -82,8 +138,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Reply Modal -->
     <div class="modal fade" id="replyModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -118,8 +172,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
-            // Delete comment
+            // Delete comment handler
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const commentId = this.dataset.commentId;
@@ -138,7 +191,7 @@
                             fetch(`/admin/comments/${commentId}`, {
                                     method: 'DELETE',
                                     headers: {
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                     }
                                 })
                                 .then(response => response.json())
@@ -147,6 +200,7 @@
                                         const row = document.querySelector(
                                             `tr[data-comment-id="${commentId}"]`);
                                         row.remove();
+                                        updateCommentCount(-1);
                                         Swal.fire('Đã xóa!', 'Bình luận đã được xóa.',
                                             'success');
                                     }
@@ -160,6 +214,20 @@
                 });
             });
 
+            // Helper function to update comment count
+            function updateCommentCount(change) {
+                const totalElement = document.querySelector('.text-muted');
+                if (totalElement) {
+                    const numbers = totalElement.textContent.match(/(\d+)/g);
+                    if (numbers && numbers.length >= 3) {
+                        const firstItem = parseInt(numbers[0]);
+                        const lastItem = parseInt(numbers[1]);
+                        const currentCount = parseInt(numbers[2]) + change;
+                        totalElement.textContent =
+                            `Hiển thị ${firstItem} đến ${lastItem} của ${currentCount} bình luận`;
+                    }
+                }
+            }
             // Reply modal
             const replyModal = document.getElementById('replyModal');
             replyModal.addEventListener('show.bs.modal', function(event) {
@@ -209,6 +277,9 @@
                                 icon: 'success',
                                 timer: 1500,
                                 showConfirmButton: false
+                            }).then(() => {
+                                location
+                                    .reload();
                             });
 
                             // Update comment count
@@ -222,102 +293,22 @@
                         Swal.fire('Lỗi!', 'Không thể gửi trả lời.', 'error');
                     });
             });
-            const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-                cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
-                encrypted: true
-            });
-
-            const channel = pusher.subscribe('comments');
-
-            channel.bind('App\\Events\\CommentPosted', function(data) {
-                // Tạo HTML cho comment mới
-                const newCommentHtml = `
-                        <tr data-comment-id="${data.id}">
-                            <td class="text-center">${data.id}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="${data.user.avatar}" class="rounded-circle me-2" width="32">
-                                    <div>
-                                        <h6 class="mb-0">${data.user.name}</h6>
-                                        <small class="text-muted">${data.user.email}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <a href="/products/${data.product.id}" class="text-body" target="_blank">
-                                    ${data.product.name}
-                                </a>
-                            </td>
-                            <td>${data.content}</td>
-                            <td>${data.created_at}</td>
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-soft-primary btn-sm reply-btn"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#replyModal"
-                                            data-comment-id="${data.id}"
-                                            data-comment-content="${data.content}">
-                                        <i class="bx bx-reply"></i>
-                                    </button>
-                                    <button type="button" 
-                                            class="btn btn-soft-danger btn-sm delete-btn"
-                                            data-comment-id="${data.id}">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-
-                // Thêm comment mới vào đầu bảng
-                const tbody = document.querySelector('#commentsTable tbody');
-                const noComments = tbody.querySelector('tr td[colspan="6"]');
-
-                if (noComments) {
-                    tbody.innerHTML = newCommentHtml;
-                } else {
-                    tbody.insertAdjacentHTML('afterbegin', newCommentHtml);
-                }
-
-                // Cập nhật số lượng comment
-                const totalElement = document.querySelector('.text-muted');
-                if (totalElement) {
-                    const numbers = totalElement.textContent.match(/(\d+)/g);
-                    if (numbers && numbers.length >= 3) {
-                        const firstItem = parseInt(numbers[0]);
-                        const lastItem = parseInt(numbers[1]);
-                        const currentCount = parseInt(numbers[2]) + 1;
-                        totalElement.textContent =
-                            `Hiển thị ${firstItem} đến ${lastItem} của ${currentCount} bình luận`;
-                    }
-                }
-
-                // Thông báo có comment mới
-                Toastify({
-                    text: "Có bình luận mới!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#4caf50",
-                }).showToast();
-            });
-
-            // Add this helper function for updating comment count
-            function updateCommentCount() {
-                const totalElement = document.querySelector('.text-muted');
-                if (totalElement) {
-                    const numbers = totalElement.textContent.match(/(\d+)/g);
-                    if (numbers && numbers.length >= 3) {
-                        const firstItem = parseInt(numbers[0]);
-                        const lastItem = parseInt(numbers[1]);
-                        const currentCount = parseInt(numbers[2]) - 1;
-                        totalElement.textContent =
-                            `Hiển thị ${firstItem} đến ${lastItem} của ${currentCount} bình luận`;
-                    }
-                }
-            }
-
         });
     </script>
 @endpush
+@push('styles')
+    <style>
+        .child-comment td {
+            background-color: #f8f9fa;
+        }
 
+        .reply-indicator {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .child-comment .comment-content {
+            position: relative;
+        }
+    </style>
+@endpush

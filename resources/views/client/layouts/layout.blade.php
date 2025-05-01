@@ -57,6 +57,7 @@
         .product-image:hover {
             transform: scale(1.05);
         }
+        
     </style>
 </head>
 

@@ -28,7 +28,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
+        $categories = $this->categoryService->getAllCategoriesForClient()->where('is_active', true)->where('status', 'approved');
         $sevenDaysAgo = Carbon::now()->subDays(30);
         $productBestSale = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)

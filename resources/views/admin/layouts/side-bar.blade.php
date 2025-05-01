@@ -222,19 +222,15 @@
             </li> -->
             <!-- Replace the existing comment menu item with this: -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.comments.index') }}">
+                <a class="nav-link" href="{{ route('admin.products.comments.list') }}">
                     <span class="nav-icon">
                         <iconify-icon icon="material-symbols:comment-outline" width="24"
                             height="24"></iconify-icon>
                     </span>
                     <span class="nav-text">
                         Bình Luận
-                        @php
-                            $commentCount = \App\Models\Comment::where('is_approved', 0)->count();
-                        @endphp
-
-                        @if ($commentCount > 0)
-                            <span class="badge bg-danger rounded-pill ms-2">{{ $commentCount }}</span>
+                        @if ($pendingCount > 0)
+                            <span class="badge bg-danger ms-2" id="pendingCommentCount">{{ $pendingCount }}</span>
                         @endif
                     </span>
                 </a>
@@ -260,19 +256,19 @@
         const channel = pusher.subscribe('comments');
 
         channel.bind('App\\Events\\CommentPosted', function(data) {
-            // Cập nhật badge số lượng bình luận
-            const badge = document.querySelector('.nav-text .badge');
+            // Thay đổi selector để chỉ định chính xác phần tử chứa badge bình luận
+            const commentNavText = document.querySelector(
+                'a[href="{{ route('admin.products.comments.list') }}"] .nav-text');
+            const badge = commentNavText.querySelector('.badge');
             const currentCount = badge ? parseInt(badge.textContent) + 1 : 1;
 
             if (badge) {
                 badge.textContent = currentCount;
             } else {
-                // Tạo badge mới nếu chưa có
-                const navText = document.querySelector('.nav-text');
                 const newBadge = document.createElement('span');
                 newBadge.className = 'badge bg-danger rounded-pill ms-2';
                 newBadge.textContent = currentCount;
-                navText.appendChild(newBadge);
+                commentNavText.appendChild(newBadge);
             }
         });
     });

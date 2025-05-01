@@ -910,6 +910,7 @@
         document.getElementById('commentForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const form = this;
             const formData = new FormData(this);
             const content = document.getElementById('question').value;
             const productId = formData.get('product_id');
@@ -939,6 +940,7 @@
                                 color: "white"
                             }
                         }).showToast();
+                        form.reset(); 
                     }
                 })
                 .catch(error => {
