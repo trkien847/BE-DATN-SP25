@@ -14,6 +14,7 @@ use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ReviewsController;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
@@ -24,7 +25,7 @@ use App\Models\Cart;
 use App\Models\ProductImportDetail;
 use App\Models\User;
 
-
+///admin/orders
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
@@ -54,7 +55,7 @@ Route::get('/Lien_he', function () {
   return view('client.home.Lien_he', compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics /admin/imports/confirm/
+// /orders/statistics /admin/profile
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -67,7 +68,11 @@ Route::get('/admin/products/{id}/productct', [ProductController::class, 'product
 
 Route::middleware(['auth'])->group(function () {
 
-  Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+  Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+  Route::post('/admin/comments', [CommentController::class, 'store'])->name('comments.store');
+
+  Route::get('/admin/reviews/list', [ReviewController::class, 'index'])->name('admin.reviews.index');
+  Route::post('/admin/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('admin.reviews.reply');
 
   Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
   Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
@@ -194,14 +199,15 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
 
-  // nhập /products/pending-update/
+  // nhập /products/pending-update/ cancel
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
   Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
   Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
   Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
-
+  
+  Route::post('/notifications/{id}/confirm', [NotificationController::class, 'confirm'])->name('notifications.confirm');
 
   Route::prefix('admin/imports')->name('imports.')->middleware(['auth'])->group(function () {
     Route::get('/show/{import}', [ProductController::class, 'showImport'])->name('show');
@@ -220,7 +226,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
   //lien he
 
-  // hủy đơn hàng
+  // hủy đơn hàng profile
   Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
   Route::post('/order/{orderId}/reject-cancel', [CartController::class, 'rejectCancel'])->name('order.rejectCancel');
   Route::post('/order/{orderId}/accept-cancel', [CartController::class, 'acceptCancel'])->name('order.acceptCancel');
@@ -265,7 +271,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
 
-  // Quản lý đơn hàng /products/
+  // Quản lý đơn hàng /checkout/
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');

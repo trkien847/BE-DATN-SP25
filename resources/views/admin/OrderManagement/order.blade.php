@@ -128,6 +128,35 @@
 #animatedText {
     white-space: nowrap;
 }
+
+.product-list {
+        padding: 0;
+        margin: 0;
+    }
+    .product-item {
+        display: flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    .product-item:hover {
+        background-color: #f1f3f5;
+        transform: translateX(5px);
+    }
+    .product-name {
+        color: #343a40;
+        font-size: 14px;
+        transition: color 0.3s ease;
+        display: inline-block;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .product-item:hover .product-name {
+        color: #007bff;
+    }
 </style>
 
 <div class="container">
@@ -197,6 +226,7 @@
                         <th scope="col">Mã đơn hàng</th>
                         <th scope="col">Tên khách hàng</th>
                         <th scope="col">Ngày mua</th>
+                        <th scope="col">Sản phẩm</th>
                         <th scope="col">Trạng thái</th>
                         <th scope="col">Tổng hóa đơn</th>
                         <th scope="col">Người xử lý</th>
@@ -210,6 +240,20 @@
                         <td>{{ $order->code }}</td>
                         <td>{{ $order->fullname }}</td>
                         <td>{{ $order->created_at }}</td>
+                        <td>
+                            <ul class="product-list list-unstyled">
+                                @foreach($order->items as $item)
+                                    <li class="product-item mb-1">
+                                        <span class="product-name" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            title="{{ $item->product->name }}">
+                                            {{ Str::limit($item->product->name, 30) }}
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </td>
                         <td class="status-cancelled">
                             <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
                                 @php
@@ -243,7 +287,7 @@
                 </tbody>
             </table>
         </div>
-        <!-- Add this pagination container -->
+       
         <div class="d-flex justify-content-between align-items-center mt-4">
             <div class="pagination-info">
                 Hiển thị <span id="showing">0-0</span> trong tổng số <span id="total">0</span> đơn hàng
@@ -299,9 +343,17 @@
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+     document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
 const modifiedBy = {{ $currentUserId ?? 'null' }};
 
 function attachStatusEvents() {

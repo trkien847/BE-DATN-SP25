@@ -9,12 +9,18 @@ class Reviews extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'product_id',
         'user_id',
-        'parent_id',
+        'product_id',
+        'order_id',
+        'rating',
         'review_text',
         'is_active',
+        'admin_reply',
+        'replied_at',
+        'is_auto'
     ];
+
+    protected $dates = ['created_at', 'updated_at', 'replied_at'];
 
     public function product()
     {

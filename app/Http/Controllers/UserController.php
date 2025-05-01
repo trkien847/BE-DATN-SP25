@@ -7,7 +7,9 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\OrderOrderStatus;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -19,11 +21,21 @@ class UserController extends Controller
     {
         return view('client.auth.login');
     }
+
     public function login(LoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
 
         if (auth()->attempt($credentials)) {
+            $user = auth()->user();
+            // Kiểm tra trạng thái banned
+            if ($user->status === 'banned' && $user->banned_until && now()->lt($user->banned_until)) {
+                $remaining = now()->diffInDays($user->banned_until);
+                auth()->logout();
+                return back()->withErrors([
+                    'error' => 'Tài khoản của bạn đã bị tạm khóa. Vui lòng thử lại sau ' . $remaining . ' ngày.'
+                ])->withInput();
+            }
             return redirect()->route('index');
         }
         return back()->withErrors(['email' => 'Tài khoản hoặc mật khẩu không chính xác.'])->withInput();
@@ -54,7 +66,7 @@ class UserController extends Controller
     public function showProfile()
     {
         $user = auth()->user();
-        $address = $user->address ? $user->address->address : null; 
+        $address = $user->address ? $user->address->address : null;
 
         $carts = Cart::where('user_id', $user->id)->get();
 
@@ -68,14 +80,24 @@ class UserController extends Controller
         $orders = Order::where('user_id', $user->id)
             ->with([
                 'latestOrderStatus',
+                'items.product' => function ($query) {
+                    $query->select('id', 'name', 'thumbnail'); 
+                },
                 'items.product.importProducts' => function ($query) {
                     $query->latest();
                 }
             ])
             ->latest()
             ->get();
+        $today = Carbon::today();
+        $cancelCountToday = OrderOrderStatus::whereHas('order', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+            ->whereIn('order_status_id', [5, 7])
+            ->whereDate('created_at', $today)
+            ->count();
 
-        return view('client.auth.profile', compact('carts', 'subtotal', 'user', 'address', 'orders'));
+        return view('client.auth.profile', compact('carts', 'subtotal', 'user', 'address', 'orders', 'cancelCountToday'));
     }
 
     public function updateProfile(ProfileUpdateRequest $request)

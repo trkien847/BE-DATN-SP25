@@ -375,6 +375,16 @@
                                             <a href="{{ $notification->data['actions']['view_details'] }}"
                                                 class="btn btn-sm btn-info">Xem chi tiết</a>
                                         </div>
+
+                                        @elseif($notification->type === 'expiry')
+                                        <div class="d-flex gap-2">
+                                                <form action="{{ route('notifications.confirm', $notification->id) }}" method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Xác nhận
+                                                    </button>
+                                                </form>
+                                        </div>
                                     @elseif($notification->type === 'product_pending_update')
                                         <div class="d-flex gap-2">
                                             <form action="{{ $notification->data['actions']['approve_request'] }}"
@@ -671,6 +681,15 @@
                                             </div>
                                         `;
 
+                                        case 'expiry':
+                                    return `
+                                        <form action="/notifications/${notification.id}/confirm" method="POST" style="display:inline;">
+                                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check me-1"></i>Xác nhận
+                                            </button>
+                                        </form>
+                                    `;
                                 case 'product_approval_response':
                                     return `
                                             <div class="d-flex gap-2">

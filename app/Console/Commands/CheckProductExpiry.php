@@ -46,20 +46,21 @@ class CheckProductExpiry extends Command
                     $productVariant->stock = max(0, $productVariant->stock - $variant->quantity);
                     $productVariant->save();
                 }
+                if ($variant->quantity > 0) {
+                    foreach ($admins as $admin) {
+                        Notification::create([
+                            'user_id' => $admin->id,
+                            'title' => 'Sản phẩm biến thể ngày nhập đã hết hạn',
+                            'content' => 'Đã xóa sản phẩm ' . $import->product_name . ' do hết hạn nhập kho.',
+                            'type' => 'expiry',
+                            'data' => json_encode(['import_product_id' => $import->id]),
+                            'is_read' => 0,
+                        ]);
+                    }
+                }
                 $variant->quantity = 0;
                 $variant->save();
             }
-
-            foreach ($admins as $admin) {
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'Sản phẩm biến thể ngày nhập đã hết hạn',
-                    'content' => 'Đã xóa sản phẩm ' . $import->product_name . ' do hết hạn nhập kho.',
-                    'type' => 'expiry',
-                    'data' => json_encode(['import_product_id' => $import->id]),
-                    'is_read' => 0,
-                ]);
-            }
         }
-    }
+    } 
 }

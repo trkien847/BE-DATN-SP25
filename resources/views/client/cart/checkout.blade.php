@@ -317,6 +317,17 @@
         .hidden-content {
             display: none;
         }
+
+        .address-field {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .address-field.visible {
+            display: block;
+            opacity: 1;
+        }
+        
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -356,10 +367,28 @@
                         <label for="phone">Số điện thoại</label>
                         <input type="text" name="phone" id="phone" class="form-control" value="{{ $user->phone_number ?? '' }}" required>
                     </div>
-                    <div class="form-group">
-                        <label for="address">Địa chỉ</label>
-                        <input type="text" name="address" id="address" class="form-control" value="{{ $userAddress ? $userAddress->address : '' }}" required>
+                    <div class="form-group mb-3">
+                    <label>Loại địa chỉ</label>
+                    <div class="address-types">
+                        <label>
+                            <input type="radio" name="address_type" value="home" {{ $userAddress && $userAddress->address_type === 'home' ? 'checked' : '' }}>
+                            <span>Nhà ở</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="address_type" value="company" {{ $userAddress && $userAddress->address_type === 'company' ? 'checked' : '' }}>
+                            <span>Công ty</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="address_type" value="lover" {{ $userAddress && $userAddress->address_type === 'lover' ? 'checked' : '' }}>
+                            <span>Nhà người yêu</span>
+                        </label>
                     </div>
+                </div>
+                <div class="form-group mb-3 address-field" id="address-field">
+                    <label for="address">Địa chỉ</label>
+                    <input type="text" name="address" id="address" class="form-control" value="{{ $userAddress ? $userAddress->address : '' }}" required>
+                </div>
+                   
                     <div class="form-group payment-method-group">
                         <label>Phương thức thanh toán</label>
                         <div class="payment-options">
@@ -379,8 +408,8 @@
                 </form>
             </div>
             </div>
-
-            <!-- Order Summary -->
+           
+          
             <div class="col-lg-6">
                 <h4>Thông tin đơn hàng</h4>
                 <div class="order-summary">
@@ -426,7 +455,63 @@
         </div>
         <div class="designed-by">Designed by TG</div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addressTypeRadios = document.querySelectorAll('input[name="address_type"]');
+            const addressInput = document.getElementById('address');
+            const addressField = document.getElementById('address-field');
+
+            if (!addressTypeRadios || !addressInput || !addressField) {
+                console.error('Không tìm thấy address_type, address hoặc address-field');
+                return;
+            }
+
+            const addresses = {
+                'home': 'Số 123 Đường Láng, Đống Đa, Hà Nội',
+                'company': '72 Lê Thánh Tôn, Quận 1, Hồ Chí Minh', 
+                'lover': '23 Lê Lợi, Phú Nhuận, Thừa Thiên Huế'
+            };
+
+            
+            function showAddressField() {
+                addressField.classList.add('visible');
+            }
+
+            
+            function hideAddressField() {
+                addressField.classList.remove('visible');
+            }
+
+            
+            addressTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    console.log('Selected value:', this.value);
+                    const selectedType = this.value;
+
+                    
+                    showAddressField();
+
+                   
+                    if (selectedType in addresses) {
+                        addressInput.value = addresses[selectedType];
+                    } else {
+                        addressInput.value = '';
+                    }
+                    console.log('New address value:', addressInput.value);
+                });
+            });
+
+            
+            const checkedRadio = document.querySelector('input[name="address_type"]:checked');
+            if (checkedRadio && checkedRadio.value in addresses) {
+                showAddressField();
+                addressInput.value = addresses[checkedRadio.value];
+            } else {
+                hideAddressField();
+            }
+        });
 
 
         document.getElementById('checkout-form').addEventListener('submit', function (event) {

@@ -90,18 +90,32 @@
                                                     <table class="order-table" id="order-table">
                                                         <thead>
                                                             <tr>
-                                                                <th>Mã đơn hàng</th>
-                                                                <th>Số lượng sản phẩm</th>
+                                                                <th>Sản phẩm</th>
+                                                                <th>Số lượng</th>
                                                                 <th>Tổng giá trị</th>
                                                                 <th>Trạng thái</th>
-                                                                <th>Tên sản phẩm</th>
+                                                                <th>Thanh toán</th>
                                                                 <th>Hành động</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody id="order-table-body">
                                                             @foreach($orders as $order)
                                                                 <tr class="order-row" style="display: none;">
-                                                                    <td>{{ $order->code }}</td>
+                                                                <td>
+                                                                    <div class="product-list">
+                                                                        @foreach($order->items as $item)
+                                                                            <div class="product-item d-flex align-items-center mb-2">
+                                                                                <img src="{{ asset('upload/'.$item->product->thumbnail) }}" 
+                                                                                    alt="{{ $item->product->name }}" 
+                                                                                    class="product-image me-2" 
+                                                                                    data-bs-toggle="tooltip" 
+                                                                                    data-bs-placement="top" 
+                                                                                    title="{{ $item->product->name }}">
+                                                                                <span class="product-name">{{ $item->product->name }}</span>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </td>
                                                                     <td>{{ $order->items->sum('quantity') }}</td>
                                                                     <td>{{ number_format($order->total_amount) }} VNĐ</td>
                                                                     <td>
@@ -113,16 +127,30 @@
                                                                         </span>
                                                                     </td>
                                                                     <td>
-                                                                    @foreach($order->items as $item)
-                                                                    {{ $item->name }}
-                                                                    @endforeach
+                                                                        @php
+                                                                            $paymentMethods = [
+                                                                                1 => ['name' => 'Tiền mặt', 'class' => 'bg-success'],
+                                                                                2 => ['name' => 'VNPAY', 'class' => 'bg-info']
+                                                                            ];
+                                                                            $payment = $paymentMethods[$order->payment_id] ?? ['name' => 'Không xác định', 'class' => 'bg-secondary'];
+                                                                        @endphp
+                                                                        <span class="badge {{ $payment['class'] }}">{{ $payment['name'] }}</span>
                                                                     </td>
                                                                     <td>
+                                                                    @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Đánh giá sản phẩm">
+                                                                            <i class="fas fa-comment"></i>
+                                                                        </a>
+                                                                    @else
                                                                         <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Xem chi tiết">
                                                                             <i class="fas fa-eye"></i>
                                                                         </a>
+                                                                    @endif
                                                                         @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
-                                                                            <a href="{{ route('order.cancel', $order->id) }}" class="action-icon" title="Hủy đơn hàng">
+                                                                            <a href="{{ route('order.cancel', $order->id) }}" 
+                                                                            class="action-icon cancel-order-link" 
+                                                                            data-cancel-count="{{ $cancelCountToday ?? 0 }}"
+                                                                            title="Hủy đơn hàng">
                                                                                 <i class="fas fa-times-circle"></i>
                                                                             </a>
                                                                         @endif
@@ -176,7 +204,7 @@
                                                                     @foreach($order->items as $item)
                                                                     <li>
                                                                         <strong><a href="{{ route('products.productct', $item->id) }}">Sản phẩm:</a></strong> {{ $item->name }} <br>
-                                                                        <strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }}
+                                                                        <strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }} 
                                                                         @if($item->attributes_variant)
                                                                         ({{ $item->attributes_variant }})
                                                                         @endif <br>
@@ -200,7 +228,22 @@
                                                                             </span>
                                                                         @else
                                                                             <strong>Ngày sản xuất:</strong> Không có <br>
-                                                                            <strong>Hạn sử dụng:</strong> Không có
+                                                                            <strong>Hạn sử dụng:</strong> Không có 
+                                                                        @endif
+                                                                        @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                            <div class="review-section mt-2">
+                                                                            <button class="btn btn-sm btn-primary" 
+                                                                                onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
+                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)  
+                                                                                    ->where('order_id', $order->id)
+                                                                                    ->where('user_id', auth()->id())
+                                                                                    ->exists() ? 'disabled' : '' }}>
+                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)  
+                                                                                    ->where('order_id', $order->id)
+                                                                                    ->where('user_id', auth()->id())
+                                                                                    ->exists() ? 'Đã đánh giá' : 'Đánh giá sản phẩm' }}
+                                                                            </button>
+                                                                            </div>
                                                                         @endif
                                                                     </li>
                                                                     @endforeach
@@ -221,44 +264,204 @@
                                                 </div>
                                             </div>
                                         </div>
-
+                                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                                         <script>
+                                             
+                                             document.addEventListener('DOMContentLoaded', function() {
+                                                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                                                var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                                                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                                                });
+                                            });
 
+                                        function showReviewForm(productId, orderId, productName) {
+                                            console.log('Debug values:', { productId, orderId, productName });
+                                            Swal.fire({
+                                                        title: `Đánh giá sản phẩm ${productName}`,
+                                                        html: `
+                                                            <div class="rating-stars mb-3">
+                                                                <span class="star" data-rating="1">★</span>
+                                                                <span class="star" data-rating="2">★</span>
+                                                                <span class="star" data-rating="3">★</span>
+                                                                <span class="star" data-rating="4">★</span>
+                                                                <span class="star" data-rating="5">★</span>
+                                                            </div>
+                                                            <input type="hidden" id="rating-value" value="5">
+                                                            <textarea id="swal-input-review" class="swal2-textarea" 
+                                                                    placeholder="Nhập nhận xét của bạn" rows="3"></textarea>
+                                                        `,
+                                                        showCancelButton: true,
+                                                        confirmButtonText: 'Gửi đánh giá',
+                                                        cancelButtonText: 'Hủy',
+                                                        didOpen: () => {
+                                                            
+                                                            const stars = Swal.getPopup().querySelectorAll('.star');
+                                                            const ratingInput = Swal.getPopup().querySelector('#rating-value');
+                                                            const reviewText = Swal.getPopup().querySelector('#swal-input-review');
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Hiển thị tất cả đơn hàng ban đầu
-    const orderRows = document.querySelectorAll('.order-row');
-    orderRows.forEach(row => {
-        row.style.display = 'table-row';
-    });
-    
-    // Xử lý sự kiện click cho các nút lọc
-    const statusFilters = document.querySelectorAll('.status-filter');
-    statusFilters.forEach(filter => {
-        filter.addEventListener('click', function() {
-            // Xóa trạng thái active từ tất cả các bộ lọc
-            statusFilters.forEach(f => f.classList.remove('active'));
-            
-            // Đặt trạng thái active cho bộ lọc được chọn
-            this.classList.add('active');
-            
-            // Lấy trạng thái cần lọc
-            const statusToFilter = this.getAttribute('data-status');
-            
-            // Lọc các đơn hàng
-            orderRows.forEach(row => {
-                const statusCell = row.querySelector('td:nth-child(4) span');
-                const statusText = statusCell.textContent.trim();
-                
-                if (statusToFilter === 'all') {
-                    row.style.display = 'table-row';
-                } else {
-                    row.style.display = statusText === statusToFilter ? 'table-row' : 'none';
-                }
-            });
-        });
-    });
-});
+                                                            
+                                                            const initialRating = parseInt(ratingInput.value);
+                                                            for (let i = 0; i < initialRating; i++) {
+                                                                stars[i].classList.add('active');
+                                                            }
+
+                                                            
+                                                            stars.forEach(star => {
+                                                                star.addEventListener('click', function() {
+                                                                    const rating = parseInt(this.getAttribute('data-rating'));
+                                                                    ratingInput.value = rating;
+
+                                                                    stars.forEach(s => s.classList.remove('active'));
+                                                                    for (let i = 0; i < rating; i++) {
+                                                                        stars[i].classList.add('active');
+                                                                    }
+                                                                });
+
+                                                                star.addEventListener('mouseover', function() {
+                                                                    const rating = parseInt(this.getAttribute('data-rating'));
+                                                                    for (let i = 0; i < rating; i++) {
+                                                                        stars[i].style.color = '#f1c40f';
+                                                                    }
+                                                                });
+
+                                                                star.addEventListener('mouseout', function() {
+                                                                    stars.forEach(s => {
+                                                                        if (!s.classList.contains('active')) {
+                                                                            s.style.color = '#ccc';
+                                                                        }
+                                                                    });
+                                                                });
+                                                            });
+
+                                                            
+                                                            reviewText.addEventListener('input', function() {
+                                                                if (this.value.trim() !== '') {
+                                                                    this.style.borderColor = '#28a745';
+                                                                } else {
+                                                                    this.style.borderColor = '#ccc';
+                                                                }
+                                                            });
+                                                        },
+                                                        preConfirm: () => {
+                                                            const rating = document.getElementById('rating-value').value;
+                                                            const reviewText = document.getElementById('swal-input-review').value;
+                                                            
+                                                            if (!reviewText.trim()) {
+                                                                Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
+                                                                return false;
+                                                            }
+
+                                                            console.log('Sending data:', {  
+                                                                product_id: productId,
+                                                                order_id: orderId,
+                                                                rating: rating,
+                                                                review_text: reviewText
+                                                            });
+
+                                                            return fetch('/reviews', {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                                                },
+                                                                body: JSON.stringify({
+                                                                    product_id: productId,
+                                                                    order_id: orderId,
+                                                                    rating: rating,
+                                                                    review_text: reviewText
+                                                                })
+                                                            })
+                                                            .then(response => response.json())
+                                                            .then(data => {
+                                                                if (!data.success) {
+                                                                    throw new Error(data.message || 'Có lỗi xảy ra');
+                                                                }
+                                                                return data;
+                                                            });
+                                                        }
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            Swal.fire('Thành công!', 'Đánh giá của bạn đã được gửi', 'success');
+                                                            const reviewButton = document.querySelector(`button[onclick="showReviewForm('${productId}', '${orderId}', '${productName}')"]`);
+                                                            if (reviewButton) {
+                                                                reviewButton.disabled = true;
+                                                                reviewButton.textContent = 'Đã đánh giá';
+                                                            }
+                                                        }
+                                                    });
+                                                }   
+
+                                            document.addEventListener('DOMContentLoaded', function() {
+
+                                                document.querySelectorAll('.cancel-order-link').forEach(function(link) {
+                                                link.addEventListener('click', function(e) {
+                                                    e.preventDefault(); 
+                                                    const cancelCount = parseInt(this.getAttribute('data-cancel-count'), 10);
+                                                    
+                                                    if (cancelCount >= 2) {
+                                                        const message = `Hôm nay bạn đã hủy <strong>${cancelCount} đơn hàng</strong>.`;
+                                                        const confirmText = "Xác nhận hủy";
+                                                        const warning = cancelCount >= 3 
+                                                            ? '<span class="warning-text">CẢNH BÁO: Hủy quá 3 đơn/ngày sẽ khóa tài khoản 3 ngày!</span>'
+                                                            : '';
+
+                                                        Swal.fire({
+                                                            title: cancelCount >= 3 ? 'CẢNH BÁO HỦY ĐƠN!' : 'Xác nhận hủy đơn',
+                                                            html: `${message}<br>${warning}<br>${cancelCount >= 3 ? '<strong>Bạn có chắc chắn muốn tiếp tục?</strong>' : 'Bạn có chắc chắn muốn hủy đơn này?'}`,
+                                                            icon: cancelCount >= 3 ? 'warning' : 'question',
+                                                            iconColor: cancelCount >= 3 ? '#ff3333' : '#3085d6',
+                                                            showCancelButton: true,
+                                                            confirmButtonText: confirmText,
+                                                            cancelButtonText: 'Hủy bỏ',
+                                                            buttonsStyling: false,
+                                                            customClass: {
+                                                                confirmButton: 'swal2-confirm-button',
+                                                                cancelButton: 'swal2-cancel-button'
+                                                            },
+                                                            animation: true,
+                                                            allowOutsideClick: false
+                                                        }).then((result) => {
+                                                            if (result.isConfirmed) {
+                                                                window.location.href = this.getAttribute('href');
+                                                            }
+                                                        });
+                                                    } else {
+                                                        window.location.href = this.getAttribute('href');
+                                                    }
+                                                });
+                                            });
+                                                
+                                                const orderRows = document.querySelectorAll('.order-row');
+                                                orderRows.forEach(row => {
+                                                    row.style.display = 'table-row';
+                                                });
+                                                
+                                                const statusFilters = document.querySelectorAll('.status-filter');
+                                                statusFilters.forEach(filter => {
+                                                    filter.addEventListener('click', function() {
+                                                       
+                                                        statusFilters.forEach(f => f.classList.remove('active'));
+                                                    
+                                                        this.classList.add('active');
+                                                        
+                                                       
+                                                        const statusToFilter = this.getAttribute('data-status');
+                                                        
+                                                       
+                                                        orderRows.forEach(row => {
+                                                            const statusCell = row.querySelector('td:nth-child(4) span');
+                                                            const statusText = statusCell.textContent.trim();
+                                                            
+                                                            if (statusToFilter === 'all') {
+                                                                row.style.display = 'table-row';
+                                                            } else {
+                                                                row.style.display = statusText === statusToFilter ? 'table-row' : 'none';
+                                                            }
+                                                        });
+                                                    });
+                                                });
+                                            });
 
                                             function showModal(modalId) {
                                                 const modal = document.getElementById(modalId);
@@ -1141,6 +1344,103 @@ document.addEventListener('DOMContentLoaded', function() {
         .status-filters {
             flex-direction: column;
         }
+    }
+
+    .swal2-confirm-button {
+        background-color: #d33;
+        color: white;
+        border-radius: 5px;
+        padding: 10px 20px;
+    }
+    .swal2-cancel-button {
+        background-color: #3085d6;
+        color: white;
+        border-radius: 5px;
+        padding: 10px 20px;
+    }
+    .rating-stars {
+        font-size: 24px;
+    }
+
+    .rating-stars .star {
+        cursor: pointer;
+        color: #ddd;
+    }
+
+    .rating-stars .star.active {
+        color: #ffd700;
+    }
+
+    .rating-stars {
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .star {
+            font-size: 30px;
+            color: #ccc;
+            transition: transform 0.2s ease, color 0.3s ease;
+        }
+        .star:hover {
+            transform: scale(1.2);
+        }
+        .star.active {
+            color: #f1c40f;
+        }
+        .swal2-popup {
+            width: 700px !important; /* Tăng chiều rộng để chứa nội dung */
+            overflow-x: hidden !important;
+            max-width: 90vw; /* Giới hạn tối đa để không vượt màn hình nhỏ */
+            border-radius: 10px;
+        }
+        .swal2-textarea {
+            width: 500px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            resize: none;
+        }
+        .swal2-textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
+        }
+        .swal2-textarea:not(:placeholder-shown) {
+            border-color: #28a745;
+        }
+
+        .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .product-item {
+        transition: all 0.3s ease;
+    }
+    .product-item:hover {
+        background-color: #f1f3f5;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .product-image {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        transition: transform 0.3s ease;
+    }
+    .product-item:hover .product-image {
+        transform: scale(1.1);
+    }
+    .product-name {
+        color: #343a40;
+        transition: color 0.3s ease;
+    }
+    .product-item:hover .product-name {
+        color: #007bff;
     }
     </style>
 @endpush
