@@ -157,6 +157,11 @@
     .product-item:hover .product-name {
         color: #007bff;
     }
+    .no-wrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
 
 <div class="container">
@@ -224,7 +229,7 @@
                     <tr>
                         <th scope="col" class="checkbox-column" style="display: none;"><input type="checkbox" id="selectAll"></th>
                         <th scope="col">Mã đơn hàng</th>
-                        <th scope="col">Tên khách hàng</th>
+                        <th scope="col">khách hàng</th>
                         <th scope="col">Ngày mua</th>
                         <th scope="col">Sản phẩm</th>
                         <th scope="col">Trạng thái</th>
@@ -312,18 +317,18 @@
                     <div class="col-md-8">
                         <h6>Danh sách sản phẩm</h6>
                         <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Tên</th>
-                                    <th>Biến thể</th>
-                                    <th>Số lượng</th>
-                                    <th>Giá</th>
-                                    <th>HSD</th>
-                                    <th>Mã lô</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orderItems"></tbody>
-                        </table>
+                <thead>
+                    <tr>
+                        <th class="no-wrap">Tên</th>
+                        <th class="no-wrap">Biến thể</th>
+                        <th class="no-wrap" style="width: 60px">Số lượng</th>
+                        <th class="no-wrap">Giá</th>
+                        <th class="no-wrap">HSD</th>
+                        <th class="no-wrap">Mã lô</th>
+                    </tr>
+                </thead>
+                <tbody id="orderItems"></tbody>
+                </table>
                         <p><strong>Tổng đơn hàng:</strong> <span id="totalAmount"></span></p>
                         <p><strong>Mã giảm giá:</strong> <span id="couponCode"></span></p>
                     </div>
