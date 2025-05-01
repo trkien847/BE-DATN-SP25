@@ -182,7 +182,7 @@
                                                         <div class="modal-content">
                                                             <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">×</button>
                                                             <div class="order-details">
-                                                                <h3>Chi tiết đơn hàng {{ $order->code }} ( Designed by TG )</h3>
+                                                                <h3>Chi tiết đơn hàng {{ $order->code }}</h3>
                                                                 <p><strong>Ngày mua:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
                                                                 <p><strong>Trạng thái:</strong> {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</p>
                                                                 <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
@@ -1116,10 +1116,13 @@
     }
     .order-table th,
     .order-table td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #e0e0e0;
-    }
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap; /* Ngăn không cho xuống dòng */
+    vertical-align: middle; /* Căn giữa theo chiều dọc cho đẹp */
+}
+
 
     .order-table th {
         background-color:rgb(0, 157, 115);
@@ -1312,12 +1315,14 @@
 }
 
 .filter-container {
-        margin-bottom: 20px;
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+    margin-bottom: 50px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
     .status-filters {
         display: flex;
         flex-wrap: wrap;
@@ -1436,9 +1441,12 @@
         transform: scale(1.1);
     }
     .product-name {
-        color: #343a40;
-        transition: color 0.3s ease;
-    }
+    display: inline-block;
+    max-width: 180px; /* Có thể điều chỉnh để phù hợp */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
     .product-item:hover .product-name {
         color: #007bff;
     }

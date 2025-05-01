@@ -238,7 +238,7 @@
                                             </td>
                                             <td class="cart-product-info">
                                                 <h4><a
-                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name, 10, '...') }}</a>
+                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name) }}</a>
                                                 </h4>
                                                 <p class="text-sm text-gray-500">{{ $variantName }}</p>
                                             </td>
@@ -341,7 +341,7 @@
     </div>
     <div id="coupon-overlay" class="coupon-overlay" style="display: none;">
         <div class="coupon-content">
-            <h3>Danh sách mã giảm giá ( Designed by TG )</h3>
+            <h3>Danh sách mã giảm giá</h3>
             <div id="coupon-list">
 
             </div>
@@ -372,7 +372,7 @@
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Đang tiến hành lên đơn</div>
-        <div class="designed-by">Designed by TG</div>
+        <div class="designed-by">BeePhamarcy</div>
     </div>
 @endsection
 @push('js')

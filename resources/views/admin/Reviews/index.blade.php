@@ -56,7 +56,7 @@
                                     @if($review->admin_reply)
                                         <p class="mb-1">{{ $review->admin_reply }}</p>
                                         <small class="text-muted">
-                                            {{ $review->replied_at->format('d/m/Y H:i:s') }}
+                                            {{ $review->replied_at }}
                                             @if($review->is_auto)
                                                 <span class="badge badge-info">Tự động</span>
                                             @endif

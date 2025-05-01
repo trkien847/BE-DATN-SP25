@@ -453,7 +453,7 @@
                 <div class="loading-dot"></div>
             </div>
         </div>
-        <div class="designed-by">Designed by TG</div>
+        <div class="designed-by">BeePhamarcy</div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
