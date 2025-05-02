@@ -754,77 +754,12 @@ class ProductController extends Controller
             DB::commit();
 
 
-            if (!empty($data['variants'])) {
-                foreach ($data['variants'] as $attributeId => $valueIds) {
-                    foreach ($valueIds as $valueId) {
-                        $variant = ProductVariant::create(['product_id' => $product->id]);
-                        AttributeValueProductVariant::create([
-                            'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $valueId,
-                        ]);
-                        AttributeValueProduct::create([
-                            'product_id' => $product->id,
-                            'attribute_value_id' => $valueId,
-                        ]);
-                    }
-                }
-            }
-        } else { // update...
-            $product = Product::findOrFail($pendingUpdate->product_id);
-            $product->brand_id = $data['brand_id'];
-            $product->name = $data['name'];
-            $product->content = $data['content'];
-            $product->sku = $data['sku'];   
-            $product->price = $data['price'];
-            $product->sell_price = $data['sell_price'];
-            $product->sale_price = $data['sale_price'];
-            if ($data['thumbnail']) {
-                if ($product->thumbnail && File::exists(public_path('upload/' . $product->thumbnail))) {
-                    File::delete(public_path('upload/' . $product->thumbnail));
-                }
-                $product->thumbnail = $data['thumbnail'];
-            }
-            $product->is_active = 1;
-            $product->save();
-
-            CategoryProduct::where('product_id', $product->id)->update(['category_id' => $data['category_id']]);
-            CategoryTypeProduct::where('product_id', $product->id)->update(['category_type_id' => $data['category_type_id']]);
-
-            if (!empty($data['images'])) {
-                ProductGalleries::where('product_id', $product->id)->delete();
-                foreach ($data['images'] as $imageName) {
-                    ProductGalleries::create([
-                        'product_id' => $product->id,
-                        'image' => $imageName,
-                    ]);
-                }
-            }
-
-            if (!empty($data['variants'])) {
-                $variantIds = [];
-                foreach ($data['variants'] as $attributeId => $valueIds) {
-                    foreach ($valueIds as $valueId) {
-                        $variant = ProductVariant::where('product_id', $product->id)
-                            ->whereHas('attributeValues', function ($query) use ($valueId) {
-                                $query->where('attribute_value_id', $valueId);
-                            })->first();
-
-                        if (!$variant) {
-                            $variant = ProductVariant::create(['product_id' => $product->id]);
-                            AttributeValueProductVariant::create([
-                                'product_variant_id' => $variant->id,
-                                'attribute_value_id' => $valueId,
-                            ]);
-                            AttributeValueProduct::create([
-                                'product_id' => $product->id,
-                                'attribute_value_id' => $valueId,
-                            ]);
-                        }
-                        $variantIds[] = $variant->id;
-                    }
-                }
-                ProductVariant::where('product_id', $product->id)->whereNotIn('id', $variantIds)->delete();
-            }
+            return redirect()->route('notifications.index')
+                ->with('success', 'Đã duyệt thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 
