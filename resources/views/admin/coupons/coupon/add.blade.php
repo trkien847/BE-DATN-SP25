@@ -113,7 +113,7 @@
                                     <div class="mb-3">
                                         <label for="min_order_value" class="form-label">Số tiền tối thiểu để áp
                                             dụng</label>
-                                        <input type="number" id="min_order_value" name="min_order_value"
+                                        <input type="text" id="min_order_value" name="min_order_value"
                                             class="form-control" step="0.01" placeholder="Nhập số tiền tối thiểu">
                                     </div>
                                 </div>
@@ -123,7 +123,7 @@
 
                                     <div class="mb-3">
                                         <label for="max_discount_value" class="form-label">Số tiền tối đa giảm</label>
-                                        <input type="number" id="max_discount_value" name="max_discount_value"
+                                        <input type="text" id="max_discount_value" name="max_discount_value"
                                             class="form-control" step="0.01" placeholder="Nhập số tiền tối đa">
                                     </div>
                                 </div>

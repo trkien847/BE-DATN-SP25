@@ -17,9 +17,17 @@ class CheckAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth()->check()) {
-            return redirect()->route('login');
+        if (!Auth::check()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Vui lòng đăng nhập để tiếp tục'
+                ], 401);
+            }
+
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục');
         }
-        return $next($request);
+
+        return $next($request); 
     }
 }

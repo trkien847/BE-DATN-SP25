@@ -38,7 +38,7 @@
             <div class="row">
                 <div class="col-lg-6 offset-lg-3">
                     <div class="account-login-inner">
-                        <form action="{{route('register.submit')}}" class="ltn__form-box contact-form-box" method="POST">
+                        <form action="{{ route('register.submit') }}" class="ltn__form-box contact-form-box" method="POST">
                             @csrf
                             <input type="text" name="firstname" placeholder="Tên">
                             @error('firstname')
@@ -60,6 +60,51 @@
                             @error('password_confirmation')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
+                            <div class="terms-conditions mb-4">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" id="agreeTerms" name="agree_terms"
+                                        >
+                                    <label class="form-check-label" for="agreeTerms">
+                                        Tôi đã đọc và đồng ý với điều khoản sử dụng và chính sách bảo mật
+                                    </label>
+                                    @error('agree_terms')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" id="agreeMedical" name="agree_medical"
+                                        >
+                                    <label class="form-check-label" for="agreeMedical">
+                                        Tôi xác nhận đã hiểu rõ các quy định về mua bán thuốc kê đơn và cam kết tuân thủ
+                                    </label>
+                                    @error('agree_medical')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" id="agreeAge" name="agree_age"
+                                        >
+                                    <label class="form-check-label" for="agreeAge">
+                                        Tôi xác nhận đủ 18 tuổi và có đầy đủ năng lực hành vi dân sự
+                                    </label>
+                                    @error('agree_age')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" id="agreeInfo" name="agree_info"
+                                        >
+                                    <label class="form-check-label" for="agreeInfo">
+                                        Tôi đồng ý cung cấp thông tin cá nhân chính xác để mua thuốc kê đơn
+                                    </label>
+                                    @error('agree_info')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
                             <div class="btn-wrapper">
                                 <button class="theme-btn-1 btn reverse-color btn-block" type="submit">
                                     ĐĂNG KÝ TÀI KHOẢN
@@ -85,7 +130,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
+                    <div
+                        class="call-to-action-inner call-to-action-inner-6 ltn__secondary-bg position-relative text-center---">
                         <div class="coll-to-info text-color-white">
                             <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ những người thân yêu của bạn</h1>
                         </div>
@@ -101,3 +147,32 @@
     </div>
     <!-- CALL TO ACTION END -->
 @endsection
+@push('css')
+    <style>
+        .terms-conditions {
+            text-align: left;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .form-check {
+            padding-left: 30px;
+        }
+
+        .form-check-input {
+            margin-left: -25px;
+        }
+
+        .form-check-label {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .text-danger {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+@endpush

@@ -1,16 +1,16 @@
 @extends('client.layouts.layout')
 @section('content')
-<div> 
-            <audio id="backgroundMusic" autoplay>
-                <source src="{{ asset('audio/wake-up.mp3') }}" type="audio/mpeg">
-            </audio>
+    <div>
+        <audio id="backgroundMusic" autoplay>
+            <source src="{{ asset('audio/wake-up.mp3') }}" type="audio/mpeg">
+        </audio>
 
-            <script>
+        <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const audio = document.getElementById('backgroundMusic');
                 audio.volume = 1;
                 let playPromise = audio.play();
-                
+
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
                         console.log("Autoplay was prevented");
@@ -22,106 +22,37 @@
                     }
                 });
             });
-            </script>
+        </script>
     </div>
-<style>
-    .cart-coupon {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+    <style>
+        .cart-coupon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.coupon-btn {
+        .coupon-btn {
     position: relative;
     padding: 10px 20px;
     border: 2px solid #22C55E;
-    background: #FFFFFF;
+    background-color: #fff;
     color: #22C55E;
-    font-weight: 500;
+    font-weight: 700;
     font-size: 14px;
+    border-radius: 8px;
     transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.coupon-btn {
-    border-radius: 0; 
-    aspect-ratio: 3 / 1; 
-}
-
-.coupon-btn:disabled {
-    border-color: #D1D5DB; 
-    color: #9CA3AF; 
-    cursor: not-allowed;
-    background: #F3F4F6;
-}
-
-
-.coupon-btn::before,
-.coupon-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    transition: width 0.3s ease;
-    z-index: 0;
-}
-
-.coupon-btn::before {
-    left: 0;
-    background: #22C55E; 
-}
-
-.coupon-btn::after {
-    right: 0;
-    background: #A855F7; 
+    cursor: pointer;
+    box-shadow: 0 0 0 transparent;
 }
 
 .coupon-btn:hover:not(:disabled),
-.coupon-btn:active:not(:disabled) {
-    color: #FFFFFF; 
+.coupon-btn:focus-visible:not(:disabled) {
+    background-color: #22C55E;
+    color: #22C55E;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transform: translateY(-2px);
 }
-
-.coupon-btn:hover:not(:disabled)::before,
-.coupon-btn:active:not(:disabled)::before,
-.coupon-btn:hover:not(:disabled)::after,
-.coupon-btn:active:not(:disabled)::after {
-    width: 50%; 
-}
-
-
-.coupon-btn .btn-text,
-.coupon-btn .btn-w {
-    position: relative;
-    z-index: 1; 
-    transition: opacity 0.3s ease;
-}
-
-.coupon-btn .btn-text {
-    opacity: 1;
-}
-
-.coupon-btn .btn-w {
-    opacity: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.coupon-btn:hover:not(:disabled) .btn-text,
-.coupon-btn:active:not(:disabled) .btn-text {
-    opacity: 0;
-}
-
-.coupon-btn:hover:not(:disabled) .btn-w,
-.coupon-btn:active:not(:disabled) .btn-w {
-    opacity: 1;
-}
-
-.loading-overlay {
+        .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -146,8 +77,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .loading-text {
@@ -165,7 +101,7 @@
         .hidden-content {
             display: none;
         }
-</style>
+    </style>
     <div class="ltn__utilize-overlay"></div>
 
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image " data-bs-bg="img/bg/14.jpg">
@@ -206,6 +142,20 @@
                                 </thead>
                                 <tbody id="cart-items">
                                     @foreach ($carts as $cart)
+                                        @php
+                                            $variant = $cart->productVariant;
+                                            $shapeValue = $variant?->attributeValues->firstWhere('attribute_id', 12);
+                                            $weightValue = $variant?->attributeValues->firstWhere('attribute_id', 14);
+                                            $variantName = '';
+
+                                            if ($shapeValue && $weightValue) {
+                                                $variantName = "{$shapeValue->value} {$weightValue->value}";
+                                            } elseif ($variant) {
+                                                $variantName = $variant->attributeValues
+                                                    ->map(fn($av) => "{$av->attribute->name}: {$av->value}")
+                                                    ->join(', ');
+                                            }
+                                        @endphp
                                         <tr data-cart-id="{{ $cart->id }}" data-product-id="{{ $cart->product->id }}">
                                             <td><input type="checkbox" class="cart-item-checkbox"
                                                     data-cart-id="{{ $cart->id }}"
@@ -219,13 +169,14 @@
                                             </td>
                                             <td class="cart-product-info">
                                                 <h4><a
-                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name, 10, '...') }}</a>
+                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name) }}</a>
                                                 </h4>
+                                                <p class="text-sm text-gray-500">{{ $variantName }}</p>
                                             </td>
                                             <td class="cart-product-price">
                                                 {{ number_format($cart->productVariant->sale_price) }}
                                             </td>
-                                            
+
                                             <td class="cart-product-quantity">
                                                 <div class="cart-plus-minus">
                                                     <input type="text" value="{{ $cart->quantity }}"
@@ -241,48 +192,20 @@
                                                 {{ $cart->productVariant->id }}
                                             </td>
 
-                                            <td class="cart-product-attributes-name" style="display: none;">
-                                                @php
-                                                    $shapeValue = $cart->productVariant->attributeValues->firstWhere('attribute_id', 12);
-                                                    $weightValue = $cart->productVariant->attributeValues->firstWhere('attribute_id', 14);
-                                                    $variantName = $shapeValue && $weightValue 
-                                                        ? "{$shapeValue->value} {$weightValue->value}"
-                                                        : $cart->productVariant->attributeValues->map(fn($av) => "{$av->attribute->name}: {$av->value}")->join(', ');
-                                                @endphp
-                                                {{ $variantName }}
-                                            </td>
-
-                                            <td class="cart-product-attributes-value" style="display: none;">
-                                                @foreach ($cart->productVariant->attributeValues as $attrValue)
-                                                    {{ $attrValue->attribute->slug }}: {{ $attrValue->value }}
-                                                @endforeach
-                                            </td>
 
                                         </tr>
                                     @endforeach
-                                    <tr class="cart-summary-row">
-                                        <td colspan="4" class="text-end cart-summary-text">Tổng tiền của tất cả sản phẩm:
-                                        </td>
-                                        <td colspan="3" class="cart-summary-amount">
-                                            {{ number_format(
-                                                $carts->sum(function ($cart) {
-                                                    return ($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0
-                                                        ? $cart->productVariant->sale_price
-                                                        : $cart->productVariant->sell_price) * $cart->quantity;
-                                                }),
-                                            ) }}đ
-                                        </td>
-                                    </tr>
                                     <tr class="cart-coupon-row">
                                         <td colspan="6">
                                             <div class="cart-coupon flex items-center gap-3">
                                                 <input type="text" name="cart-coupon" placeholder="Coupon code"
-                                                    id="coupon-code" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                    id="coupon-code"
+                                                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                                                     {{ $appliedCoupon ? 'disabled' : '' }}>
-                                                <button type="button" class="btn btn-effect-2 coupon-btn"
-                                                    id="apply-coupon" {{ $appliedCoupon ? 'disabled' : '' }}>
+                                                <button type="button" class="btn btn-effect-2 coupon-btn" id="apply-coupon"
+                                                    {{ $appliedCoupon ? 'disabled' : '' }}>
                                                     <span class="btn-text">Sử dụng mã giảm giá</span>
-                                                    <span class="btn-w hidden">W</span>
+                                                    
                                                 </button>
                                                 @if ($appliedCoupon)
                                                     <small id="applied-coupon-text">Đã áp dụng:
@@ -292,10 +215,9 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-effect-2 coupon-btn"
-                                                id="show-coupons">
+                                            <button type="button" class="btn btn-effect-2 coupon-btn" id="show-coupons">
                                                 <span class="btn-text">Lấy mã giảm giá</span>
-                                                <span class="btn-w hidden">W</span>
+                                               
                                             </button>
                                         </td>
                                     </tr>
@@ -303,12 +225,12 @@
                             </table>
                         </div>
                         <script>
-                        document.querySelectorAll('.coupon-btn').forEach(button => {
-                            button.addEventListener('click', () => {
-                                if (button.disabled) return;
-                                console.log(`${button.id} clicked`);
+                            document.querySelectorAll('.coupon-btn').forEach(button => {
+                                button.addEventListener('click', () => {
+                                    if (button.disabled) return;
+                                    console.log(`${button.id} clicked`);
+                                });
                             });
-                        });
                         </script>
                         <div class="shoping-cart-total mt-50">
                             <h4>Thông tin đơn hàng:</h4>
@@ -350,7 +272,7 @@
     </div>
     <div id="coupon-overlay" class="coupon-overlay" style="display: none;">
         <div class="coupon-content">
-            <h3>Danh sách mã giảm giá ( Designed by TG )</h3>
+            <h3>Danh sách mã giảm giá</h3>
             <div id="coupon-list">
 
             </div>
@@ -381,14 +303,12 @@
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Đang tiến hành lên đơn</div>
-        <div class="designed-by">Designed by TG</div>
+        <div class="designed-by">BeePhamarcy</div>
     </div>
 @endsection
 @push('js')
     <script>
-
-
-        document.getElementById('checkout-form').addEventListener('submit', function (event) {
+        document.getElementById('checkout-form').addEventListener('submit', function(event) {
             event.preventDefault();
             document.getElementById('page-content').classList.add('hidden-content');
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -534,7 +454,8 @@
                                     /[,.đ]/g, '')) || 0;
                                 totalAmount += amount;
                             });
-                            $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + 'đ')
+                            $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN')
+                                    .format(totalAmount) + 'đ')
                                 .addClass('updating');
                             $('sup').text(response.cart_count);
                             setTimeout(() => {
@@ -1117,6 +1038,7 @@
             color: #2c3e50;
             font-weight: 600;
             text-transform: uppercase;
+            text-align: left !important;
         }
 
         .cart-summary-amount {
@@ -1269,10 +1191,10 @@
         }
 
         /* Căn chỉnh từng cột */
-        .shopping-cart-main-table .cart-product-remove,
+        .shopping-cart-main-table th.cart-product-remove,
         .shopping-cart-main-table td.cart-product-remove {
             text-align: center;
-            width: 50px;
+            width: 50px !important;
         }
 
         .shopping-cart-main-table .cart-product-image,
@@ -1281,14 +1203,14 @@
             width: 100px;
         }
 
-        .shopping-cart-main-table .cart-product-info,
+        .shopping-cart-main-table th.cart-product-info,
         .shopping-cart-main-table td.cart-product-info {
-            text-align: left;
+            text-align: left !important;
         }
 
-        .shopping-cart-main-table .cart-product-price,
+        .shopping-cart-main-table th.cart-product-price,
         .shopping-cart-main-table td.cart-product-price {
-            text-align: right;
+            text-align: right !important;
             width: 150px;
         }
 
@@ -1300,7 +1222,7 @@
 
         .shopping-cart-main-table .cart-product-subtotal,
         .shopping-cart-main-table td.cart-product-subtotal {
-            text-align: right;
+            text-align: right !important;
             width: 150px;
         }
 
@@ -1324,22 +1246,68 @@
 
         /* Căn chỉnh tổng tiền */
         .shopping-cart-main-table .cart-summary-row td:first-child {
-            text-align: right;
+            text-align: left;
         }
 
         .shopping-cart-main-table .cart-summary-row td:last-child {
-            text-align: right;
+            text-align: left;
             font-weight: bold;
         }
 
         /* Căn chỉnh tổng tiền */
         .shopping-cart-main-table .cart-summary-row td:first-child {
-            text-align: right;
+            text-align: left;
         }
 
         .shopping-cart-main-table .cart-summary-row td:last-child {
             text-align: right;
             font-weight: bold;
+        }
+
+        .shopping-cart-main-table td {
+            vertical-align: middle !important;
+            text-align: center;
+        }
+
+        .shopping-cart-main-table td.cart-product-info {
+            text-align: left;
+            /* Giữ text-align left cho cột thông tin sản phẩm */
+        }
+
+        .shopping-cart-main-table td.cart-product-price,
+        .shopping-cart-main-table td.cart-product-subtotal {
+            text-align: rt;
+            /* Giữ text-align right cho cột giá */
+        }
+
+        .shopping-cart-main-table td h4 {
+            margin-bottom: 5px;
+        }
+
+        .shopping-cart-main-table td p {
+            margin-bottom: 0;
+        }
+
+        .cart-product-info a {
+            display: block;
+            text-align: left;
+        }
+
+        .shopping-cart-main-table thead th {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
+
+        .shopping-cart-main-table .cart-product-subtotal {
+            width: 150px;
+            text-align: right;
+        }
+        .shopping-cart-main-table .cart-product-quantity {
+            width: 170px;
+            text-align: center;
         }
     </style>
 @endpush

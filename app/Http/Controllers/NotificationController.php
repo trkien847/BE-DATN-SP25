@@ -82,6 +82,15 @@ class NotificationController extends Controller
         return view('admin.notifications.index', compact('notifications'));
     }
 
+    public function confirm($id)
+    {
+        $notification = Notification::findOrFail($id);
+        $notification->is_read = 1;
+        $notification->save();
+
+        return back()->with('success', 'Đã xác nhận thông báo!');
+    }
+
     public function getNotifications()
     {
         $notifications = Notification::userOrSystem(Auth::id())

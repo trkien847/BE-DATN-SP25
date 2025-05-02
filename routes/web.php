@@ -6,6 +6,7 @@ use App\Http\Controllers\AiTgCtroller;
 use App\Http\Controllers\Brands\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Coupons\CoupoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ReviewsController;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
@@ -23,7 +25,7 @@ use App\Models\Cart;
 use App\Models\ProductImportDetail;
 use App\Models\User;
 
-
+///admin/orders
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');
@@ -50,10 +52,10 @@ Route::get('/Lien_he', function () {
       : $cart->productVariant->price;
     return $cart->quantity * $price;
   });
-  return view('client.home.Lien_he',compact('carts', 'subtotal'));
+  return view('client.home.Lien_he', compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics /admin/imports/confirm/
+// /orders/statistics /admin/productct
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
@@ -64,32 +66,41 @@ Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name(
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
 
-Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
-Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
-Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
-Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::middleware(['auth'])->group(function () {
+
+  Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+  Route::post('/admin/comments', [CommentController::class, 'store'])->name('comments.store');
+
+  Route::get('/admin/reviews/list', [ReviewController::class, 'index'])->name('admin.reviews.index');
+  Route::post('/admin/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('admin.reviews.reply');
+
+  Route::get('/cart', [CartController::class, 'index'])->name('get-cart');
+  Route::post('/cart/remove', [CartController::class, 'removeCartItem'])->name('cart.remove');
+  Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+  Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+  Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+  Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 
 
-Route::post('/checkout', [CartController::class, 'showCheckout'])->name('checkout');
-Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.get');
+  Route::post('/checkout', [CartController::class, 'showCheckout'])->name('checkout');
+  Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.get');
 
-Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('checkout.process');
-Route::get('/thank-you', function () {
-  $carts = Cart::where('user_id', auth()->id())
-    ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
-    ->get();
-  $subtotal = $carts->sum(function ($cart) {
-    $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
-      ? $cart->productVariant->sale_price
-      : $cart->productVariant->price;
-    return $cart->quantity * $price;
-  });
-  return view('client.cart.thank-you', compact('carts', 'subtotal'));
-})->name('thank-you');
+  Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('checkout.process');
+  Route::get('/thank-you', function () {
+    $carts = Cart::where('user_id', auth()->id())
+      ->with(['productVariant.product', 'productVariant.attributeValues.attribute'])
+      ->get();
+    $subtotal = $carts->sum(function ($cart) {
+      $price = !empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0
+        ? $cart->productVariant->sale_price
+        : $cart->productVariant->price;
+      return $cart->quantity * $price;
+    });
+    return view('client.cart.thank-you', compact('carts', 'subtotal'));
+  })->name('thank-you');
 
-Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
+  Route::get('/checkout/return', [CartController::class, 'vnpayReturn'])->name('checkout.return');
+});
 
 
 // Ai thích hợp products.store
@@ -188,14 +199,15 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::patch('/products/restore/{id}', [ProductController::class, 'restore'])->name('products.restore');
 
 
-  // nhập /products/pending-update/
+  // nhập /products/pending-update/ cancel
   Route::get('/imports/create', [ProductController::class, 'createImport'])->name('admin.imports.create');
   Route::post('/admin/suppliers', [ProductController::class, 'storeSupplier']);
   Route::get('/suppliers/{id}', [ProductController::class, 'showSupplier']);
   Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
   Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
   Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
-
+  
+  Route::post('/notifications/{id}/confirm', [NotificationController::class, 'confirm'])->name('notifications.confirm');
 
   Route::prefix('admin/imports')->name('imports.')->middleware(['auth'])->group(function () {
     Route::get('/show/{import}', [ProductController::class, 'showImport'])->name('show');
@@ -214,7 +226,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::get('/api/notifications', [NotificationController::class, 'getNotifications'])->name('api.notifications');
   //lien he
 
-  // hủy đơn hàng
+  // hủy đơn hàng profile
   Route::match(['get', 'post'], '/order/{orderId}/cancel', [CartController::class, 'cancelOrder'])->name('order.cancel');
   Route::post('/order/{orderId}/reject-cancel', [CartController::class, 'rejectCancel'])->name('order.rejectCancel');
   Route::post('/order/{orderId}/accept-cancel', [CartController::class, 'acceptCancel'])->name('order.acceptCancel');
@@ -259,7 +271,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::put('/products/approve-pending/{pendingId}', [ProductController::class, 'approvePendingUpdate'])->name('products.approve-pending');
   Route::delete('/products/reject-pending/{pendingId}', [ProductController::class, 'rejectPendingUpdate'])->name('products.reject-pending');
 
-  // Quản lý đơn hàng /products/
+  // Quản lý đơn hàng /checkout/
   Route::get('/admin/orders', [OrderController::class, 'index'])->name('order.list');
   Route::post('/admin/orders/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
   Route::get('/admin/orders/{id}/details', [OrderController::class, 'getOrderDetails'])->name('orders.details');
@@ -270,10 +282,14 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::post('/notifications/cancel/{order_id}', [OrderController::class, 'cancel'])->name('notifications.cancel');
   Route::get('/notifications/details/{order_id}', [OrderController::class, 'details'])->name('notifications.details');
 
+  // Quản lý bình luận
+  Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments.index');
+  Route::post('/admin/comments/{id}/approve', [CommentController::class, 'approve'])->name('comments.approve');
+  Route::delete('/admin/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+  Route::post('/admin/comments/{id}/reply', [CommentController::class, 'reply'])->name('comments.reply');
+  Route::get('/admin/products/{id}/comments', [CommentController::class, 'productComments'])->name('admin.products.comments');
+  Route::get('/admin/products/comments', [CommentController::class, 'productsList'])->name('admin.products.comments.list');
 
-  Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
-  Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
-  Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
   Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     // Quản lý người dùng
@@ -284,6 +300,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
     Route::get('/admin/users/{id}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
     Route::put('/admin/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
     Route::delete('/admin/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    Route::post('/admin/users/update-role', [UserManagementController::class, 'updateRole'])->name('users.updateRole');
 
     // Quản lý phân quyền
     Route::get('/admin/roles', [UserManagementController::class, 'rolesList'])->name('roles.list');

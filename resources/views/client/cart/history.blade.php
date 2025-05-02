@@ -226,7 +226,7 @@
         <div class="modal-content">
             <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">×</button>
             <div class="order-details">
-                <h3>Chi tiết đơn hàng {{ $order->code }} ( Designed by TG )</h3>
+                <h3>Chi tiết đơn hàng {{ $order->code }}</h3>
                 <p><strong>Ngày mua:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
                 <p><strong>Trạng thái:</strong> {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</p>
                 <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>

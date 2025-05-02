@@ -896,7 +896,7 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-sm text-gray-600">Giá bán <span class="text-red-500">*</span></label>
-                                    <input type="number" 
+                                    <input type="text" 
                                         name="variant_prices[${shapeId}-${weightId}][price]" 
                                         value="${existingData ? existingData.price : ''}"
                                         class="form-control w-full mt-1" 
@@ -905,7 +905,7 @@
                                 </div>
                                 <div>
                                     <label class="text-sm text-gray-600">Giá khuyến mãi</label>
-                                    <input type="number" 
+                                    <input type="text" 
                                         name="variant_prices[${shapeId}-${weightId}][sale_price]" 
                                         value="${existingData ? existingData.sale_price || '' : ''}"
                                         class="form-control w-full mt-1" 

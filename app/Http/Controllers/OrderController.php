@@ -22,7 +22,13 @@ class OrderController extends Controller
     {
         $status = $request->query('status');
 
-        $query = Order::with(['orderStatuses.orderStatus', 'orderStatuses.modifier'])->latest('created_at');
+        $query = Order::with([
+            'orderStatuses.orderStatus',
+            'orderStatuses.modifier',
+            'items.product' => function ($query) {
+                $query->select('id', 'name');
+            }
+        ])->latest('created_at');
 
         if ($status) {
             $query->whereHas('orderStatuses', function ($q) use ($status) {
@@ -49,6 +55,7 @@ class OrderController extends Controller
 
         $orders = $query->get();
         $currentUserId = Auth::id();
+
         return view('admin.OrderManagement.order', compact('orders', 'currentUserId'));
     }
 
@@ -369,7 +376,7 @@ class OrderController extends Controller
             $end = Carbon::today()->endOfDay();
             $dateLabel = Carbon::today()->format('d/m/Y');
         }
- 
+
         if ($request->has('export')) {
             return Excel::download(new OrdersStatisticsExport($start, $end, $filterType, $dateLabel), 'thong-ke-don-hang.xlsx');
         }

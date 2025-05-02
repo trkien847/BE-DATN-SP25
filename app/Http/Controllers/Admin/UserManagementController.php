@@ -14,6 +14,7 @@ class UserManagementController extends Controller
 
     public function index(Request $request)
     {
+        $roles = Role::all(); 
         $search = $request->input('search');
 
         $users = User::when($search, function ($query, $search) {
@@ -22,7 +23,8 @@ class UserManagementController extends Controller
                          ->orWhere('phone_number', 'like', '%' . $search . '%');
         })->paginate(10);
     
-        return view('admin.UserManagement.list', compact('users', 'search'));
+        return view('admin.UserManagement.list', compact('users', 'search', 'roles'));
+
     }
 
     public function create()
@@ -133,4 +135,15 @@ class UserManagementController extends Controller
     $user = User::with('address')->findOrFail($id); 
     return view('admin.UserManagement.detail', compact('user'));
 }
+
+public function updateRole(Request $request)
+{
+    $user = User::find($request->user_id);
+    $user->role_id = $request->role_id;  // Cập nhật vai trò
+    $user->save();  // Lưu thay đổi
+
+    return response()->json(['message' => 'Cập nhật vai trò thành công']);
+}
+
+
 }
