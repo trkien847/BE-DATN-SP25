@@ -32,95 +32,26 @@
         }
 
         .coupon-btn {
-            position: relative;
-            padding: 10px 20px;
-            border: 2px solid #22C55E;
-            background: #FFFFFF;
-            color: #22C55E;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
+    position: relative;
+    padding: 10px 20px;
+    border: 2px solid #22C55E;
+    background-color: #fff;
+    color: #22C55E;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 0 0 transparent;
+}
 
-        .coupon-btn {
-            border-radius: 0;
-            aspect-ratio: 3 / 1;
-        }
-
-        .coupon-btn:disabled {
-            border-color: #D1D5DB;
-            color: #9CA3AF;
-            cursor: not-allowed;
-            background: #F3F4F6;
-        }
-
-
-        .coupon-btn::before,
-        .coupon-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 0;
-            transition: width 0.3s ease;
-            z-index: 0;
-        }
-
-        .coupon-btn::before {
-            left: 0;
-            background: #22C55E;
-        }
-
-        .coupon-btn::after {
-            right: 0;
-            background: #A855F7;
-        }
-
-        .coupon-btn:hover:not(:disabled),
-        .coupon-btn:active:not(:disabled) {
-            color: #FFFFFF;
-        }
-
-        .coupon-btn:hover:not(:disabled)::before,
-        .coupon-btn:active:not(:disabled)::before,
-        .coupon-btn:hover:not(:disabled)::after,
-        .coupon-btn:active:not(:disabled)::after {
-            width: 50%;
-        }
-
-
-        .coupon-btn .btn-text,
-        .coupon-btn .btn-w {
-            position: relative;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .coupon-btn .btn-text {
-            opacity: 1;
-        }
-
-        .coupon-btn .btn-w {
-            opacity: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .coupon-btn:hover:not(:disabled) .btn-text,
-        .coupon-btn:active:not(:disabled) .btn-text {
-            opacity: 0;
-        }
-
-        .coupon-btn:hover:not(:disabled) .btn-w,
-        .coupon-btn:active:not(:disabled) .btn-w {
-            opacity: 1;
-        }
-
+.coupon-btn:hover:not(:disabled),
+.coupon-btn:focus-visible:not(:disabled) {
+    background-color: #22C55E;
+    color: #22C55E;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transform: translateY(-2px);
+}
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -274,7 +205,7 @@
                                                 <button type="button" class="btn btn-effect-2 coupon-btn" id="apply-coupon"
                                                     {{ $appliedCoupon ? 'disabled' : '' }}>
                                                     <span class="btn-text">Sử dụng mã giảm giá</span>
-                                                    <span class="btn-w hidden">W</span>
+                                                    
                                                 </button>
                                                 @if ($appliedCoupon)
                                                     <small id="applied-coupon-text">Đã áp dụng:
@@ -286,7 +217,7 @@
                                         <td>
                                             <button type="button" class="btn btn-effect-2 coupon-btn" id="show-coupons">
                                                 <span class="btn-text">Lấy mã giảm giá</span>
-                                                <span class="btn-w hidden">W</span>
+                                               
                                             </button>
                                         </td>
                                     </tr>
