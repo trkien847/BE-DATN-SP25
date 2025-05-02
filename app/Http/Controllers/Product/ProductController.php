@@ -1244,7 +1244,7 @@ class ProductController extends Controller
         }
 
         $cart_count = $carts->sum('quantity');
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $sevenDaysAgo = Carbon::now()->subDays(30);
         $productTop = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')

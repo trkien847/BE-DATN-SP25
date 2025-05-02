@@ -43,7 +43,7 @@
                                     <tr data-product-id="{{ $product->id }}">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $product->image_url ?? asset('images/default-product.png') }}"
+                                                <img src="{{ $product->thumbnail ?? asset('images/default-product.png') }}"
                                                     class="rounded me-2" width="48" height="48"
                                                     style="object-fit: cover;">
                                                 <div>

@@ -466,14 +466,20 @@
                                                     <li>
                                                         <div class="ltn__comment-item clearfix">
                                                             <div class="ltn__commenter-img">
-                                                                <img src="{{ asset('img/testimonial/default.jpg') }}"
-                                                                    alt="User">
+                                                                @if ($comment->user && $comment->user->avatar)
+                                                                    <img src="{{ asset($comment->user->avatar) }}"
+                                                                        alt="User Avatar"
+                                                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                                @else
+                                                                    <img src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                                        alt="Default Avatar"
+                                                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                                @endif
                                                             </div>
                                                             <div class="ltn__commenter-comment">
                                                                 <h6><a
                                                                         href="#">{{ $comment->user->fullname ?? 'Ẩn danh' }}</a>
                                                                 </h6>
-
                                                                 <p>{{ $comment->content }}</p>
                                                                 <span
                                                                     class="ltn__comment-reply-btn">{{ $comment->created_at->format('H:i, d/m/Y') }}</span>
@@ -487,8 +493,15 @@
                                                                     <li>
                                                                         <div class="ltn__comment-item clearfix">
                                                                             <div class="ltn__commenter-img">
-                                                                                <img src="{{ asset('img/testimonial/admin.jpg') }}"
-                                                                                    alt="Admin">
+                                                                                @if ($reply->user && $reply->user->avatar)
+                                                                                    <img src="{{ asset($reply->user->avatar) }}"
+                                                                                        alt="User Avatar"
+                                                                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                                                @else
+                                                                                    <img src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                                                        alt="Default Avatar"
+                                                                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                                                @endif
                                                                             </div>
                                                                             <div class="ltn__commenter-comment">
                                                                                 <h6><a
@@ -597,6 +610,20 @@
             <div class="row ltn__related-product-slider-one-active slick-arrow-1">
                 <!-- ltn__product-item -->
                 @foreach ($relatedProducts as $product)
+                    @php
+                        // Lọc các biến thể còn hàng
+                        $availableVariants = $product->variants->filter(function ($variant) {
+                            return $variant->stock > 0;
+                        });
+
+                        // Nếu không có biến thể còn hàng thì bỏ qua sản phẩm này
+                        if ($availableVariants->isEmpty()) {
+                            continue;
+                        }
+
+                        $salePrice = $availableVariants->where('sale_price', '>', 0)->min('sale_price');
+                        $regularPrice = $availableVariants->min('price');
+                    @endphp
                     <div class="col-lg-12">
                         <div class="ltn__product-item ltn__product-item-3 text-center"
                             style="height: 420px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
@@ -635,40 +662,41 @@
                             </div>
                             <div class="product-info">
                                 <div class="product-ratting d-flex justify-content-center">
-                                @php
-                                    $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
-                                    $fullStars = floor($avgRating);
-                                    $halfStar = ($avgRating - $fullStars) >= 0.5 ? 1 : 0;
-                                    $emptyStars = 5 - $fullStars - $halfStar;
-                                @endphp
-                                <ul>
-                                    @for ($i = 0; $i < $fullStars; $i++)
-                                        <li><i class="fas fa-star text-warning"></i></li>
-                                    @endfor
-                                    @if ($halfStar)
-                                        <li><i class="fas fa-star-half-alt text-warning"></i></li>
-                                    @endif
-                                    @for ($i = 0; $i < $emptyStars; $i++)
-                                        <li><i class="far fa-star text-warning"></i></li>
-                                    @endfor
-                                    <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
-                                </ul>
+                                    @php
+                                        $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                        $fullStars = floor($avgRating);
+                                        $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                        $emptyStars = 5 - $fullStars - $halfStar;
+                                    @endphp
+                                    <ul>
+                                        @for ($i = 0; $i < $fullStars; $i++)
+                                            <li><i class="fas fa-star text-warning"></i></li>
+                                        @endfor
+                                        @if ($halfStar)
+                                            <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                        @endif
+                                        @for ($i = 0; $i < $emptyStars; $i++)
+                                            <li><i class="far fa-star text-warning"></i></li>
+                                        @endfor
+                                        <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
+                                    </ul>
                                 </div>
                                 <h2 class="product-title"><a
                                         href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                 </h2>
-                                <div class="product-price">
-                                    @php
-                                        $variants = $product->product->variants ?? collect();
-                                        $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
-                                        $regularPrice = $variants->min('price');
-                                    @endphp
-                                    @if (!empty($salePrice) && $salePrice > 0)
-                                        <span>{{ number_format($salePrice) }}đ</span>
-                                        <del>{{ number_format($regularPrice) }}đ</del>
-                                    @else
-                                        <span>{{ number_format($regularPrice) }}đ</span>
-                                    @endif
+                                <div class="product-info">
+                                    <h2 class="product-title">
+                                        <a
+                                            href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
+                                    </h2>
+                                    <div class="product-price">
+                                        @if (!empty($salePrice) && $salePrice > 0)
+                                            <span>{{ number_format($salePrice) }}đ</span>
+                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                        @else
+                                            <span>{{ number_format($regularPrice) }}đ</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -720,6 +748,9 @@
 @push('js')
     <script>
         let selectedVariantId = null;
+        const routes = {
+            category_show: '{{ route('category.show', ':id') }}'
+        };
 
         document.querySelectorAll('.variant-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -747,58 +778,98 @@
             `.replace(':id', response.id));
 
                     $('#quick_view_modal h3').text(response.name);
-                    $('#quick_view_modal .product-price span')
-                        .css('font-size', '30px')
-                        .text(new Intl.NumberFormat().format(response.sale_price) + 'đ');
+                    if (response.variants && response.variants.length > 0) {
+                        // Tìm giá thấp nhất trong các variants
+                        let minPrice = Math.min(...response.variants.map(v => v.price));
+                        let minSalePrice = Math.min(...response.variants
+                            .filter(v => v.sale_price > 0)
+                            .map(v => v.sale_price) || [0]);
 
-                    $('#quick_view_modal .product-price del')
-                        .css('font-size', '30px')
-                        .text(new Intl.NumberFormat().format(response.sell_price) + 'đ');
+                        // Hiển thị giá
+                        if (minSalePrice > 0) {
+                            $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minSalePrice)}đ</span>
+                        <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</del>
+                    `);
+                        } else {
+                            $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</span>
+                    `);
+                        }
+                    }
                     let categoriesHtml = response.categories.map(category =>
-                        `<a href="#">${category.name}</a>`
+                        `<a href="${routes.category_show.replace(':id', category.id)}" class="category-link">
+                            ${category.name}
+                        </a>`
                     ).join(", ");
                     $('#quick_view_modal .modal-product-meta span').html(categoriesHtml);
 
                     // Làm mới danh sách biến thể
                     if (response.variants && response.variants.length > 0) {
                         let variantsHtml = '<div class="variant-buttons">';
+
+                        // Tìm variant có giá thấp nhất
+                        let lowestPriceVariant = response.variants.reduce((lowest, current) => {
+                            let currentFinalPrice = current.sale_price > 0 ? current
+                                .sale_price : current.price;
+                            let lowestFinalPrice = lowest.sale_price > 0 ? lowest.sale_price :
+                                lowest.price;
+                            return currentFinalPrice < lowestFinalPrice ? current : lowest;
+                        }, response.variants[0]);
+
                         variantsHtml += response.variants.map((variant, index) => {
                             let shapeAttr = variant.attributes.find(attr => attr.attribute?.name
                                 .includes('Hình'));
                             let weightAttr = variant.attributes.find(attr => attr.attribute
                                 ?.name.includes('Khối'));
-
                             let variantName = [shapeAttr?.value, weightAttr?.value].filter(
                                 Boolean).join(' ') || 'Không có thuộc tính';
 
+                            // Thêm class active cho variant có giá thấp nhất
+                            let isLowestPrice = variant.id === lowestPriceVariant.id ?
+                                'active' : '';
+
                             return `
-                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
-                            data-product-id="${response.id}"
-                            data-variant-id="${variant.id}"
-                            data-price="${variant.price}"
-                            data-sale-price="${variant.sale_price}"
-                            data-stock="${variant.stock}"
-                            data-variant-index="${index}">
-                            ${variantName || 'Không có thuộc tính'}
-                        </button>
-                    `;
+                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                                        text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
+                                        text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
+                                        hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200 ${isLowestPrice}"
+                                        data-product-id="${response.id}"
+                                        data-variant-id="${variant.id}"
+                                        data-price="${variant.price}"
+                                        data-sale-price="${variant.sale_price}"
+                                        data-stock="${variant.stock}">
+                                        ${variantName}
+                                    </button>
+                                `;
                         }).join('');
                         variantsHtml += '</div>';
+
                         $('#quick_view_modal .modal-product-variants .variant-list').html(variantsHtml);
+
+                        // Tự động trigger click vào variant có giá thấp nhất
+                        setTimeout(() => {
+                            $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
+                                .trigger('click');
+                        }, 100);
 
                         // Xóa sự kiện cũ và gắn sự kiện mới
                         $('.variant-btn').off('click').on('click', function() {
-                            const variantPrice = $(this).data('sale-price') || $(this).data(
-                                'price');
+                            const variantPrice = $(this).data('price');
+                            const variantSalePrice = $(this).data('sale-price');
                             const variantStock = $(this).data('stock');
 
-                            // Cập nhật giá chính
-                            $('#quick_view_modal .product-price span').text(
-                                new Intl.NumberFormat().format(variantPrice) + 'đ'
-                            );
+                            // Cập nhật hiển thị giá
+                            if (variantSalePrice > 0) {
+                                $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantSalePrice)}đ</span>
+                                    <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</del>
+                                `);
+                            } else {
+                                $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</span>
+                                `);
+                            }
 
                             if (variantStock > 0) {
                                 $('.cart-plus-minus-box')
@@ -909,7 +980,7 @@
                         // ✅ Cập nhật tổng tiền trên header & giỏ hàng
                         $(".mini-cart-sub-total span").text(data.subtotal);
                         $("#cart-subtotal").text(data.subtotal);
-                        $('sup').text(response.cart_count);
+                        $('sup').text(data.cart_count);
                     } else {
                         showToast("Lỗi: " + data.message, "error");
                     }
@@ -951,7 +1022,7 @@
                                 color: "white"
                             }
                         }).showToast();
-                        form.reset(); 
+                        form.reset();
                     }
                 })
                 .catch(error => {

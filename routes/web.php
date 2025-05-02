@@ -61,7 +61,9 @@ Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, '
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
   ->name('category.show');
 
-Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])->name('search');
+Route::get('/search/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'search'])
+  ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
+  ->name('search');
 Route::get('/get-product/{id}', [ProductController::class, 'getProduct'])->name('get-product');
 Route::get('/products/{id}/productct', [ProductController::class, 'productct'])->name('products.productct');
 Route::get('/admin/products/{id}/productct', [ProductController::class, 'productctad'])->name('productad.productct');
@@ -206,7 +208,7 @@ Route::middleware(['auth', 'auth.admin'])->group(function () {
   Route::match(['get', 'post'], '/admin/imports/store', [ProductController::class, 'storeImport'])->name('admin.imports.store');
   Route::get('/admin/imports', [ProductController::class, 'indexImport'])->name('admin.imports.index');
   Route::get('/admin/imports/{import}/detail', [ProductController::class, 'getDetail']);
-  
+
   Route::post('/notifications/{id}/confirm', [NotificationController::class, 'confirm'])->name('notifications.confirm');
 
   Route::prefix('admin/imports')->name('imports.')->middleware(['auth'])->group(function () {

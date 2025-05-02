@@ -296,25 +296,25 @@
                                         <div class="row">
 
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                        <div class="slide-item-info">
-                                                                            <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                <h5
-                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                    Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                                                <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
-                                                                                </h1>
-                                                                                <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
-                                                                                <div class="slide-brief animated d-none">
-                                                                                    <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
-                                                                                        phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
-                                                                                </div>
-                                                                                <div class="btn-wrapper  animated">
-                                                                                    <a href="{{ route('category.show') }}"
-                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
+                                                                                            <div class="slide-item-info">
+                                                                                                <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                    <h5
+                                                                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                        Giảm giá đến 50% chỉ hôm nay!</h5>
+                                                                                                    <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
+                                                                                                    </h1>
+                                                                                                    <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
+                                                                                                    <div class="slide-brief animated d-none">
+                                                                                                        <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                                                                            phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                                                    </div>
+                                                                                                    <div class="btn-wrapper  animated">
+                                                                                                        <a href="{{ route('category.show') }}"
+                                                                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div> -->
 
 
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
@@ -333,26 +333,26 @@
                                     <div class="container">
                                         <div class="row">
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                        <div class="slide-item-info">
-                                                                            <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                <h4
-                                                                                    class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                    Chào mừng đến với cửa hàng của chúng tôi</h4>
-                                                                                <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
-                                                                                </h1>
-                                                                                <div class="slide-brief animated d-none">
-                                                                                    <p>Predictive analytics is drastically changing the real
-                                                                                        estate industry. In the past, providing data for quick
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div class="btn-wrapper  animated">
-                                                                                    <a href="shop.html"
-                                                                                        class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                                                        now</a>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
+                                                                                            <div class="slide-item-info">
+                                                                                                <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                    <h4
+                                                                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                        Chào mừng đến với cửa hàng của chúng tôi</h4>
+                                                                                                    <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                                                                    </h1>
+                                                                                                    <div class="slide-brief animated d-none">
+                                                                                                        <p>Predictive analytics is drastically changing the real
+                                                                                                            estate industry. In the past, providing data for quick
+                                                                                                        </p>
+                                                                                                    </div>
+                                                                                                    <div class="btn-wrapper  animated">
+                                                                                                        <a href="shop.html"
+                                                                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
+                                                                                                            now</a>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div> -->
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                                 <div class="slide-item-img">
                                                     <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
@@ -597,10 +597,10 @@
         <!-- ABOUT US AREA END -->
 
         <!-- COUNTDOWN AREA START -->
-        <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="">
+        <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="{{ asset('client/img/haha.png') }}">
             <div class="container">
                 <div class="row">
-                    <div class="http://127.0.0.1:8000/upload/.jpg">
+                    <div class="col-lg-7 col-md-6 col-sm-4">
                         <!-- <img src="{{ asset('client/img/banner/15.png') }}" alt="#"> -->
                     </div>
                     <div class="col-lg-5 col-md-6 col-sm-8">
@@ -715,6 +715,20 @@
                 <div class="row">
                     <!-- small-product-item -->
                     @foreach ($productTop as $product)
+                        @php
+                            // Get variants with stock > 0
+                            $availableVariants = $product->variants->filter(function ($variant) {
+                                return $variant->stock > 0;
+                            });
+
+                            // Only proceed if product has variants with stock
+                            if ($availableVariants->isEmpty()) {
+                                continue;
+                            }
+
+                            $salePrice = $availableVariants->where('sale_price', '>', 0)->min('sale_price');
+                            $regularPrice = $availableVariants->min('price');
+                        @endphp
                         <div class="col-lg-4 col-md-6 col-12">
                             <div class="ltn__small-product-item">
                                 <div class="small-product-item-img">
@@ -727,12 +741,7 @@
                                             href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                     </h2>
                                     <div class="product-price">
-                                        @php
-                                            $salePrice = $product->variants
-                                                ->where('sale_price', '>', 0)
-                                                ->min('sale_price');
-                                            $regularPrice = $product->variants->min('price');
-                                        @endphp
+
 
                                         @if (!empty($salePrice) && $salePrice > 0)
                                             <span>{{ number_format($salePrice) }}đ</span>
@@ -1007,6 +1016,9 @@
 
 
     <script>
+        const routes = {
+            category_show: '{{ route('category.show', ':id') }}'
+        };
         document.addEventListener('DOMContentLoaded', function() {
             const moreBtn = document.querySelector('.ltn__category-menu-more-item-parent');
             const hiddenItems = document.querySelectorAll('.ltn__category-menu-more-item');
@@ -1036,65 +1048,106 @@
                     console.log(response);
                     $('#quick_view_modal').attr('data-product-id', response.id); // Cập nhật productId
                     $('#quick_view_modal .modal-product-img').html(`
-                <a href="{{ route('products.productct', ':id') }}" target="_blank">
-                    <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
-                </a>
-            `.replace(':id', response.id));
+                        <a href="{{ route('products.productct', ':id') }}" target="_blank">
+                            <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
+                        </a>
+                    `.replace(':id', response.id));
 
                     $('#quick_view_modal h3').text(response.name);
-                    $('#quick_view_modal .product-price span')
-                        .css('font-size', '30px')
-                        .text(new Intl.NumberFormat().format(response.sale_price) + 'đ');
+                    if (response.variants && response.variants.length > 0) {
+                        // Tìm giá thấp nhất trong các variants
+                        let minPrice = Math.min(...response.variants.map(v => v.price));
+                        let minSalePrice = Math.min(...response.variants
+                            .filter(v => v.sale_price > 0)
+                            .map(v => v.sale_price) || [0]);
 
-                    $('#quick_view_modal .product-price del')
-                        .css('font-size', '30px')
-                        .text(new Intl.NumberFormat().format(response.sell_price) + 'đ');
+                        // Hiển thị giá
+                        if (minSalePrice > 0) {
+                            $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minSalePrice)}đ</span>
+                        <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</del>
+                    `);
+                        } else {
+                            $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</span>
+                    `);
+                        }
+                    }
                     let categoriesHtml = response.categories.map(category =>
-                        `<a href="#">${category.name}</a>`
+                        `<a href="${routes.category_show.replace(':id', category.id)}" class="category-link">
+                            ${category.name}
+                        </a>`
                     ).join(", ");
                     $('#quick_view_modal .modal-product-meta span').html(categoriesHtml);
 
                     // Làm mới danh sách biến thể
                     if (response.variants && response.variants.length > 0) {
                         let variantsHtml = '<div class="variant-buttons">';
+
+                        // Tìm variant có giá thấp nhất
+                        let lowestPriceVariant = response.variants.reduce((lowest, current) => {
+                            let currentFinalPrice = current.sale_price > 0 ? current
+                                .sale_price : current.price;
+                            let lowestFinalPrice = lowest.sale_price > 0 ? lowest.sale_price :
+                                lowest.price;
+                            return currentFinalPrice < lowestFinalPrice ? current : lowest;
+                        }, response.variants[0]);
+
                         variantsHtml += response.variants.map((variant, index) => {
                             let shapeAttr = variant.attributes.find(attr => attr.attribute?.name
                                 .includes('Hình'));
                             let weightAttr = variant.attributes.find(attr => attr.attribute
                                 ?.name.includes('Khối'));
-
                             let variantName = [shapeAttr?.value, weightAttr?.value].filter(
                                 Boolean).join(' ') || 'Không có thuộc tính';
 
+                            // Thêm class active cho variant có giá thấp nhất
+                            let isLowestPrice = variant.id === lowestPriceVariant.id ?
+                                'active' : '';
+
                             return `
-                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
-                            data-product-id="${response.id}"
-                            data-variant-id="${variant.id}"
-                            data-price="${variant.price}"
-                            data-sale-price="${variant.sale_price}"
-                            data-stock="${variant.stock}"
-                            data-variant-index="${index}">
-                            ${variantName || 'Không có thuộc tính'}
-                        </button>
-                    `;
+                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                                        text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
+                                        text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
+                                        hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200 ${isLowestPrice}"
+                                        data-product-id="${response.id}"
+                                        data-variant-id="${variant.id}"
+                                        data-price="${variant.price}"
+                                        data-sale-price="${variant.sale_price}"
+                                        data-stock="${variant.stock}">
+                                        ${variantName}
+                                    </button>
+                                `;
                         }).join('');
                         variantsHtml += '</div>';
+
                         $('#quick_view_modal .modal-product-variants .variant-list').html(variantsHtml);
+
+                        // Tự động trigger click vào variant có giá thấp nhất
+                        setTimeout(() => {
+                            $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
+                                .trigger('click');
+                        }, 100);
 
                         // Xóa sự kiện cũ và gắn sự kiện mới
                         $('.variant-btn').off('click').on('click', function() {
-                            const variantPrice = $(this).data('sale-price') || $(this).data(
-                                'price');
+                            const variantPrice = $(this).data('price');
+                            const variantSalePrice = $(this).data('sale-price');
                             const variantStock = $(this).data('stock');
 
-                            // Cập nhật giá chính
-                            $('#quick_view_modal .product-price span').text(
-                                new Intl.NumberFormat().format(variantPrice) + 'đ'
-                            );
+                            // Cập nhật hiển thị giá
+                            if (variantSalePrice > 0) {
+                                $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantSalePrice)}đ</span>
+                                    <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</del>
+                                `);
+                            } else {
+                                $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</span>
+                                `);
+                            }
 
+                            // Cập nhật trạng thái nút và số lượng
                             if (variantStock > 0) {
                                 $('.cart-plus-minus-box')
                                     .val(1)

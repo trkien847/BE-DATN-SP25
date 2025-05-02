@@ -22,7 +22,7 @@ class ShopListController extends Controller
     public function show($categoryId = null, $subcategoryId = null)
     {
         $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $sevenDaysAgo = Carbon::now()->subDays(30);
         $productTop = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -102,7 +102,7 @@ class ShopListController extends Controller
         $categories = $this->categoryService->getAllCategories();
         $category = null;
         $subcategory = null;
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $sevenDaysAgo = Carbon::now()->subDays(30);
         $productTop = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -204,7 +204,7 @@ class ShopListController extends Controller
         // Lấy sản phẩm với variants có stock > 0
         $products = $query->with(['variants' => function ($query) {
             $query->where('stock', '>', 0);
-        }])->get();
+        }])->paginate(12);
 
         // Trả về Ajax hoặc view
         if ($request->ajax()) {
