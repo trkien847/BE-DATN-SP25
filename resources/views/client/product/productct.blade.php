@@ -635,13 +635,24 @@
                             </div>
                             <div class="product-info">
                                 <div class="product-ratting d-flex justify-content-center">
-                                    <ul>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star"></i></a></li>
-                                        <li><a href="#"><i class="fas fa-star-half-alt"></i></a></li>
-                                        <li><a href="#"><i class="far fa-star"></i></a></li>
-                                    </ul>
+                                @php
+                                    $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                    $fullStars = floor($avgRating);
+                                    $halfStar = ($avgRating - $fullStars) >= 0.5 ? 1 : 0;
+                                    $emptyStars = 5 - $fullStars - $halfStar;
+                                @endphp
+                                <ul>
+                                    @for ($i = 0; $i < $fullStars; $i++)
+                                        <li><i class="fas fa-star text-warning"></i></li>
+                                    @endfor
+                                    @if ($halfStar)
+                                        <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                    @endif
+                                    @for ($i = 0; $i < $emptyStars; $i++)
+                                        <li><i class="far fa-star text-warning"></i></li>
+                                    @endfor
+                                    <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
+                                </ul>
                                 </div>
                                 <h2 class="product-title"><a
                                         href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>

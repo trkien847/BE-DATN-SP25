@@ -167,33 +167,6 @@ function createLeaf() {
 setInterval(createLeaf, 500);
 
 
-const matrixText = document.getElementById('matrix-text');
-const finalText = matrixText.textContent;
-const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?';
-let currentText = Array(finalText.length).fill('').map(() => characters[Math.floor(Math.random() * characters.length)]);
-let iteration = 0;
-
-function updateMatrixText() {
-    if (iteration >= finalText.length) {
-        matrixText.textContent = finalText;
-        return;
-    }
-
-    for (let i = 0; i <= iteration; i++) {
-        currentText[i] = finalText[i];
-    }
-
-    for (let i = iteration + 1; i < finalText.length; i++) {
-        currentText[i] = characters[Math.floor(Math.random() * characters.length)];
-    }
-
-    matrixText.textContent = currentText.join('');
-    iteration++;
-
-    setTimeout(updateMatrixText, 50); 
-}
-
-updateMatrixText();
 </script>
 
 @endsection

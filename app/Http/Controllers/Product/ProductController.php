@@ -1211,13 +1211,13 @@ class ProductController extends Controller
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
         })
-            ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
-                $query->whereIn('category_types.id', $categoryTypeIds);
-            })
-            ->where('id', '!=', $id)
-            ->with('variants')
-            ->limit(10)
-            ->get();
+        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+            $query->whereIn('category_types.id', $categoryTypeIds);
+        })
+        ->where('id', '!=', $id)
+        ->with(['variants', 'reviews']) 
+        ->limit(10)
+        ->get();
 
         $carts = collect();
         $subtotal = 0;
