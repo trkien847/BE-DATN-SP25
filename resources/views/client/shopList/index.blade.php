@@ -404,7 +404,7 @@
                                             <div class="product-price">
                                                 ${product.min_sale_price > 0 ? 
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_sale_price)}đ</span>
-                                                                    <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
+                                                                        <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</span>`
                                                 }
                                             </div>
@@ -775,6 +775,23 @@
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
+                    } else {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "#ff4444",
+                                color: "white"
+                            }
+                        }).showToast();
+
+                        // Nếu server trả về số lượng có sẵn, cập nhật input
+                        if (response.available_quantity) {
+                            $('.cart-plus-minus-box').val(response.available_quantity);
+                        }
                     }
                 },
                 error: function(xhr) {

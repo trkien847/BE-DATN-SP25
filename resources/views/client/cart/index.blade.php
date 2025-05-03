@@ -134,7 +134,7 @@
                             <table class="table shopping-cart-main-table" id="cart-table">
                                 <thead>
                                     <th><input type="checkbox" id="select-all"></th>
-                                    <th class="cart-product-remove">Xóa</th>
+                                    <th class="cart-product-remove-header">Xóa</th>
                                     <th class="cart-product-image">Ảnh</th>
                                     <th class="cart-product-info">Tên sản phẩm</th>
                                     <th class="cart-product-price">Giá</th>
@@ -590,7 +590,7 @@
             });
 
 
-            $(document).on('click', '.cart-product-remove', function() {
+            $(document).on('click', 'tbody .cart-product-remove', function() {
                 let $row = $(this).closest('tr');
                 let cartId = $row.data('cart-id');
 
@@ -1350,6 +1350,31 @@
         .shopping-cart-main-table .cart-product-quantity {
             width: 170px;
             text-align: center;
+        }
+
+        /* Style cho header cột xóa */
+        .cart-product-remove-header {
+            text-align: center;
+            width: 50px;
+        }
+
+        /* Style cho cell chứa icon xóa */
+        tbody .cart-product-remove {
+            text-align: center;
+            cursor: pointer;
+            color: #dc3545;
+        }
+
+        tbody .cart-product-remove:hover {
+            color: #c82333;
+        }
+
+        tbody .cart-product-remove i {
+            transition: all 0.3s ease;
+        }
+
+        tbody .cart-product-remove i:hover {
+            transform: scale(1.2);
         }
     </style>
 @endpush

@@ -296,25 +296,25 @@
                                         <div class="row">
 
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                                                                    <div class="slide-item-info">
-                                                                                                                        <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                                                            <h5
-                                                                                                                                class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                                                                Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                                                                                            <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
-                                                                                                                            </h1>
-                                                                                                                            <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
-                                                                                                                            <div class="slide-brief animated d-none">
-                                                                                                                                <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
-                                                                                                                                    phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
-                                                                                                                            </div>
-                                                                                                                            <div class="btn-wrapper  animated">
-                                                                                                                                <a href="{{ route('category.show') }}"
-                                                                                                                                    class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div> -->
+                                                                                                                                <div class="slide-item-info">
+                                                                                                                                    <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                                                        <h5
+                                                                                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                                                            Giảm giá đến 50% chỉ hôm nay!</h5>
+                                                                                                                                        <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
+                                                                                                                                        </h1>
+                                                                                                                                        <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
+                                                                                                                                        <div class="slide-brief animated d-none">
+                                                                                                                                            <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                                                                                                                phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="btn-wrapper  animated">
+                                                                                                                                            <a href="{{ route('category.show') }}"
+                                                                                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
+                                                                                                                                        </div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            </div> -->
 
 
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
@@ -333,26 +333,26 @@
                                     <div class="container">
                                         <div class="row">
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                                                                    <div class="slide-item-info">
-                                                                                                                        <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                                                            <h4
-                                                                                                                                class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                                                                Chào mừng đến với cửa hàng của chúng tôi</h4>
-                                                                                                                            <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
-                                                                                                                            </h1>
-                                                                                                                            <div class="slide-brief animated d-none">
-                                                                                                                                <p>Predictive analytics is drastically changing the real
-                                                                                                                                    estate industry. In the past, providing data for quick
-                                                                                                                                </p>
-                                                                                                                            </div>
-                                                                                                                            <div class="btn-wrapper  animated">
-                                                                                                                                <a href="shop.html"
-                                                                                                                                    class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                                                                                                    now</a>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div> -->
+                                                                                                                                <div class="slide-item-info">
+                                                                                                                                    <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                                                        <h4
+                                                                                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                                                            Chào mừng đến với cửa hàng của chúng tôi</h4>
+                                                                                                                                        <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                                                                                                        </h1>
+                                                                                                                                        <div class="slide-brief animated d-none">
+                                                                                                                                            <p>Predictive analytics is drastically changing the real
+                                                                                                                                                estate industry. In the past, providing data for quick
+                                                                                                                                            </p>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="btn-wrapper  animated">
+                                                                                                                                            <a href="shop.html"
+                                                                                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
+                                                                                                                                                now</a>
+                                                                                                                                        </div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            </div> -->
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                                 <div class="slide-item-img">
                                                     <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
@@ -458,7 +458,7 @@
                                     id="liton_tab_3_{{ $index + 1 }}">
                                     <div class="ltn__product-tab-content-inner">
                                         <div class="row ltn__tab-product-slider-one-active slick-arrow-1">
-                                            @foreach ($category->products as $product)
+                                            @foreach ($category->products->where('is_active', 1) as $product)
                                                 @php
                                                     // Lọc variants còn hàng
                                                     $availableVariants = $product->variants->filter(function (
@@ -1124,12 +1124,12 @@
                 }).showToast();
                 return;
             @endif
-            let selectedButton = $('.variant-btn.active'); // Lấy nút biến thể được chọn
+            let selectedButton = $('.variant-btn.active');
             let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
-                'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
-            let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') :
-                null; // Lấy variant_id từ nút
-            let quantity = $('.cart-plus-minus-box').val();
+                'product-id');
+            let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') : null;
+            let quantity = parseInt($('.cart-plus-minus-box').val());
+            let maxStock = parseInt($('.cart-plus-minus-box').attr('max'));
             $.ajax({
                 url: "{{ route('cart.add') }}",
                 type: "POST",
@@ -1180,6 +1180,23 @@
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
+                    } else {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "#ff4444",
+                                color: "white"
+                            }
+                        }).showToast();
+
+                        // Nếu server trả về số lượng có sẵn, cập nhật input
+                        if (response.available_quantity) {
+                            $('.cart-plus-minus-box').val(response.available_quantity);
+                        }
                     }
                 },
                 error: function(xhr) {

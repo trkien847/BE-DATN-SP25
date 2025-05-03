@@ -1086,12 +1086,21 @@ class CartController extends Controller
             ->where('product_id', $product->id)
             ->where('product_variant_id', $selectedVariantId)
             ->first();
-        $totalQuantity = $cartItem ? $cartItem->quantity + $requestQuantity : $requestQuantity;
+
+        $currentCartQuantity = $cartItem ? $cartItem->quantity : 0;
+        $totalQuantity = $currentCartQuantity + $requestQuantity;
 
         if ($totalQuantity > $variant->stock) {
+            $remainingStock = $variant->stock - $currentCartQuantity;
+            if ($remainingStock <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Bạn đã thêm tối đa số lượng có thể cho sản phẩm này!"
+                ]);
+            }
             return response()->json([
                 'status' => 'error',
-                'message' => "Chỉ còn {$variant->stock} sản phẩm trong kho!"
+                'message' => "Chỉ có thể thêm thêm {$remainingStock} sản phẩm nữa vào giỏ hàng!"
             ]);
         }
 
