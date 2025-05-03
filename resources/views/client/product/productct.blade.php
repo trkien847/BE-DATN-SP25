@@ -214,6 +214,72 @@
             cursor: not-allowed;
             opacity: 0.6;
         }
+
+        .reviews-section {
+    margin-top: 30px;
+}
+
+.reviews-section h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.review-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 15px 0;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.review-header img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.review-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.review-info strong {
+    font-size: 16px;
+}
+
+.rating {
+    color: #f5c518; /* Màu vàng cho sao */
+}
+
+.review-date {
+    font-size: 14px;
+    color: #777;
+}
+
+.review-content p {
+    margin: 0 0 10px;
+}
+
+.admin-reply {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid #007bff;
+}
+
+.admin-reply strong {
+    color: #007bff;
+}
+
+.reply-date {
+    font-size: 12px;
+    color: #777;
+}
     </style>
     <div class="ltn__breadcrumb-area text-left bg-overlay-white-30 bg-image" data-bs-bg="img/bg/14.jpg">
         <div class="container">
@@ -277,6 +343,26 @@
                             <div class="col-md-6">
                                 <div class="modal-product-info shop-details-info pl-0">
                                     <h3>{{ $product->name }}</h3>
+                                    <div class="product-ratting d-flex justify-content-start">
+                                    @php
+                                        $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                        $fullStars = floor($avgRating);
+                                        $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                        $emptyStars = 5 - $fullStars - $halfStar;
+                                    @endphp
+                                    <ul>
+                                        @for ($i = 0; $i < $fullStars; $i++)
+                                            <li><i class="fas fa-star text-warning"></i></li>
+                                        @endfor
+                                        @if ($halfStar)
+                                            <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                        @endif
+                                        @for ($i = 0; $i < $emptyStars; $i++)
+                                            <li><i class="far fa-star text-warning"></i></li>
+                                        @endfor
+                                        <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
+                                    </ul>
+                                </div>
                                     @php
                                         $min_variant_price = $product->variants->min('price');
                                         $min_variant_sale_price = $product->variants->min('sale_price');
@@ -446,6 +532,7 @@
                             <div class="nav">
                                 <a class="active show" data-bs-toggle="tab" href="#liton_tab_details_1_1">MÔ TẢ SẢN PHẨM</a>
                                 <a data-bs-toggle="tab" href="#liton_tab_details_1_2" class="">HỎI ĐÁP</a>
+                                <a data-bs-toggle="tab" href="#liton_tab_details_1_3" class="">ĐÁNH GIÁ</a>
                             </div>
                         </div>
                         <div class="tab-content">
@@ -454,6 +541,56 @@
                                     <p>{!! $product->content !!}</p>
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade active show" id="liton_tab_details_1_3">
+                                <div class="ltn__shop-details-tab-content-inner">
+                                   
+                                    <div class="reviews-section">
+                                        <h3>Đánh giá sản phẩm</h3>
+                                        @if($product->reviews->isEmpty())
+                                            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                                        @else
+                                            @foreach($product->reviews as $review)
+                                                <div class="review-item">
+                                                    <div class="review-header">
+                                                        <!-- Ảnh đại diện -->
+                                                        @if ($review->user && $review->user->avatar)
+                                                            <img src="{{ asset($review->user->avatar) }}"
+                                                                alt="User Avatar"
+                                                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                        @else
+                                                            <img src="https://th.bing.com/th/id/OIP.aqvXTTm52Z6bjq8IeOa43QHaEK?rs=1&pid=ImgDetMain"
+                                                                alt="Default Avatar"
+                                                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                                        @endif
+                                                        <!-- Thông tin người dùng và đánh giá -->
+                                                        <div class="review-info">
+                                                            <strong>{{ $review->user->fullname ?? 'Ẩn danh' }}</strong>
+                                                            <span class="rating">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <i class="fa {{ $i <= $review->rating ? 'fa-star' : 'fa-star-o' }}" style="color: #f5c518;"></i>
+                                                                @endfor
+                                                            </span>
+                                                            <span class="review-date">{{ $review->created_at->format('d/m/Y H:i') }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="review-content">
+                                                        <p>{{ $review->review_text }}</p>
+                                                        @if($review->admin_reply)
+                                                            <div class="admin-reply">
+                                                                <strong>Phản hồi từ quản trị viên:</strong>
+                                                                <p>{{ $review->admin_reply }}</p>
+                                                                <span class="reply-date">{{ $review->replied_at ? \Carbon\Carbon::parse($review->replied_at)->format('d/m/Y H:i') : '' }}</span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="tab-pane fade" id="liton_tab_details_1_2">
                                 <div class="ltn__shop-details-tab-content-inner">
                                     <h4 class="title-2">Hỏi & Đáp</h4>

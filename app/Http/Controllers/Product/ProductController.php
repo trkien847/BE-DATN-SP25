@@ -1152,7 +1152,8 @@ class ProductController extends Controller
 
 
     // client
-    public function productctad($id){
+    public function productctad($id)
+    {
         $product = Product::query()
             ->with([
                 'brand',
@@ -1160,29 +1161,29 @@ class ProductController extends Controller
                 'categoryTypes',
                 'variants.attributeValues.attribute',
                 'attributeValues.attribute',
-                'importProducts.import.user', 
+                'importProducts.import.user',
                 'importProducts.import.supplier',
                 'importProducts.importProductVariants.productVariant'
             ])->withSum('variants', 'stock')
             ->where('id', $id)->first();
-        
-            $productGallery = ProductGalleries::where('product_id', $id)->get();
 
-            $images = [
-                [
-                    'src' => $product->thumbnail,
-                    'alt' => $product->thumbnail_alt ?? 'Main product image',
-                ],
+        $productGallery = ProductGalleries::where('product_id', $id)->get();
+
+        $images = [
+            [
+                'src' => $product->thumbnail,
+                'alt' => $product->thumbnail_alt ?? 'Main product image',
+            ],
+        ];
+
+        foreach ($productGallery as $galleryImage) {
+            $images[] = [
+                'src' => $galleryImage->image,
+                'alt' => $galleryImage->alt ?? 'Gallery image',
             ];
-        
-            foreach ($productGallery as $galleryImage) {
-                $images[] = [
-                    'src' => $galleryImage->image,
-                    'alt' => $galleryImage->alt ?? 'Gallery image',
-                ];
-            }
+        }
 
-    return view('admin.products.chitiet', compact('product', 'productGallery', 'images'));
+        return view('admin.products.chitiet', compact('product', 'productGallery', 'images'));
     }
     public function productct($id)
     {
@@ -1193,9 +1194,13 @@ class ProductController extends Controller
                 'categories',
                 'categoryTypes',
                 'variants.attributeValues.attribute',
-                'attributeValues.attribute'
+                'attributeValues.attribute',
+                'reviews' => function ($query) {
+                    $query->where('is_active', true)->with('user');
+                }
             ])
-            ->where('id', $id)->first();
+            ->where('id', $id)
+            ->firstOrFail();
 
         $min_variant_price = $product->variants->min('price');
 
@@ -1211,13 +1216,13 @@ class ProductController extends Controller
         $relatedProducts = Product::whereHas('categories', function ($query) use ($categoryIds) {
             $query->whereIn('categories.id', $categoryIds);
         })
-        ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
-            $query->whereIn('category_types.id', $categoryTypeIds);
-        })
-        ->where('id', '!=', $id)
-        ->with(['variants', 'reviews']) 
-        ->limit(10)
-        ->get();
+            ->orWhereHas('categoryTypes', function ($query) use ($categoryTypeIds) {
+                $query->whereIn('category_types.id', $categoryTypeIds);
+            })
+            ->where('id', '!=', $id)
+            ->with(['variants', 'reviews'])
+            ->limit(10)
+            ->get();
 
         $carts = collect();
         $subtotal = 0;

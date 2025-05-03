@@ -319,7 +319,7 @@ class CartController extends Controller
                     ->get();
 
                 if ($importProducts->isEmpty()) {
-                    throw new \Exception("Không tìm thấy sản phẩm với product_id: {$product['id']} trong bảng import_products");
+                    return redirect()->back()->with('success', 'Không tìm thấy sản phẩm');
                 }
 
                 $validImportProducts = $importProducts->map(function ($import) use ($today) {
@@ -334,7 +334,7 @@ class CartController extends Controller
                     ->sortBy('months_diff');
 
                 if ($validImportProducts->isEmpty()) {
-                    throw new \Exception("Không có sản phẩm với product_id: {$product['id']} có expiry_date >= 8 tháng");
+                    return redirect()->back()->with('error', "Không có sản phẩm với product_id: {$product['id']} có expiry_date >= 8 tháng");
                 }
 
                 $variant = ProductVariant::where('id', $product['id_variant'])->first();
@@ -343,10 +343,10 @@ class CartController extends Controller
                         $variant->stock -= $product['quantity'];
                         $variant->save();
                     } else {
-                        throw new \Exception("Số lượng tồn kho không đủ cho sản phẩm: {$product['name']} (Variant ID: {$product['id_variant']})");
+                        return redirect()->back()->with('error', "Số lượng tồn kho không đủ cho sản phẩm: {$product['name']} (Variant ID: {$product['id_variant']})");
                     }
                 } else {
-                    throw new \Exception("Không tìm thấy variant với ID: {$product['id_variant']}");
+                    return redirect()->back()->with('error', "Không tìm thấy variant với ID: {$product['id_variant']}");
                 }
 
                 $remainingQuantity = $product['quantity'];
@@ -378,7 +378,7 @@ class CartController extends Controller
                                 ->first();
 
                             if (!$import) {
-                                throw new \Exception("Không tìm thấy thông tin lô nhập với import_id: {$importProduct->import_id}");
+                                return redirect()->back()->with('error', "Không tìm thấy thông tin lô nhập với import_id: {$importProduct->import_id}");
                             }
 
                             $importDetails[] = [

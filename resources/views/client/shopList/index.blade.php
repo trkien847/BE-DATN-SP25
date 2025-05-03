@@ -216,11 +216,11 @@
                             <h4 class="ltn__widget-title ltn__widget-title-border">Giá tiền</h4>
                             <ul>
                                 @foreach ([
-            'under_100' => 'Dưới 100.000đ',
-            '100_300' => '100.000đ - 300.000đ',
-            '300_500' => '300.000đ - 500.000đ',
-            'above_500' => 'Trên 500.000đ',
-        ] as $value => $label)
+                                    'under_100' => 'Dưới 100.000đ',
+                                    '100_300' => '100.000đ - 300.000đ',
+                                    '300_500' => '300.000đ - 500.000đ',
+                                    'above_500' => 'Trên 500.000đ',
+                                ] as $value => $label)
                                     <li>
                                         <label>
                                             <input type="checkbox" name="price_range[]" value="{{ $value }}"
@@ -243,7 +243,7 @@
                                                         src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                                         alt="#"></a>
                                             </div>
-                                            <div class="top-rated-product-info">
+                                                <div class="top-rated-product-info">
                                                 <div class="product-ratting">
                                                     {{-- <ul>
                                                         <li><a href="#"><i class="fas fa-star"></i></a></li>
