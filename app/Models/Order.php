@@ -72,4 +72,5 @@ class Order extends Model
             ->first()
             ?->created_at;
     }
+    
 }

@@ -7,12 +7,12 @@
                     <div class="d-flex flex-wrap justify-content-between gap-3">
                         <div class="search-bar">
                             <span><i class="bx bx-search-alt"></i></span>
-                            <input type="search" class="form-control" id="search" placeholder="Search categories...">
+                            <input type="text" id="searchCategory" class="form-control" placeholder="Tìm kiếm danh mục...">
                         </div>
                         <div>
                             @if (auth()->user()->role_id == 3)
                                 <a href="{{ route('categories.pending') }}" class="btn btn-success">
-                                    <i class="bx bx-plus me-1"></i>Danh mục đợi duyệt
+                                    Danh mục đợi duyệt
                                 </a>
                             @endif
                             <a href="{{ route('categories.create') }}" class="btn btn-success">
@@ -110,14 +110,12 @@
                             <!-- end tbody -->
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <div>
-                            Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of
-                            {{ $categories->total() }} entries
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted">
+                            Hiển thị {{ $categories->firstItem() ?? 0 }} đến {{ $categories->lastItem() ?? 0 }}
+                            của {{ $categories->total() ?? 0 }} sản phẩm
                         </div>
-                        <div>
-                            {{ $categories->links() }}
-                        </div>
+                        {{ $categories->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
@@ -125,118 +123,164 @@
     </div>
 @endsection
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all features
+            initializeSearch();
+            initializeToggleSubcategories();
+            initializeToggleActive();
 
+            // Search functionality
+            function initializeSearch() {
+                const searchInput = document.getElementById('searchCategory');
+                let timeoutId;
 
-        //     document.querySelectorAll('.category-row').forEach(function(row) {
-        //         row.addEventListener('click', function() {
-        //             const categoryId = this.getAttribute('data-category-id');
-        //             const subRows = document.querySelectorAll(
-        //                 `.subcategory-row[data-parent-id="${categoryId}"]`);
+                searchInput.addEventListener('keyup', function() {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        const searchText = this.value;
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('search', searchText);
 
-        //             // Toggle display of subcategory rows
-        //             subRows.forEach(function(subRow) {
-        //                 subRow.style.display = subRow.style.display === 'none' ?
-        //                     'table-row' : 'none';
-        //             });
+                        fetch(url)
+                            .then(response => response.text())
+                            .then(html => {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                document.querySelector('.table-responsive').innerHTML =
+                                    doc.querySelector('.table-responsive').innerHTML;
 
-        //             // Toggle active class on category row
-        //             this.classList.toggle('active');
+                                // Reinitialize toggle features after search
+                                initializeToggleSubcategories();
+                                initializeToggleActive();
 
-        //             // Change background color of subcategory rows
-        //             subRows.forEach(function(subRow) {
-        //                 if (subRow.style.display === 'table-row') {
-        //                     subRow.classList.add('highlight');
-        //                 } else {
-        //                     subRow.classList.remove('highlight');
-        //                 }
-        //             });
-        //         });
-        //     });
-        // });
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll(".toggle-subcategories").forEach(button => {
-                button.addEventListener("click", function() {
-                    let categoryId = this.getAttribute("data-category-id");
-                    let subcategories = document.querySelectorAll(`.subcategory-${categoryId}`);
+                                window.history.pushState({}, '', url);
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }, 300);
+                });
+            }
 
-                    subcategories.forEach(sub => {
-                        sub.style.display = sub.style.display === "none" ? "table-row" :
-                            "none";
+            // Toggle subcategories functionality
+            function initializeToggleSubcategories() {
+                document.querySelectorAll(".toggle-subcategories").forEach(button => {
+                    button.addEventListener("click", function() {
+                        const categoryId = this.getAttribute("data-category-id");
+                        const subcategories = document.querySelectorAll(
+                            `.subcategory-${categoryId}`);
+                        const isExpanding = this.textContent === "+";
+
+                        subcategories.forEach(sub => {
+                            sub.style.display = isExpanding ? "table-row" : "none";
+                        });
+
+                        this.textContent = isExpanding ? "−" : "+";
+                        this.classList.toggle("btn-primary", isExpanding);
+                        this.classList.toggle("btn-outline-primary", !isExpanding);
                     });
+                });
+            }
 
-                    // Đổi dấu "+" thành "-" khi mở danh mục con
-                    if (this.textContent === "+") {
-                        this.textContent = "−";
-                        this.classList.add("btn-primary");
-                        this.classList.remove("btn-outline-primary");
-                    } else {
-                        this.textContent = "+";
-                        this.classList.add("btn-outline-primary");
-                        this.classList.remove("btn-primary");
+            // Toggle active status functionality
+            function initializeToggleActive() {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+                document.querySelectorAll(".toggle-active").forEach(checkbox => {
+                    checkbox.addEventListener("change", function() {
+                        const categoryId = this.getAttribute("data-id");
+                        const isActive = this.checked;
+                        const isParent = !this.hasAttribute("data-parent-id");
+                        const checkboxElement = this;
+
+                        Swal.fire({
+                            title: 'Xác nhận thay đổi',
+                            text: `Bạn có chắc chắn muốn ${isActive ? 'kích hoạt' : 'vô hiệu hóa'} danh mục này?`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Đồng ý',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                handleStatusChange(categoryId, isActive, isParent,
+                                    checkboxElement, csrfToken);
+                            } else {
+                                checkboxElement.checked = !isActive;
+                            }
+                        });
+                    });
+                });
+            }
+
+            // Handle category status change
+            function handleStatusChange(categoryId, isActive, isParent, checkboxElement, csrfToken) {
+                const url = isParent ?
+                    `/categories/${categoryId}/toggle-active` :
+                    `/categories/${categoryId}/toggle-subcategory-active`;
+
+                fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": csrfToken
+                        },
+                        body: JSON.stringify({
+                            is_active: isActive ? 1 : 0
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            handleSuccessResponse(categoryId, isActive, isParent);
+                        } else {
+                            handleErrorResponse(checkboxElement, data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        handleErrorResponse(checkboxElement);
+                    });
+            }
+
+            // Handle success response
+            function handleSuccessResponse(categoryId, isActive, isParent) {
+                if (isParent) {
+                    updateSubcategories(categoryId, isActive);
+                }
+
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Trạng thái danh mục đã được cập nhật',
+                    icon: 'success',
+                    timer: 1500
+                });
+            }
+
+            // Update subcategories status
+            function updateSubcategories(categoryId, isActive) {
+                const subcategories = document.querySelectorAll(`[data-parent-id="${categoryId}"]`);
+                subcategories.forEach(subcategory => {
+                    const subCheckbox = subcategory.querySelector(".toggle-active");
+                    if (subCheckbox) {
+                        subCheckbox.disabled = !isActive;
+                        if (!isActive) {
+                            subCheckbox.checked = false;
+                        }
                     }
                 });
-            });
-        });
-        document.addEventListener("DOMContentLoaded", function() {
-            let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+            }
 
-            document.querySelectorAll(".toggle-active").forEach(checkbox => {
-                checkbox.addEventListener("change", function() {
-                    let categoryId = this.getAttribute("data-id");
-                    let isActive = this.checked ? 1 : 0;
-                    let isParent = this.getAttribute("data-parent-id") ===
-                        null; // Kiểm tra danh mục cha/con
-
-                    let url = isParent ?
-                        `/categories/${categoryId}/toggle-active` :
-                        `/categories/${categoryId}/toggle-subcategory-active`;
-
-                    fetch(url, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": csrfToken
-                            },
-                            body: JSON.stringify({
-                                is_active: isActive
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log("Cập nhật trạng thái thành công!");
-
-                                if (isParent) {
-                                    let subcategories = document.querySelectorAll(
-                                        `[data-parent-id="${categoryId}"]`);
-                                    subcategories.forEach(subcategory => {
-                                        let subCheckbox = subcategory.querySelector(
-                                            ".toggle-active");
-                                        if (subCheckbox) {
-                                            subCheckbox.disabled = isActive ===
-                                                0; // Nếu cha tắt, vô hiệu hóa danh mục con
-                                            if (isActive === 0) {
-                                                subCheckbox.checked =
-                                                    false;
-                                            }
-                                        }
-                                        subcategory.style.display = isActive === 1 ?
-                                            "table-row" :
-                                            "none";
-                                    });
-                                }
-                            } else {
-                                console.error(
-                                    "Không thể bật danh mục con nếu danh mục cha đang tắt.");
-                                this.checked = !
-                                    isActive;
-                            }
-                        })
-                        .catch(error => console.error("Lỗi:", error));
+            // Handle error response
+            function handleErrorResponse(checkboxElement, message = 'Đã xảy ra lỗi khi cập nhật trạng thái!') {
+                checkboxElement.checked = !checkboxElement.checked;
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: message,
+                    icon: 'error'
                 });
-            });
+            }
         });
     </script>
 @endpush

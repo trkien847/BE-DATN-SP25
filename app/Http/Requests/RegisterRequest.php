@@ -26,6 +26,10 @@ class RegisterRequest extends FormRequest
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
+            'agree_terms' => 'required',
+            'agree_medical' => 'required',
+            'agree_age' => 'required',
+            'agree_info' => 'required',
         ];
     }
 
@@ -40,6 +44,10 @@ class RegisterRequest extends FormRequest
             'password.required' => 'Mật khẩu không được để trống.',
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'agree_terms.required' => 'Vui lòng đồng ý với điều khoản sử dụng',
+            'agree_medical.required' => 'Vui lòng xác nhận hiểu rõ quy định về mua thuốc',
+            'agree_age.required' => 'Vui lòng xác nhận đủ tuổi',
+            'agree_info.required' => 'Vui lòng đồng ý cung cấp thông tin',
         ];
     }
 }

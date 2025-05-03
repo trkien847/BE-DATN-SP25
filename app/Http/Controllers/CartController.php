@@ -706,7 +706,7 @@ class CartController extends Controller
             ]);
         }
 
-        return redirect()->route('orderHistory')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
+        return redirect()->route('profile')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
     }
 
     public function refundDetails(Request $request, $orderId)
@@ -784,13 +784,16 @@ class CartController extends Controller
             'note' => 'Đã nhận được tiền hoàn',
         ]);
 
-        return redirect()->route('orderHistory')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
+        return redirect()->route('profile')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
     }
 
     public function cancelOrder(Request $request, $orderId)
     {
         $user = Auth::user();
-        $order = Order::where('user_id', $user->id)->findOrFail($orderId);
+        $order = Order::where('user_id', $user->id)
+            ->with(['items.product', 'latestOrderStatus'])
+            ->findOrFail($orderId);
+            
         $currentStatus = $order->latestOrderStatus->name;
 
         if ($request->isMethod('post')) {
@@ -833,7 +836,7 @@ class CartController extends Controller
                 event(new OrderCancelRequested($user, $order, $request->cancel_reason));
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
@@ -1023,7 +1026,7 @@ class CartController extends Controller
                 }
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
@@ -1075,6 +1078,7 @@ class CartController extends Controller
         }
 
         $selectedVariantId = $request->product_variant_id ?? $product->variants->first()->id;
+        $variant = ProductVariant::with('attributeValues.attribute')->find($selectedVariantId);
 
         $cartItem = Cart::where('user_id', $user->id)
             ->where('product_id', $product->id)
@@ -1093,24 +1097,32 @@ class CartController extends Controller
             ]);
         }
 
-
         $carts = Cart::where('user_id', $user->id)
-            ->with(['product', 'productVariant'])
+            ->with([
+                'product',
+                'productVariant.attributeValues.attribute'
+            ])
             ->get();
 
         $subtotal = $carts->sum(function ($cart) {
-            $price = (!empty($cart->productVariant->sale_price) && $cart->productVariant->sale_price > 0)
+            $price = $cart->productVariant->sale_price > 0
                 ? $cart->productVariant->sale_price
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
 
         $cartItems = $carts->map(function ($cart) {
+            // Lấy các thuộc tính của biến thể
+            $variantAttributes = $cart->productVariant->attributeValues->map(function ($av) {
+                return $av->value;
+            })->join(' ');
+
             return [
                 'id' => $cart->id,
                 'product_id' => $cart->product_id,
                 'product_variant_id' => $cart->product_variant_id,
                 'quantity' => $cart->quantity,
+                'variant_name' => $variantAttributes ?: 'Mặc định', // Hiển thị "Mặc định" nếu không có thuộc tính
                 'product' => [
                     'name' => $cart->product->name,
                     'thumbnail' => asset('upload/' . $cart->product->thumbnail),
@@ -1124,7 +1136,7 @@ class CartController extends Controller
             'status' => 'success',
             'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
             'cart_count' => $carts->sum('quantity'),
-            'subtotal' => number_format($subtotal, 2) . 'đ',
+            'subtotal' => number_format($subtotal, 0, ',', '.') . 'đ',
             'cart_items' => $cartItems
         ]);
     }
@@ -1142,7 +1154,7 @@ class CartController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Xóa sản phẩm khỏi giỏ hàng thành công!',
-            'cart_count' => $carts->sum('quantity') 
+            'cart_count' => $carts->sum('quantity')
         ]);
     }
 

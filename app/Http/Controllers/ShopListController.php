@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\CategoryType;
@@ -20,8 +21,8 @@ class ShopListController extends Controller
     }
     public function show($categoryId = null, $subcategoryId = null)
     {
-        $categories = $this->categoryService->getAllCategories();
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+        $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
+        $sevenDaysAgo = Carbon::now()->subDays(30);
         $productTop = OrderItem::with('product.variants')
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -30,6 +31,7 @@ class ShopListController extends Controller
             ->orderByDesc('total_sold')
             ->limit(3)
             ->get();
+
         $carts = Cart::where('user_id', auth()->id())->get();
 
         $subtotal = $carts->sum(function ($cart) {
@@ -39,35 +41,60 @@ class ShopListController extends Controller
             return $cart->quantity * $price;
         });
 
+        // Modify base query to include only products with active variants
         $productsQuery = Product::selectRaw(
             'products.*, 
-        (SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id) as min_price, 
-        (SELECT MIN(sale_price) FROM product_variants WHERE product_variants.product_id = products.id AND sale_price > 0) as min_sale_price'
-        );
+            (SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id AND stock > 0) as min_price, 
+            (SELECT MIN(sale_price) FROM product_variants WHERE product_variants.product_id = products.id AND sale_price > 0 AND stock > 0) as min_sale_price'
+        )->whereHas('variants', function ($query) {
+            $query->where('stock', '>', 0);
+        });
 
         if ($categoryId) {
             $category = Category::findOrFail($categoryId);
 
             if ($subcategoryId) {
-                $subcategory = CategoryType::where('id', $subcategoryId)
-                    ->where('category_id', $category->id)
+                $subcategory = CategoryType::where('category_types.id', $subcategoryId)
+                    ->where('category_types.category_id', $category->id)
                     ->firstOrFail();
+
                 $products = $productsQuery->whereHas('categoryTypes', function ($query) use ($subcategoryId) {
-                    $query->where('id', $subcategoryId);
-                })->get();
-                $brands = $products->pluck('brand')->unique()->filter();
+                    $query->where('category_types.id', $subcategoryId);
+                })->with(['variants' => function ($query) {
+                    $query->where('stock', '>', 0);
+                }])->paginate(12);
+
+                $brands = Brand::whereIn('id', Product::whereHas('variants', function($query) {
+                    $query->where('stock', '>', 0);
+                })->pluck('brand_id'))
+                ->get();
+
                 return view('client.shopList.index', compact('category', 'subcategory', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
             }
 
             $products = $productsQuery->whereHas('categories', function ($query) use ($category) {
                 $query->where('categories.id', $category->id);
-            })->get();
-            $brands = $products->pluck('brand')->unique()->filter();
+            })->with(['variants' => function ($query) {
+                $query->where('stock', '>', 0);
+            }])->paginate(12);
+
+            $brands = Brand::whereIn('id', Product::whereHas('variants', function($query) {
+                $query->where('stock', '>', 0);
+            })->pluck('brand_id'))
+            ->get();
+
             return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
         }
 
-        $products = $productsQuery->paginate(12);
-        $brands = $products->pluck('brand')->unique()->filter();
+        $products = $productsQuery->with(['variants' => function ($query) {
+            $query->where('stock', '>', 0);
+        }])->paginate(12);
+
+        $brands = Brand::whereIn('id', Product::whereHas('variants', function($query) {
+            $query->where('stock', '>', 0);
+        })->pluck('brand_id'))
+        ->get();
+
         return view('client.shopList.index', compact('products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
     }
     public function search(Request $request, $categoryId = null, $subcategoryId = null)
@@ -75,14 +102,29 @@ class ShopListController extends Controller
         $categories = $this->categoryService->getAllCategories();
         $category = null;
         $subcategory = null;
-        $productTop = Product::orderBy('views', 'desc')->take(3)->get();
+        $sevenDaysAgo = Carbon::now()->subDays(30);
+        $productTop = OrderItem::with('product.variants')
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->limit(3)
+            ->get();
 
-        // Truy vấn cơ bản với giá
+        // Truy vấn cơ bản với giá - chỉ lấy từ variants có stock > 0
         $query = Product::selectRaw("
         products.*,
-        (SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id) as min_price,
-        (SELECT MIN(sale_price) FROM product_variants WHERE product_variants.product_id = products.id AND sale_price > 0) as min_sale_price
-    ");
+        (SELECT MIN(price) FROM product_variants 
+         WHERE product_variants.product_id = products.id 
+         AND stock > 0) as min_price,
+        (SELECT MIN(sale_price) FROM product_variants 
+         WHERE product_variants.product_id = products.id 
+         AND sale_price > 0 
+         AND stock > 0) as min_sale_price
+            ")->whereHas('variants', function ($query) {
+            $query->where('stock', '>', 0);
+        });
 
         // Lọc theo category/subcategory nếu có
         if ($categoryId) {
@@ -103,7 +145,7 @@ class ShopListController extends Controller
             }
         }
 
-        // Lấy danh sách brand
+        // Lấy danh sách brand từ sản phẩm có variants với stock > 0
         $brands = $query->get()->pluck('brand')->unique()->filter();
 
         // Lọc theo từ khóa
@@ -126,17 +168,18 @@ class ShopListController extends Controller
             ];
 
             $query->whereHas('variants', function ($q) use ($request, $priceFilters) {
-                $q->where(function ($subQuery) use ($request, $priceFilters) {
-                    foreach ($request->price_range as $range) {
-                        if (isset($priceFilters[$range])) {
-                            [$min, $max] = $priceFilters[$range];
-                            $subQuery->orWhereRaw(
-                                '(CASE WHEN sale_price IS NOT NULL AND sale_price > 0 THEN sale_price ELSE price END) BETWEEN ? AND ?',
-                                [$min, $max]
-                            );
+                $q->where('stock', '>', 0)
+                    ->where(function ($subQuery) use ($request, $priceFilters) {
+                        foreach ($request->price_range as $range) {
+                            if (isset($priceFilters[$range])) {
+                                [$min, $max] = $priceFilters[$range];
+                                $subQuery->orWhereRaw(
+                                    '(CASE WHEN sale_price IS NOT NULL AND sale_price > 0 THEN sale_price ELSE price END) BETWEEN ? AND ?',
+                                    [$min, $max]
+                                );
+                            }
                         }
-                    }
-                });
+                    });
             });
         }
 
@@ -158,8 +201,10 @@ class ShopListController extends Controller
             }
         }
 
-        // Lấy sản phẩm
-        $products = $query->get();
+        // Lấy sản phẩm với variants có stock > 0
+        $products = $query->with(['variants' => function ($query) {
+            $query->where('stock', '>', 0);
+        }])->paginate(12);
 
         // Trả về Ajax hoặc view
         if ($request->ajax()) {

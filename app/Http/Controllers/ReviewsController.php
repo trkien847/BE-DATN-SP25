@@ -45,4 +45,5 @@ class ReviewsController extends Controller
 
         return redirect()->route('admin.reviews.listReviews')->with('message', 'Đã ẩn thành công 1 đánh giá.');
     }
+    
 }

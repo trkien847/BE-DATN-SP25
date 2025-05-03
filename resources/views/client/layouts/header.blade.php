@@ -7,7 +7,7 @@
             <div class="row">
                 <div class="col">
                     <div class="site-logo">
-                        <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo.png') }}" alt="Logo"></a>
+                        <a href="{{ route('index') }}"><img src="{{ asset('client/img/2.png') }}" alt="Logo"></a>
                     </div>
                 </div>
                 <div class="col header-contact-serarch-column d-none d-lg-block">
@@ -19,13 +19,14 @@
                             </div>
                             <div class="header-feature-info">
                                 <h6>Tư vấn:</h6>
-                                <p><a href="tel:0123456789">+0123-456-789</a></p>
+                                <p><a href="tel:0123456789">0976229245</a></p>
                             </div>
                         </div>
                         <!-- header-search-2 -->
                         <div class="header-search-2">
-                            <form id="#123" method="get" action="#">
-                                <input type="text" name="search" value="" placeholder="Tìm kiếm ở đây..." />
+                            <form id="search-form" method="get" action="{{ route('search') }}">
+                                <input type="text" name="q" value="{{ request()->get('q') }}"
+                                    placeholder="Tìm kiếm sản phẩm..." id="header-search-input" />
                                 <button type="submit">
                                     <span><i class="icon-search"></i></span>
                                 </button>
@@ -37,26 +38,6 @@
                     <!-- header-options -->
                     <div class="ltn__header-options">
                         <ul>
-                            {{-- <li class="d-none">
-                                <!-- ltn__currency-menu -->
-                                <div class="ltn__drop-menu ltn__currency-menu">
-                                    <ul>
-                                        <li><a href="#" class="dropdown-toggle"><span
-                                                    class="active-currency">USD</span></a>
-                                            <ul>
-                                                <li><a href="login.html">USD - US Dollar</a></li>
-                                                <li><a href="wishlist.html">CAD - Canada Dollar</a></li>
-                                                <li><a href="register.html">EUR - Euro</a></li>
-                                                <li><a href="account.html">GBP - British Pound</a></li>
-                                                <li><a href="wishlist.html">INR - Indian Rupee</a></li>
-                                                <li><a href="wishlist.html">BDT - Bangladesh Taka</a></li>
-                                                <li><a href="wishlist.html">JPY - Japan Yen</a></li>
-                                                <li><a href="wishlist.html">AUD - Australian Dollar</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li> --}}
                             <li class="d-lg-none">
                                 <!-- header-search-1 -->
                                 <div class="header-search-wrap">
@@ -88,13 +69,12 @@
                                                     <li><a href="{{ route('login') }}">Đăng nhập</a></li>
                                                     <li><a href="{{ route('register') }}">Đăng ký</a></li>
                                                 @endif
-                                            
+
                                                 @if (Auth::check())
-                                                
                                                     <li><a href="{{ route('profile') }}">Tài khoản</a></li>
                                                     <li><a href="{{ route('logout') }}">Đăng xuất</a></li>
                                                 @endif
-                                            </ul>                                            
+                                            </ul>
                                         </li>
                                     </ul>
                                 </div>
@@ -107,8 +87,8 @@
                                                 <i class="icon-shopping-cart"></i>
                                                 <sup>{{ $carts->sum('quantity') }}</sup>
                                             </span>
-                                            <h6><span>Giỏ hàng</span> <span
-                                                class="ltn__secondary-color" id="cart-subtotal">{{ number_format($subtotal, 0) }}đ</span>
+                                            <h6><span>Giỏ hàng</span> <span class="ltn__secondary-color"
+                                                    id="cart-subtotal">{{ number_format($subtotal, 0) }}đ</span>
                                             </h6>
                                         </a>
                                     </div>
@@ -129,7 +109,8 @@
                 <div class="col header-menu-column justify-content-center">
                     <div class="sticky-logo">
                         <div class="site-logo">
-                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo-3.p') }}ng" alt="Logo"></a>
+                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo-3.p') }}ng"
+                                    alt="Logo"></a>
                         </div>
                     </div>
                     <div class="header-menu header-menu-2">
@@ -203,3 +184,46 @@
     </div>
     <!-- header-bottom-area end -->
 </header>
+{{-- @push('js')
+    <script>
+        $(document).ready(function() {
+            $('#search-form').on('submit', function(e) {
+                e.preventDefault();
+                const searchQuery = $('#search-input').val().trim();
+
+                if (searchQuery) {
+                    $.ajax({
+                        url: "{{ route('search') }}",
+                        method: 'GET',
+                        data: {
+                            q: searchQuery
+                        },
+                        success: function(response) {
+                            // Cập nhật UI với kết quả tìm kiếm
+                            if (response.products && response.products.length > 0) {
+                                // Chuyển hướng đến trang kết quả tìm kiếm
+                                window.location.href = "{{ route('search') }}?q=" +
+                                    encodeURIComponent(searchQuery);
+                            } else {
+                                // Hiển thị thông báo không tìm thấy kết quả
+                                Toastify({
+                                    text: "Không tìm thấy sản phẩm phù hợp",
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: "#ff4444"
+                                    }
+                                }).showToast();
+                            }
+                        },
+                        error: function(xhr) {
+                            console.log("Lỗi khi tìm kiếm:", xhr);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+@endpush --}}

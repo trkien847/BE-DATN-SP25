@@ -305,7 +305,7 @@
 <div id="loading-overlay" class="loading-overlay">
     <div class="loading-content">
         <div class="loading-text">
-            <span>D</span><span>e</span><span>s</span><span>i</span><span>g</span><span>n</span><span>e</span><span>d</span><span>&nbsp;</span><span>b</span><span>y</span><span>&nbsp;</span><span>T</span><span>G</span>
+            <span>B</span><span>e</span><span>e</span><span>P</span><span>h</span><span>a</span><span>r</span><span>m</span><span>a</span><span>c</span><span>y</span>
         </div>
     </div>
 </div>
@@ -339,7 +339,7 @@
                 <tr>
                     <th scope="col">Mã SP</th>
                     <th scope="col">Tên Sản Phẩm</th>
-                    <th scope="col">Số lần nhập</th>
+                    <th scope="col">Ngày Nhập</th>
                     <th scope="col">Ảnh</th>
                     <th scope="col">Danh mục</th>
                     <th scope="col">Trạng Thái</th>
@@ -443,7 +443,7 @@
             <div id="details-{{ $product->id }}-{{ $importCount }}" class="overlay">
                 <div class="overlay-content">
                     <button class="close-btn" onclick="closeDetails('details-{{ $product->id }}-{{ $importCount }}')">Close</button>
-                    <h4>Thông tin lô nhập Designed by TG</h4>
+                    <h4>Thông tin lô nhập</h4>
                     <p><strong>Ngày nhập lô:</strong> {{ $importProduct->import->import_date }}</p>
                     <p><strong>Người nhập:</strong> {{ $importProduct->import->user->fullname ?? 'N/A' }}</p>
                     <p><strong>Số lượng nhập:</strong> {{ $importProduct->import->total_quantity }}</p>

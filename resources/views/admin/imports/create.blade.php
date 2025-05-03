@@ -1,11 +1,11 @@
 @extends('admin.layouts.layout')
 @section('content')
 <div> 
-            <audio id="backgroundMusic" autoplay>
+            <!-- <audio id="backgroundMusic" autoplay>
                 <source src="{{ asset('audio/Wake Me Up X After Hours.mp3') }}" type="audio/mpeg">
-            </audio>
+            </audio> -->
 
-            <script>
+            <!-- <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const audio = document.getElementById('backgroundMusic');
                 audio.volume = 1;
@@ -22,7 +22,7 @@
                     }
                 });
             });
-            </script>
+            </script> -->
     </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
 <form id="importForm" method="POST" action="{{ route('admin.imports.store') }}" enctype="multipart/form-data">
@@ -30,7 +30,7 @@
 <div class="container">
     <div class="panel">
         <h2 ><i class="fas fa-box"></i> Danh Sách Sản Phẩm</h2>
-        <a href="javascript:void(0)" id="add-product-btn" class="btn-add-product">
+        <a href="#" id="add-product-btn" class="btn-add-product">
             <i class="fas fa-plus"></i> Thêm Sản Phẩm
         </a>
         
@@ -139,12 +139,12 @@
         </div>
         
         <div class="order-batch-info">
-            <div class="supplier-header">
-                <div class="info-label">Thông Tin Lô Hàng</div>
-                <a href="javascript:void(0)" id="add-order-batch-btn" class="btn-add-batch">
-                    <i class="fas fa-plus"></i> Thêm Lô Hàng
-                </a>
-            </div>
+        <div class="supplier-header">
+        <div class="info-label">Thông Tin Lô Hàng</div>
+        <a href="javascript:void(0)" id="add-order-batch-btn" class="btn-add-batch">
+        <i class="fas fa-plus"></i> Thêm Lô Hàng
+        </a>
+        </div>
             <select id="order-batch-select" name="order_import_id">
                 <option value="">Chọn lô hàng</option>
                 @foreach($orderImport as $orderIm)
@@ -296,13 +296,14 @@
     }
 
     .container {
-        max-width: 1400px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 30px;
-        padding: 20px;
-    }
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    padding: 20px;
+    overflow-x: hidden; /* tránh tràn chiều ngang */
+}
 
     .panel {
         background: var(--card-background);
@@ -482,23 +483,32 @@
     }
 
     .btn-add-batch {
-        padding: 8px 15px;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-    }
+    padding: 10px 18px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+}
 
-    .btn-add-batch:hover {
-        background: var(--primary-hover);
-        transform: scale(1.05);
-        color: white;
-    }
+.btn-add-batch:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+    color: white;
+}
 
+
+.btn-add-batch i {
+    font-size: 1rem; /* Hoặc 16px */
+}
     .order-batch-details {
         margin-top: 15px;
         padding: 15px;
@@ -718,33 +728,33 @@
     }
 
     .btn-add-product {
-        width: 100%;
-        margin-bottom: 20px;
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: var(--transition);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        text-decoration: none; /* Thêm style cho thẻ a */
-        font-size: 14px;
-    }
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap; /* Không xuống dòng */
+}
 
-    .btn-add-product:hover {
-        background-color: var(--primary-hover);
-        transform: scale(1.05);
-        color: white; /* Giữ màu chữ khi hover */
-        text-decoration: none; /* Không gạch chân khi hover */
-    }
+.btn-add-product:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.03);
+    color: white;
+    text-decoration: none;
+}
 
     .btn-add-product i {
-        font-size: 1.2em;
-    }
+    font-size: 16px;
+}
 
     .btn-submit-import {
         width: 100%;
@@ -875,15 +885,14 @@
     }
 
     .supplier-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
+    display: flex;
+    align-items: center; /* căn giữa theo chiều cao */
+    justify-content: space-between; /* hoặc flex-start nếu bạn không muốn chúng tách ra xa */
+    gap: 16px; /* khoảng cách giữa label và nút */
+    flex-wrap: nowrap; /* không cho xuống dòng */
+    margin-bottom: 20px;
+}
 
-    .supplier-header .info-label {
-        margin-bottom: 0;
-    }
 
     .supplier-info select {
         margin-bottom: 10px;
@@ -938,25 +947,28 @@
     }
 
     .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
+    display: none;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow: auto; /* Cho phép cuộn nếu nội dung bị tràn */
+}
 
-    .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 20px;
-        border-radius: var(--border-radius);
-        width: 500px;
-        position: relative;
-        animation: slideIn 0.3s ease;
-    }
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 5% auto; /* Căn giữa modal với một khoảng cách từ trên xuống */
+    padding: 20px;
+    width: 80%; /* Giới hạn chiều rộng */
+    max-width: 600px; /* Đặt chiều rộng tối đa để tránh quá rộng */
+    max-height: 80vh; /* Giới hạn chiều cao ở mức 80% chiều cao khung nhìn */
+    overflow-y: auto; /* Cuộn theo chiều dọc nếu nội dung bị tràn */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 
     .modal-header {
         display: flex;
@@ -1014,10 +1026,7 @@
         }
     }
 
-    .btn-add-product {
-        width: 100%;
-        margin-bottom: 20px;
-    }
+
 
     .selected-products {
         margin-top: 20px;
@@ -1131,18 +1140,36 @@
     }
 
     .user-info .header-row {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 10px;
-    }
+    display: flex;
+    align-items: center;      /* Căn giữa theo chiều dọc */
+    justify-content: space-between; /* Phân bổ đều nếu muốn đẩy nút ra xa */
+    gap: 15px;
+    margin-bottom: 10px;
+    flex-wrap: wrap; /* Đảm bảo không vỡ layout khi màn hình nhỏ */
+}
 
-    .user-info .info-label {
-        margin: 0;
-        white-space: nowrap;
-        font-weight: 600;
-        color: #666;
-    }
+.header-row .info-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #444;
+    white-space: nowrap;
+}
+
+.header-row p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 14px;
+    color: #333;
+}
+    .info-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #444;
+    white-space: nowrap;
+}
 
     .user-info p {
         margin: 0;
@@ -1152,12 +1179,20 @@
         flex: 1;
     }
 
-    #view-more-btn {
-        margin: 0;
-        padding: 8px 15px;
-        font-size: 0.9em;
-        white-space: nowrap;
-    }
+    .view-more-btn {
+    padding: 8px 14px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
 
     .user-details {
         margin-top: 15px;
@@ -1366,20 +1401,26 @@
         }
 
         function validateImportDate() {
-            const importDate = new Date(importDateInput.value);
-            const today = new Date();
+    const importDate = new Date(importDateInput.value);
+    const today = new Date();
 
-            importDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
+    importDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
 
-            if (importDate > today) {
-                alert('Ngày nhập không được lớn hơn ngày hiện tại.');
-                importDateInput.value = today.toISOString().split('T')[0];
-                return false;
-            }
+    if (importDate < today) {
+        alert('Ngày nhập không được nhỏ hơn ngày hiện tại.');
+        importDateInput.value = today.toISOString().split('T')[0];
+        return false;
+    }
 
-            return true;
-        }
+    if (importDate > today) {
+        alert('Ngày nhập không được lớn hơn ngày hiện tại.');
+        importDateInput.value = today.toISOString().split('T')[0];
+        return false;
+    }
+
+    return true;
+}
 
         importDateInput.addEventListener('change', validateImportDate);
 
@@ -1777,11 +1818,11 @@
                         <div class="selected-product-form">
                             <div class="form-input">
                                 <label>Giá nhập</label>
-                                <input type="number" name="products[${productId}][variants][${variantId}][price]" required min="0">
+                                <input type="text" name="products[${productId}][variants][${variantId}][price]" required min="0">
                             </div>
                             <div class="form-input">
                                 <label>Số lượng</label>
-                                <input type="number" name="products[${productId}][variants][${variantId}][quantity]" required min="1">
+                                <input type="text" name="products[${productId}][variants][${variantId}][quantity]" required min="1">
                             </div>
                             <div class="form-input">
                                 <label>Ngày sản xuất</label>
@@ -1867,7 +1908,7 @@
             updateProductCount();
             productModal.style.display = 'none';
         }
-
+            
         function updateProductCount() {
             let countElement = document.getElementById('selected-product-count');
             if (!countElement) {

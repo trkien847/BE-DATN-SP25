@@ -315,7 +315,7 @@
 
                         <!-- Thông tin phiếu nhập -->
                         <div class="import-info">
-                            <h4 class="font-semibold mb-2">Thông tin phiếu nhập (Designed by TG)</h4>
+                            <h4 class="font-semibold mb-2">Thông tin phiếu nhập</h4>
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong>Mã nhập:</strong> {{ $importProduct->import->import_code ?? 'N/A' }}</p>
