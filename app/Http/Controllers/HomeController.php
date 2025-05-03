@@ -34,10 +34,12 @@ class HomeController extends Controller
 
         $sevenDaysAgo = Carbon::now()->subDays(30);
         $productBestSale = OrderItem::with(['product.variants' => function ($query) {
-            $query->whereNull('deleted_at');
+            $query->whereNull('deleted_at')
+                ->where('stock', '>', 0);  // Chỉ lấy biến thể còn hàng
         }])
-            ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+            ->whereHas('product.variants', function ($query) {
+                $query->whereNull('deleted_at')
+                    ->where('stock', '>', 0);  // Chỉ lấy sản phẩm có ít nhất 1 biến thể còn hàng
             })
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -48,6 +50,10 @@ class HomeController extends Controller
             ->get();
 
         $productTop = Product::whereNull('deleted_at')
+            ->whereHas('variants', function ($query) {
+                $query->whereNull('deleted_at')
+                    ->where('stock', '>', 0);
+            })
             ->orderBy('views', 'desc')
             ->take(6)
             ->get();

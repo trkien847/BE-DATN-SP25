@@ -32,26 +32,27 @@
         }
 
         .coupon-btn {
-    position: relative;
-    padding: 10px 20px;
-    border: 2px solid #22C55E;
-    background-color: #fff;
-    color: #22C55E;
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 0 0 transparent;
-}
+            position: relative;
+            padding: 10px 20px;
+            border: 2px solid #22C55E;
+            background-color: #fff;
+            color: #22C55E;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 0 transparent;
+        }
 
-.coupon-btn:hover:not(:disabled),
-.coupon-btn:focus-visible:not(:disabled) {
-    background-color: #22C55E;
-    color: #22C55E;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    transform: translateY(-2px);
-}
+        .coupon-btn:hover:not(:disabled),
+        .coupon-btn:focus-visible:not(:disabled) {
+            background-color: #22C55E;
+            color: #22C55E;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            transform: translateY(-2px);
+        }
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -186,7 +187,10 @@
 
                                             <td class="cart-product-subtotal">
                                                 @php
-                                                    $price = $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->price;
+                                                    $price =
+                                                        $cart->productVariant->sale_price > 0
+                                                            ? $cart->productVariant->sale_price
+                                                            : $cart->productVariant->price;
                                                     $subtotal = $price * $cart->quantity;
                                                 @endphp
                                                 {{ number_format($subtotal) }}đ
@@ -209,7 +213,7 @@
                                                 <button type="button" class="btn btn-effect-2 coupon-btn" id="apply-coupon"
                                                     {{ $appliedCoupon ? 'disabled' : '' }}>
                                                     <span class="btn-text">Sử dụng mã giảm giá</span>
-                                                    
+
                                                 </button>
                                                 @if ($appliedCoupon)
                                                     <small id="applied-coupon-text">Đã áp dụng:
@@ -221,7 +225,7 @@
                                         <td>
                                             <button type="button" class="btn btn-effect-2 coupon-btn" id="show-coupons">
                                                 <span class="btn-text">Lấy mã giảm giá</span>
-                                               
+
                                             </button>
                                         </td>
                                     </tr>
@@ -405,33 +409,95 @@
             });
 
 
-            $('.qtybutton').off('click');
-            $(document).on('click', '.qtybutton', function() {
+
+            $(document).off('click', '.qtybutton').on('click', '.qtybutton', function(e) {
+                if ($(this).hasClass('disabled')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+
                 let $button = $(this);
                 let $input = $button.siblings('input.cart-plus-minus-box');
                 let oldValue = parseInt($input.val());
+                let $row = $button.closest('tr');
+                let cartId = $row.data('cart-id');
 
+                // Lưu giá trị cũ
+                $input.data('old-value', oldValue);
                 let newVal = oldValue;
-                if ($button.hasClass('inc')) {
-                    newVal = oldValue + 1;
-                } else if ($button.hasClass('dec') && oldValue > 1) {
-                    newVal = oldValue - 1;
-                }
 
-                $input.val(newVal);
-                clearTimeout(updateTimer);
-                updateTimer = setTimeout(function() {
+                if ($button.hasClass('inc')) {
+
+                    $.ajax({
+                        url: "{{ route('cart.check-quantity') }}",
+                        type: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            cart_id: cartId,
+                            quantity: newVal
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                $input.val(newVal);
+                                $input.trigger('change');
+                            } else {
+                                showToast(response.message, "error");
+                                // Reset về số lượng cũ
+                                $input.val(response.old_quantity);
+
+                                // Cập nhật lại subtotal
+                                const price = parseFloat($row.find('.cart-product-price').text()
+                                    .replace(/[,.đ]/g, ''));
+                                const subtotal = price * response.old_quantity;
+                                $row.find('.cart-product-subtotal').text(new Intl.NumberFormat(
+                                    'vi-VN').format(subtotal) + 'đ');
+                                updateCartTotal();
+
+                                // Disable nút tăng
+                                $button.addClass('disabled').css({
+                                    'opacity': '0.5',
+                                    'cursor': 'not-allowed',
+                                    'pointer-events': 'none'
+                                });
+                            }
+                        },
+                        error: function() {
+                            showToast("Có lỗi xảy ra khi cập nhật số lượng!", "error");
+                            // Reset về số lượng cũ
+                            $input.val(oldValue);
+
+                            // Cập nhật lại subtotal
+                            const price = parseFloat($row.find('.cart-product-price').text()
+                                .replace(/[,.đ]/g, ''));
+                            const subtotal = price * oldValue;
+                            $row.find('.cart-product-subtotal').text(new Intl.NumberFormat(
+                                'vi-VN').format(subtotal) + 'đ');
+                            updateCartTotal();
+                        }
+                    });
+                } else if ($button.hasClass('dec') && oldValue > 1) {
+                    $input.val(newVal);
                     $input.trigger('change');
-                }, 500);
+
+                    // Kích hoạt lại nút tăng
+                    $row.find('.inc').removeClass('disabled').css({
+                        'opacity': '1',
+                        'cursor': 'pointer',
+                        'pointer-events': 'auto'
+                    });
+                }
             });
 
-            $('.cart-plus-minus-box').on('change', function() {
-                const $row = $(this).closest('tr');
+            $(document).off('change', '.cart-plus-minus-box').on('change', '.cart-plus-minus-box', function() {
+                const $input = $(this);
+                const $row = $input.closest('tr');
                 const cartId = $row.data('cart-id');
-                const quantity = parseInt($(this).val(), 10);
+                const quantity = parseInt($input.val(), 10);
+                const oldValue = $input.data('old-value');
 
-                if (quantity < 1) {
-                    $(this).val(1);
+                if (isNaN(quantity) || quantity < 1) {
+                    $input.val(oldValue);
                     return;
                 }
 
@@ -449,27 +515,20 @@
                             const price = parseFloat($row.find('.cart-product-price').text()
                                 .replace(/[,.đ]/g, ''));
                             const newSubtotal = price * quantity;
-                            $row.find('.cart-product-subtotal').text(
-                                new Intl.NumberFormat('vi-VN').format(newSubtotal) + 'đ'
-                            );
-                            let totalAmount = 0;
-                            $('.cart-product-subtotal').each(function() {
-                                const amount = parseFloat($(this).text().replace(
-                                    /[,.đ]/g, '')) || 0;
-                                totalAmount += amount;
-                            });
-                            $('.cart-summary-amount').text(new Intl.NumberFormat('vi-VN')
-                                    .format(totalAmount) + 'đ')
-                                .addClass('updating');
-                            $('sup').text(response.cart_count);
-                            setTimeout(() => {
-                                $('.cart-summary-amount').removeClass('updating');
-                            }, 300);
+                            $row.find('.cart-product-subtotal').text(new Intl.NumberFormat(
+                                'vi-VN').format(newSubtotal) + 'đ');
                             updateCartTotal();
-                            showToast("Cập nhật giỏ hàng thành công!", "success");
+                            showToast(response.message, "success");
+
+                            // Cập nhật lại old-value
+                            $input.data('old-value', quantity);
+                        } else {
+                            $input.val(oldValue);
+                            showToast(response.message, "error");
                         }
                     },
-                    error: function(xhr) {
+                    error: function() {
+                        $input.val(oldValue);
                         showToast("Có lỗi xảy ra khi cập nhật giỏ hàng!", "error");
                     },
                     complete: function() {
@@ -479,28 +538,6 @@
             });
 
 
-            // $(document).on('click', '.cart-product-remove', function() {
-            //     let cartRow = $(this).closest('tr');
-            //     let cartId = cartRow.data('cart-id');
-
-            //     $.ajax({
-            //         url: "{{ route('cart.remove') }}",
-            //         type: "POST",
-            //         data: {
-            //             _token: "{{ csrf_token() }}",
-            //             cart_id: cartId
-            //         },
-            //         success: function(response) {
-            //             if (response.status === "success") {
-            //                 cartRow.remove();
-            //                 updateCartTotal();
-            //                 showToast(response.message, "success");
-            //             } else {
-            //                 showToast(response.message, "error");
-            //             }
-            //         }
-            //     });
-            // });
 
 
             $('#apply-coupon').on('click', function() {
@@ -1309,6 +1346,7 @@
             width: 150px;
             text-align: right;
         }
+
         .shopping-cart-main-table .cart-product-quantity {
             width: 170px;
             text-align: center;

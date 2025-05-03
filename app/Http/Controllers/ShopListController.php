@@ -24,10 +24,12 @@ class ShopListController extends Controller
         $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
         $sevenDaysAgo = Carbon::now()->subDays(30);
         $productTop = OrderItem::with(['product.variants' => function ($query) {
-            $query->whereNull('deleted_at');
+            $query->whereNull('deleted_at')
+                ->where('stock', '>', 0);  // Chỉ lấy biến thể còn hàng
         }])
-            ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+            ->whereHas('product.variants', function ($query) {
+                $query->whereNull('deleted_at')
+                    ->where('stock', '>', 0);  // Chỉ lấy sản phẩm có ít nhất 1 biến thể còn hàng
             })
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
