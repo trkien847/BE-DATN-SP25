@@ -71,214 +71,29 @@
                                                     <div class="container">
                                                         <h1>Lịch Sử Mua Hàng</h1>
 
-                                                    <div class="filter-container">
-                        <h5>Lọc theo trạng thái</h5>
-                        <div class="status-filters">
-                            <div class="status-filter all-filter active" data-status="all">Tất cả</div>
-                            <div class="status-filter" data-status="Chờ xác nhận">Chờ xác nhận</div>
-                            <div class="status-filter" data-status="Chờ giao hàng">Chờ giao hàng</div>
-                            <div class="status-filter" data-status="Đang giao hàng">Đang giao hàng</div>
-                            <div class="status-filter" data-status="Đã giao hàng">Đã giao hàng</div>
-                            <div class="status-filter" data-status="Hoàn thành">Hoàn thành</div>
-                            <div class="status-filter" data-status="Đã hủy">Đã hủy</div>
-                            <div class="status-filter" data-status="Chờ hủy">Chờ hủy</div>
-                            <div class="status-filter" data-status="Chờ hoàn tiền">Chờ hoàn tiền</div>
-                            <div class="status-filter" data-status="Chuyển khoản thành công">Chuyển khoản thành công</div>
-                        </div>
-                    </div>
-
-                                                    <table class="order-table" id="order-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Sản phẩm</th>
-                                                                <th>Tổng giá trị</th>
-                                                                <th>Trạng thái</th>
-                                                                <th>Thanh toán</th>
-                                                                <th>Hành động</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="order-table-body">
-                                                            @foreach($orders as $order)
-                                                                <tr class="order-row" style="display: none;">
-                                                                <td>
-                                                                    <div class="product-list">
-                                                                        @foreach($order->items as $item)
-                                                                            <div class="product-item d-flex align-items-center mb-2">
-                                                                                <img src="{{ asset('upload/'.$item->product->thumbnail) }}" 
-                                                                                    alt="{{ $item->product->name }}" 
-                                                                                    class="product-image me-2" 
-                                                                                    data-bs-toggle="tooltip" 
-                                                                                    data-bs-placement="top" 
-                                                                                    title="{{ $item->product->name }}">
-                                                                                <span class="product-name">{{ $item->product->name }}</span>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
-                                                                </td>
-                                                                    <td>{{ number_format($order->total_amount) }} VNĐ</td>
-                                                                    <td>
-                                                                        @php
-                                                                            $statusName = $order->latestOrderStatus->name ?? 'Chưa có trạng thái';
-                                                                        @endphp
-                                                                        <span class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
-                                                                            {{ $statusName }}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td>
-                                                                        @php
-                                                                            $paymentMethods = [
-                                                                                1 => ['name' => 'Tiền mặt', 'class' => 'bg-success'],
-                                                                                2 => ['name' => 'VNPAY', 'class' => 'bg-info']
-                                                                            ];
-                                                                            $payment = $paymentMethods[$order->payment_id] ?? ['name' => 'Không xác định', 'class' => 'bg-secondary'];
-                                                                        @endphp
-                                                                        <span class="badge {{ $payment['class'] }}">{{ $payment['name'] }}</span>
-                                                                    </td>
-                                                                    <td>
-                                                                    @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
-                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Đánh giá sản phẩm">
-                                                                            <i class="fas fa-comment"></i>
-                                                                        </a>
-                                                                    @else
-                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Xem chi tiết">
-                                                                            <i class="fas fa-eye"></i>
-                                                                        </a>
-                                                                    @endif
-                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
-                                                                            <a href="{{ route('order.cancel', $order->id) }}" 
-                                                                            class="action-icon cancel-order-link" 
-                                                                            data-cancel-count="{{ $cancelCountToday ?? 0 }}"
-                                                                            title="Hủy đơn hàng">
-                                                                                <i class="fas fa-times-circle"></i>
-                                                                            </a>
-                                                                        @endif
-                                                                        @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành' && $order->completedStatusTimestamp() && \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
-                                                                            <a href="{{ route('order.return', $order->id) }}" class="action-icon" title="Hoàn hàng">
-                                                                                <i class="fas fa-undo"></i>
-                                                                            </a>
-                                                                        @endif
-                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
-                                                                            <a href="{{ route('order.refund.form', $order->id) }}" class="action-icon" title="Nhập thông tin tài khoản">
-                                                                                <i class="fas fa-money-check-alt"></i>
-                                                                            </a>
-                                                                        @endif
-                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
-                                                                            <a href="{{ route('order.refund.confirm', $order->id) }}" class="action-icon" title="Xác nhận nhận tiền">
-                                                                                <i class="fas fa-check-circle"></i>
-                                                                            </a>
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-
-
-                                                    <div class="pagination" id="pagination-controls"></div>
-                                                    @foreach($orders as $order)
-                                                    <div id="order{{ $order->id }}" class="modal">
-                                                        <div class="modal-content">
-                                                            <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">&times;</button>
-                                                            <div class="order-details">
-                                                                <h3 class="modal-title">Chi tiết đơn hàng #{{ $order->code }}</h3>
-
-                                                                <!-- Order Summary -->
-                                                                <div class="section">
-                                                                    <h4>Thông tin đơn hàng</h4>
-                                                                    <div class="info-grid">
-                                                                        <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
-                                                                        <p><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
-                                                                        <p><strong>Trạng thái:</strong> <span class="status {{ Str::slug($order->latestOrderStatus->name ?? 'unknown') }}">{{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</span></p>
-                                                                        <p><strong>Tổng cộng:</strong> {{ number_format($order->total_amount) }} VNĐ</p>
-                                                                        @if($order->coupon_code)
-                                                                            <p><strong>Mã giảm giá:</strong> {{ $order->coupon_code }} (Giảm {{ $order->coupon_discount_value }}{{ $order->coupon_discount_type === 'percent' ? '%' : ' VNĐ' }})</p>
-                                                                        @endif
-                                                                    </div>
+                                                        <div class="filter-container">
+                                                            <h5>Lọc theo trạng thái</h5>
+                                                            <div class="status-filters">
+                                                                <div class="status-filter all-filter active"
+                                                                    data-status="all">Tất cả</div>
+                                                                <div class="status-filter" data-status="Chờ xác nhận">Chờ
+                                                                    xác nhận</div>
+                                                                <div class="status-filter" data-status="Chờ giao hàng">Chờ
+                                                                    giao hàng</div>
+                                                                <div class="status-filter" data-status="Đang giao hàng">Đang
+                                                                    giao hàng</div>
+                                                                <div class="status-filter" data-status="Đã giao hàng">Đã
+                                                                    giao hàng</div>
+                                                                <div class="status-filter" data-status="Hoàn thành">Hoàn
+                                                                    thành</div>
+                                                                <div class="status-filter" data-status="Đã hủy">Đã hủy</div>
+                                                                <div class="status-filter" data-status="Chờ hủy">Chờ hủy
                                                                 </div>
-
-                                                                <!-- Customer Information -->
-                                                                <div class="section">
-                                                                    <h4>Thông tin khách hàng</h4>
-                                                                    <div class="info-grid">
-                                                                        <p><strong>Họ và tên:</strong> {{ $order->user->fullname ?? 'Không có' }}</p>
-                                                                        <p><strong>Số điện thoại:</strong> {{ $order->user->phone_number ?? 'Không có' }}</p>
-                                                                        <p><strong>Email:</strong> {{ $order->user->email ?? 'Không có' }}</p>
-                                                                        <p><strong>Địa chỉ giao hàng:</strong> 
-                                                                            {{ $order->address }}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-
-                                                                <!-- Payment Information -->
-                                                                <div class="section">
-                                                                    <h4>Thông tin thanh toán</h4>
-                                                                    <div class="info-grid">
-                                                                        <p><strong>Phương thức:</strong> {{ $order->payment_method === 'cash' ? 'Tiền mặt' : 'VNPay' }}</p>
-                                                                        <p><strong>Trạng thái:</strong> {{ $order->payment_status ?? 'Chưa thanh toán' }}</p>
-                                                                    </div>
-                                                                    @if($order->refund_proof_image)
-                                                                        <p><strong>Ảnh hoàn tiền:</strong></p>
-                                                                        <img src="{{ asset('upload/' . $order->refund_proof_image) }}" 
-                                                                            class="refund-image" 
-                                                                            alt="Ảnh chứng minh hoàn tiền" 
-                                                                            onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')">
-                                                                    @endif
-                                                                </div>
-
-                                                                <!-- Product List -->
-                                                                <div class="section">
-                                                                    <h4>Danh sách sản phẩm</h4>
-                                                                    <div class="product-list">
-                                                                        @foreach($order->items as $item)
-                                                                            <div class="product-item">
-                                                                                <img src="{{ asset('upload/'.$item->product->thumbnail) }}" alt="{{ $item->name }}" class="product-image">
-                                                                                <div class="product-details">
-                                                                                    <p><strong><a href="{{ route('products.productct', $item->id) }}">{{ $item->name }}</a></strong></p>
-                                                                                    <p><strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }} 
-                                                                                        @if($item->attributes_variant)({{ $item->attributes_variant }})@endif</p>
-                                                                                    <p><strong>Giá:</strong> {{ number_format($item->price_variant ?? $item->price) }} VNĐ</p>
-                                                                                    <p><strong>Số lượng:</strong> {{ $item->quantity }}</p>
-                                                                                    @if($item->product && $item->product->importProducts->isNotEmpty())
-                                                                                        <p><strong>Ngày sản xuất:</strong> 
-                                                                                            {{ $item->product->importProducts->first()->manufacture_date ? 
-                                                                                            \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y') : 
-                                                                                            'Không có' }}</p>
-                                                                                        <p><strong>Hạn sử dụng:</strong> 
-                                                                                            @php
-                                                                                                $expiryDate = $item->product->importProducts->first()->expiry_date;
-                                                                                                $daysUntilExpiry = $expiryDate ? \Carbon\Carbon::parse($expiryDate)->diffInDays(now()) : null;
-                                                                                            @endphp
-                                                                                            <span class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
-                                                                                                {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
-                                                                                                @if($daysUntilExpiry && $daysUntilExpiry <= 30)
-                                                                                                    (Còn {{ $daysUntilExpiry }} ngày)
-                                                                                                @endif
-                                                                                            </span>
-                                                                                        </p>
-                                                                                    @else
-                                                                                        <p><strong>Ngày sản xuất:</strong> Không có</p>
-                                                                                        <p><strong>Hạn sử dụng:</strong> Không có</p>
-                                                                                    @endif
-                                                                                    @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
-                                                                                        <div class="review-section">
-                                                                                            <button class="btn btn-sm btn-primary review-btn" 
-                                                                                                    onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
-                                                                                                    {{ App\Models\Reviews::where('product_id', $item->product_id)
-                                                                                                        ->where('order_id', $order->id)
-                                                                                                        ->where('user_id', auth()->id())
-                                                                                                        ->exists() ? 'disabled' : '' }}>
-                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)
-                                                                                                    ->where('order_id', $order->id)
-                                                                                                    ->where('user_id', auth()->id())
-                                                                                                    ->exists() ? 'Đã đánh giá' : 'Đánh giá sản phẩm' }}
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
-                                                                </div>
+                                                                <div class="status-filter" data-status="Chờ hoàn tiền">Chờ
+                                                                    hoàn tiền</div>
+                                                                <div class="status-filter"
+                                                                    data-status="Chuyển khoản thành công">Chuyển khoản thành
+                                                                    công</div>
                                                             </div>
                                                         </div>
 
@@ -286,7 +101,6 @@
                                                             <thead>
                                                                 <tr>
                                                                     <th>Sản phẩm</th>
-                                                                    <th>Số lượng</th>
                                                                     <th>Tổng giá trị</th>
                                                                     <th>Trạng thái</th>
                                                                     <th>Thanh toán</th>
@@ -313,7 +127,6 @@
                                                                                 @endforeach
                                                                             </div>
                                                                         </td>
-                                                                        <td>{{ $order->items->sum('quantity') }}</td>
                                                                         <td>{{ number_format($order->total_amount) }} VNĐ
                                                                         </td>
                                                                         <td>
@@ -406,132 +219,430 @@
                                                             <div id="order{{ $order->id }}" class="modal">
                                                                 <div class="modal-content">
                                                                     <button class="close-btn"
-                                                                        onclick="hideModal('order{{ $order->id }}')">×</button>
+                                                                        onclick="hideModal('order{{ $order->id }}')">&times;</button>
                                                                     <div class="order-details">
-                                                                        <h3>Chi tiết đơn hàng {{ $order->code }}</h3>
-                                                                        <p><strong>Ngày mua:</strong>
-                                                                            {{ $order->created_at->format('d/m/Y H:i:s') }}
-                                                                        </p>
-                                                                        <p><strong>Trạng thái:</strong>
-                                                                            {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}
-                                                                        </p>
-                                                                        <p><strong>Mã đơn hàng:</strong>
-                                                                            {{ $order->code }}</p>
-                                                                        @if ($order->refund_proof_image)
-                                                                            <p>
-                                                                                <strong>Ảnh hoàn tiền:</strong>
+                                                                        <h3 class="modal-title">Chi tiết đơn hàng
+                                                                            #{{ $order->code }}</h3>
+
+                                                                        <!-- Order Summary -->
+                                                                        <div class="section">
+                                                                            <h4>Thông tin đơn hàng</h4>
+                                                                            <div class="info-grid">
+                                                                                <p><strong>Mã đơn hàng:</strong>
+                                                                                    {{ $order->code }}</p>
+                                                                                <p><strong>Ngày đặt:</strong>
+                                                                                    {{ $order->created_at->format('d/m/Y H:i:s') }}
+                                                                                </p>
+                                                                                <p><strong>Trạng thái:</strong> <span
+                                                                                        class="status {{ Str::slug($order->latestOrderStatus->name ?? 'unknown') }}">{{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</span>
+                                                                                </p>
+                                                                                <p><strong>Tổng cộng:</strong>
+                                                                                    {{ number_format($order->total_amount) }}
+                                                                                    VNĐ</p>
+                                                                                @if ($order->coupon_code)
+                                                                                    <p><strong>Mã giảm giá:</strong>
+                                                                                        {{ $order->coupon_code }} (Giảm
+                                                                                        {{ $order->coupon_discount_value }}{{ $order->coupon_discount_type === 'percent' ? '%' : ' VNĐ' }})
+                                                                                    </p>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- Customer Information -->
+                                                                        <div class="section">
+                                                                            <h4>Thông tin khách hàng</h4>
+                                                                            <div class="info-grid">
+                                                                                <p><strong>Họ và tên:</strong>
+                                                                                    {{ $order->user->fullname ?? 'Không có' }}
+                                                                                </p>
+                                                                                <p><strong>Số điện thoại:</strong>
+                                                                                    {{ $order->user->phone_number ?? 'Không có' }}
+                                                                                </p>
+                                                                                <p><strong>Email:</strong>
+                                                                                    {{ $order->user->email ?? 'Không có' }}
+                                                                                </p>
+                                                                                <p><strong>Địa chỉ giao hàng:</strong>
+                                                                                    {{ $order->address }}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- Payment Information -->
+                                                                        <div class="section">
+                                                                            <h4>Thông tin thanh toán</h4>
+                                                                            <div class="info-grid">
+                                                                                <p><strong>Phương thức:</strong>
+                                                                                    {{ $order->payment_method === 'cash' ? 'Tiền mặt' : 'VNPay' }}
+                                                                                </p>
+                                                                                <p><strong>Trạng thái:</strong>
+                                                                                    {{ $order->payment_status ?? 'Chưa thanh toán' }}
+                                                                                </p>
+                                                                            </div>
+                                                                            @if ($order->refund_proof_image)
+                                                                                <p><strong>Ảnh hoàn tiền:</strong></p>
                                                                                 <img src="{{ asset('upload/' . $order->refund_proof_image) }}"
-                                                                                    class="img-thumbnail"
+                                                                                    class="refund-image"
                                                                                     alt="Ảnh chứng minh hoàn tiền"
-                                                                                    width="100px" height="100px"
-                                                                                    onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')"
-                                                                                    style="cursor: pointer;">
-                                                                            </p>
-                                                                        @endif
+                                                                                    onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')">
+                                                                            @endif
+                                                                        </div>
 
-                                                                        <h4>Thông tin sản phẩm:</h4>
-                                                                        <ul>
-                                                                            @foreach ($order->items as $item)
-                                                                                <li>
-                                                                                    <strong><a
-                                                                                            href="{{ route('products.productct', $item->id) }}">Sản
-                                                                                            phẩm:</a></strong>
-                                                                                    {{ $item->name }} <br>
-                                                                                    <strong>Biến thể:</strong>
-                                                                                    {{ $item->name_variant ?? 'Không có' }}
-                                                                                    @if ($item->attributes_variant)
-                                                                                        ({{ $item->attributes_variant }})
-                                                                                    @endif <br>
-                                                                                    <strong>Giá:</strong>
-                                                                                    {{ number_format($item->price_variant ?? $item->price) }}
-                                                                                    VNĐ <br>
-                                                                                    <strong>Số lượng:</strong>
-                                                                                    {{ $item->quantity }} <br>
-                                                                                    @if ($item->product && $item->product->importProducts->isNotEmpty())
-                                                                                        <strong>Ngày sản xuất:</strong>
-                                                                                        {{ $item->product->importProducts->first()->manufacture_date
-                                                                                            ? \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y')
-                                                                                            : 'Không có' }}
-                                                                                        <br>
-                                                                                        <strong>Hạn sử dụng:</strong>
-                                                                                        @php
-                                                                                            $expiryDate = $item->product->importProducts->first()
-                                                                                                ->expiry_date;
-                                                                                            $daysUntilExpiry = $expiryDate
-                                                                                                ? \Carbon\Carbon::parse(
-                                                                                                    $expiryDate,
-                                                                                                )->diffInDays(now())
-                                                                                                : null;
-                                                                                        @endphp
-                                                                                        <span
-                                                                                            class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
-                                                                                            {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
-                                                                                            @if ($daysUntilExpiry && $daysUntilExpiry <= 30)
-                                                                                                (Còn {{ $daysUntilExpiry }}
-                                                                                                ngày)
+                                                                        <!-- Product List -->
+                                                                        <div class="section">
+                                                                            <h4>Danh sách sản phẩm</h4>
+                                                                            <div class="product-list">
+                                                                                @foreach ($order->items as $item)
+                                                                                    <div class="product-item">
+                                                                                        <img src="{{ asset('upload/' . $item->product->thumbnail) }}"
+                                                                                            alt="{{ $item->name }}"
+                                                                                            class="product-image">
+                                                                                        <div class="product-details">
+                                                                                            <p><strong><a
+                                                                                                        href="{{ route('products.productct', $item->id) }}">{{ $item->name }}</a></strong>
+                                                                                            </p>
+                                                                                            <p><strong>Biến thể:</strong>
+                                                                                                {{ $item->name_variant ?? 'Không có' }}
+                                                                                                @if ($item->attributes_variant)
+                                                                                                    ({{ $item->attributes_variant }})
+                                                                                                @endif
+                                                                                            </p>
+                                                                                            <p><strong>Giá:</strong>
+                                                                                                {{ number_format($item->price_variant ?? $item->price) }}
+                                                                                                VNĐ</p>
+                                                                                            <p><strong>Số lượng:</strong>
+                                                                                                {{ $item->quantity }}</p>
+                                                                                            @if ($item->product && $item->product->importProducts->isNotEmpty())
+                                                                                                <p><strong>Ngày sản
+                                                                                                        xuất:</strong>
+                                                                                                    {{ $item->product->importProducts->first()->manufacture_date
+                                                                                                        ? \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y')
+                                                                                                        : 'Không có' }}
+                                                                                                </p>
+                                                                                                <p><strong>Hạn sử
+                                                                                                        dụng:</strong>
+                                                                                                    @php
+                                                                                                        $expiryDate = $item->product->importProducts->first()
+                                                                                                            ->expiry_date;
+                                                                                                        $daysUntilExpiry = $expiryDate
+                                                                                                            ? \Carbon\Carbon::parse(
+                                                                                                                $expiryDate,
+                                                                                                            )->diffInDays(
+                                                                                                                now(),
+                                                                                                            )
+                                                                                                            : null;
+                                                                                                    @endphp
+                                                                                                    <span
+                                                                                                        class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                                                                                        {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                                                                                        @if ($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                                                                                            (Còn
+                                                                                                            {{ $daysUntilExpiry }}
+                                                                                                            ngày)
+                                                                                                        @endif
+                                                                                                    </span>
+                                                                                                </p>
+                                                                                            @else
+                                                                                                <p><strong>Ngày sản
+                                                                                                        xuất:</strong> Không
+                                                                                                    có</p>
+                                                                                                <p><strong>Hạn sử
+                                                                                                        dụng:</strong> Không
+                                                                                                    có</p>
                                                                                             @endif
-                                                                                        </span>
-                                                                                    @else
-                                                                                        <strong>Ngày sản xuất:</strong>
-                                                                                        Không có <br>
-                                                                                        <strong>Hạn sử dụng:</strong> Không
-                                                                                        có
-                                                                                    @endif
-                                                                                    @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
-                                                                                        <div class="review-section mt-2">
-                                                                                            <button
-                                                                                                class="btn btn-sm btn-primary"
-                                                                                                onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
-                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
-                                                                                                    ? 'disabled'
-                                                                                                    : '' }}>
-                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
-                                                                                                    ? 'Đã đánh giá'
-                                                                                                    : 'Đánh giá sản phẩm' }}
-                                                                                            </button>
+                                                                                            @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                                <div
+                                                                                                    class="review-section">
+                                                                                                    <button
+                                                                                                        class="btn btn-sm btn-primary review-btn"
+                                                                                                        onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
+                                                                                                        {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                            ? 'disabled'
+                                                                                                            : '' }}>
+                                                                                                        {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                            ? 'Đã đánh giá'
+                                                                                                            : 'Đánh giá sản phẩm' }}
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            @endif
                                                                                         </div>
-                                                                                    @endif
-                                                                                </li>
-                                                                            @endforeach
-                                                                        </ul>
-
-                                                                        @if ($order->coupon_code)
-                                                                            <p><strong>Mã giảm giá:</strong>
-                                                                                {{ $order->coupon_code }}
-                                                                                (Giảm {{ $order->coupon_discount_value }}
-                                                                                {{ $order->coupon_discount_type === 'percent' ? '%' : 'VNĐ' }})
-                                                                            </p>
-                                                                        @endif
-                                                                        <p><strong>Tổng cộng:</strong>
-                                                                            {{ number_format($order->total_amount) }} VNĐ
-                                                                        </p>
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
+
+                                                                <table class="order-table" id="order-table">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Sản phẩm</th>
+                                                                            <th>Số lượng</th>
+                                                                            <th>Tổng giá trị</th>
+                                                                            <th>Trạng thái</th>
+                                                                            <th>Thanh toán</th>
+                                                                            <th>Hành động</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody id="order-table-body">
+                                                                        @foreach ($orders as $order)
+                                                                            <tr class="order-row" style="display: none;">
+                                                                                <td>
+                                                                                    <div class="product-list">
+                                                                                        @foreach ($order->items as $item)
+                                                                                            <div
+                                                                                                class="product-item d-flex align-items-center mb-2">
+                                                                                                <img src="{{ asset('upload/' . $item->product->thumbnail) }}"
+                                                                                                    alt="{{ $item->product->name }}"
+                                                                                                    class="product-image me-2"
+                                                                                                    data-bs-toggle="tooltip"
+                                                                                                    data-bs-placement="top"
+                                                                                                    title="{{ $item->product->name }}">
+                                                                                                <span
+                                                                                                    class="product-name">{{ $item->product->name }}</span>
+                                                                                            </div>
+                                                                                        @endforeach
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td>{{ $order->items->sum('quantity') }}
+                                                                                </td>
+                                                                                <td>{{ number_format($order->total_amount) }}
+                                                                                    VNĐ
+                                                                                </td>
+                                                                                <td>
+                                                                                    @php
+                                                                                        $statusName =
+                                                                                            $order->latestOrderStatus
+                                                                                                ->name ??
+                                                                                            'Chưa có trạng thái';
+                                                                                    @endphp
+                                                                                    <span
+                                                                                        class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
+                                                                                        {{ $statusName }}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td>
+                                                                                    @php
+                                                                                        $paymentMethods = [
+                                                                                            1 => [
+                                                                                                'name' => 'Tiền mặt',
+                                                                                                'class' => 'bg-success',
+                                                                                            ],
+                                                                                            2 => [
+                                                                                                'name' => 'VNPAY',
+                                                                                                'class' => 'bg-info',
+                                                                                            ],
+                                                                                        ];
+                                                                                        $payment = $paymentMethods[
+                                                                                            $order->payment_id
+                                                                                        ] ?? [
+                                                                                            'name' => 'Không xác định',
+                                                                                            'class' => 'bg-secondary',
+                                                                                        ];
+                                                                                    @endphp
+                                                                                    <span
+                                                                                        class="badge {{ $payment['class'] }}">{{ $payment['name'] }}</span>
+                                                                                </td>
+                                                                                <td>
+                                                                                    @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                        <a href="#"
+                                                                                            class="action-icon"
+                                                                                            onclick="showModal('order{{ $order->id }}')"
+                                                                                            title="Đánh giá sản phẩm">
+                                                                                            <i class="fas fa-comment"></i>
+                                                                                        </a>
+                                                                                    @else
+                                                                                        <a href="#"
+                                                                                            class="action-icon"
+                                                                                            onclick="showModal('order{{ $order->id }}')"
+                                                                                            title="Xem chi tiết">
+                                                                                            <i class="fas fa-eye"></i>
+                                                                                        </a>
+                                                                                    @endif
+                                                                                    @if (in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
+                                                                                        <a href="{{ route('order.cancel', $order->id) }}"
+                                                                                            class="action-icon cancel-order-link"
+                                                                                            data-cancel-count="{{ $cancelCountToday ?? 0 }}"
+                                                                                            title="Hủy đơn hàng">
+                                                                                            <i
+                                                                                                class="fas fa-times-circle"></i>
+                                                                                        </a>
+                                                                                    @endif
+                                                                                    @if (
+                                                                                        ($order->latestOrderStatus->name ?? '') === 'Hoàn thành' &&
+                                                                                            $order->completedStatusTimestamp() &&
+                                                                                            \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
+                                                                                        <a href="{{ route('order.return', $order->id) }}"
+                                                                                            class="action-icon"
+                                                                                            title="Hoàn hàng">
+                                                                                            <i class="fas fa-undo"></i>
+                                                                                        </a>
+                                                                                    @endif
+                                                                                    @if (in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
+                                                                                        <a href="{{ route('order.refund.form', $order->id) }}"
+                                                                                            class="action-icon"
+                                                                                            title="Nhập thông tin tài khoản">
+                                                                                            <i
+                                                                                                class="fas fa-money-check-alt"></i>
+                                                                                        </a>
+                                                                                    @endif
+                                                                                    @if (in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
+                                                                                        <a href="{{ route('order.refund.confirm', $order->id) }}"
+                                                                                            class="action-icon"
+                                                                                            title="Xác nhận nhận tiền">
+                                                                                            <i
+                                                                                                class="fas fa-check-circle"></i>
+                                                                                        </a>
+                                                                                    @endif
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+
+
+                                                                <div class="pagination" id="pagination-controls"></div>
+                                                                @foreach ($orders as $order)
+                                                                    <div id="order{{ $order->id }}" class="modal">
+                                                                        <div class="modal-content">
+                                                                            <button class="close-btn"
+                                                                                onclick="hideModal('order{{ $order->id }}')">×</button>
+                                                                            <div class="order-details">
+                                                                                <h3>Chi tiết đơn hàng {{ $order->code }}
+                                                                                </h3>
+                                                                                <p><strong>Ngày mua:</strong>
+                                                                                    {{ $order->created_at->format('d/m/Y H:i:s') }}
+                                                                                </p>
+                                                                                <p><strong>Trạng thái:</strong>
+                                                                                    {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}
+                                                                                </p>
+                                                                                <p><strong>Mã đơn hàng:</strong>
+                                                                                    {{ $order->code }}</p>
+                                                                                @if ($order->refund_proof_image)
+                                                                                    <p>
+                                                                                        <strong>Ảnh hoàn tiền:</strong>
+                                                                                        <img src="{{ asset('upload/' . $order->refund_proof_image) }}"
+                                                                                            class="img-thumbnail"
+                                                                                            alt="Ảnh chứng minh hoàn tiền"
+                                                                                            width="100px" height="100px"
+                                                                                            onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')"
+                                                                                            style="cursor: pointer;">
+                                                                                    </p>
+                                                                                @endif
+
+                                                                                <h4>Thông tin sản phẩm:</h4>
+                                                                                <ul>
+                                                                                    @foreach ($order->items as $item)
+                                                                                        <li>
+                                                                                            <strong><a
+                                                                                                    href="{{ route('products.productct', $item->id) }}">Sản
+                                                                                                    phẩm:</a></strong>
+                                                                                            {{ $item->name }} <br>
+                                                                                            <strong>Biến thể:</strong>
+                                                                                            {{ $item->name_variant ?? 'Không có' }}
+                                                                                            @if ($item->attributes_variant)
+                                                                                                ({{ $item->attributes_variant }})
+                                                                                            @endif <br>
+                                                                                            <strong>Giá:</strong>
+                                                                                            {{ number_format($item->price_variant ?? $item->price) }}
+                                                                                            VNĐ <br>
+                                                                                            <strong>Số lượng:</strong>
+                                                                                            {{ $item->quantity }} <br>
+                                                                                            @if ($item->product && $item->product->importProducts->isNotEmpty())
+                                                                                                <strong>Ngày sản
+                                                                                                    xuất:</strong>
+                                                                                                {{ $item->product->importProducts->first()->manufacture_date
+                                                                                                    ? \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y')
+                                                                                                    : 'Không có' }}
+                                                                                                <br>
+                                                                                                <strong>Hạn sử
+                                                                                                    dụng:</strong>
+                                                                                                @php
+                                                                                                    $expiryDate = $item->product->importProducts->first()
+                                                                                                        ->expiry_date;
+                                                                                                    $daysUntilExpiry = $expiryDate
+                                                                                                        ? \Carbon\Carbon::parse(
+                                                                                                            $expiryDate,
+                                                                                                        )->diffInDays(
+                                                                                                            now(),
+                                                                                                        )
+                                                                                                        : null;
+                                                                                                @endphp
+                                                                                                <span
+                                                                                                    class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                                                                                    {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                                                                                    @if ($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                                                                                        (Còn
+                                                                                                        {{ $daysUntilExpiry }}
+                                                                                                        ngày)
+                                                                                                    @endif
+                                                                                                </span>
+                                                                                            @else
+                                                                                                <strong>Ngày sản
+                                                                                                    xuất:</strong>
+                                                                                                Không có <br>
+                                                                                                <strong>Hạn sử
+                                                                                                    dụng:</strong> Không
+                                                                                                có
+                                                                                            @endif
+                                                                                            @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                                <div
+                                                                                                    class="review-section mt-2">
+                                                                                                    <button
+                                                                                                        class="btn btn-sm btn-primary"
+                                                                                                        onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
+                                                                                                        {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                            ? 'disabled'
+                                                                                                            : '' }}>
+                                                                                                        {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                            ? 'Đã đánh giá'
+                                                                                                            : 'Đánh giá sản phẩm' }}
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            @endif
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+
+                                                                                @if ($order->coupon_code)
+                                                                                    <p><strong>Mã giảm giá:</strong>
+                                                                                        {{ $order->coupon_code }}
+                                                                                        (Giảm
+                                                                                        {{ $order->coupon_discount_value }}
+                                                                                        {{ $order->coupon_discount_type === 'percent' ? '%' : 'VNĐ' }})
+                                                                                    </p>
+                                                                                @endif
+                                                                                <p><strong>Tổng cộng:</strong>
+                                                                                    {{ number_format($order->total_amount) }}
+                                                                                    VNĐ
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
                                                             </div>
                                                         @endforeach
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                                        <script>
-                                            document.addEventListener('DOMContentLoaded', function() {
-                                                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                                                var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                                                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                                            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                                                    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                                                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                                                    });
                                                 });
-                                            });
 
-                                            function showReviewForm(productId, orderId, productName) {
-                                                console.log('Debug values:', {
-                                                    productId,
-                                                    orderId,
-                                                    productName
-                                                });
-                                                Swal.fire({
-                                                    title: `Đánh giá sản phẩm ${productName}`,
-                                                    html: `
+                                                function showReviewForm(productId, orderId, productName) {
+                                                    console.log('Debug values:', {
+                                                        productId,
+                                                        orderId,
+                                                        productName
+                                                    });
+                                                    Swal.fire({
+                                                        title: `Đánh giá sản phẩm ${productName}`,
+                                                        html: `
                                                             <div class="rating-stars mb-3">
                                                                 <span class="star" data-rating="1">★</span>
                                                                 <span class="star" data-rating="2">★</span>
@@ -543,417 +654,424 @@
                                                             <textarea id="swal-input-review" class="swal2-textarea" 
                                                                     placeholder="Nhập nhận xét của bạn" rows="3"></textarea>
                                                         `,
-                                                    showCancelButton: true,
-                                                    confirmButtonText: 'Gửi đánh giá',
-                                                    cancelButtonText: 'Hủy',
-                                                    didOpen: () => {
+                                                        showCancelButton: true,
+                                                        confirmButtonText: 'Gửi đánh giá',
+                                                        cancelButtonText: 'Hủy',
+                                                        didOpen: () => {
 
-                                                        const stars = Swal.getPopup().querySelectorAll('.star');
-                                                        const ratingInput = Swal.getPopup().querySelector('#rating-value');
-                                                        const reviewText = Swal.getPopup().querySelector('#swal-input-review');
-
-
-                                                        const initialRating = parseInt(ratingInput.value);
-                                                        for (let i = 0; i < initialRating; i++) {
-                                                            stars[i].classList.add('active');
-                                                        }
+                                                            const stars = Swal.getPopup().querySelectorAll('.star');
+                                                            const ratingInput = Swal.getPopup().querySelector('#rating-value');
+                                                            const reviewText = Swal.getPopup().querySelector('#swal-input-review');
 
 
-                                                        stars.forEach(star => {
-                                                            star.addEventListener('click', function() {
-                                                                const rating = parseInt(this.getAttribute('data-rating'));
-                                                                ratingInput.value = rating;
+                                                            const initialRating = parseInt(ratingInput.value);
+                                                            for (let i = 0; i < initialRating; i++) {
+                                                                stars[i].classList.add('active');
+                                                            }
 
-                                                                stars.forEach(s => s.classList.remove('active'));
-                                                                for (let i = 0; i < rating; i++) {
-                                                                    stars[i].classList.add('active');
-                                                                }
-                                                            });
 
-                                                            star.addEventListener('mouseover', function() {
-                                                                const rating = parseInt(this.getAttribute('data-rating'));
-                                                                for (let i = 0; i < rating; i++) {
-                                                                    stars[i].style.color = '#f1c40f';
-                                                                }
-                                                            });
+                                                            stars.forEach(star => {
+                                                                star.addEventListener('click', function() {
+                                                                    const rating = parseInt(this.getAttribute('data-rating'));
+                                                                    ratingInput.value = rating;
 
-                                                            star.addEventListener('mouseout', function() {
-                                                                stars.forEach(s => {
-                                                                    if (!s.classList.contains('active')) {
-                                                                        s.style.color = '#ccc';
+                                                                    stars.forEach(s => s.classList.remove('active'));
+                                                                    for (let i = 0; i < rating; i++) {
+                                                                        stars[i].classList.add('active');
                                                                     }
                                                                 });
+
+                                                                star.addEventListener('mouseover', function() {
+                                                                    const rating = parseInt(this.getAttribute('data-rating'));
+                                                                    for (let i = 0; i < rating; i++) {
+                                                                        stars[i].style.color = '#f1c40f';
+                                                                    }
+                                                                });
+
+                                                                star.addEventListener('mouseout', function() {
+                                                                    stars.forEach(s => {
+                                                                        if (!s.classList.contains('active')) {
+                                                                            s.style.color = '#ccc';
+                                                                        }
+                                                                    });
+                                                                });
                                                             });
-                                                        });
 
 
-                                                        reviewText.addEventListener('input', function() {
-                                                            if (this.value.trim() !== '') {
-                                                                this.style.borderColor = '#28a745';
-                                                            } else {
-                                                                this.style.borderColor = '#ccc';
+                                                            reviewText.addEventListener('input', function() {
+                                                                if (this.value.trim() !== '') {
+                                                                    this.style.borderColor = '#28a745';
+                                                                } else {
+                                                                    this.style.borderColor = '#ccc';
+                                                                }
+                                                            });
+                                                        },
+                                                        preConfirm: () => {
+                                                            const rating = document.getElementById('rating-value').value;
+                                                            const reviewText = document.getElementById('swal-input-review').value;
+
+                                                            if (!reviewText.trim()) {
+                                                                Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
+                                                                return false;
                                                             }
-                                                        });
-                                                    },
-                                                    preConfirm: () => {
-                                                        const rating = document.getElementById('rating-value').value;
-                                                        const reviewText = document.getElementById('swal-input-review').value;
 
-                                                        if (!reviewText.trim()) {
-                                                            Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
-                                                            return false;
-                                                        }
+                                                            console.log('Sending data:', {
+                                                                product_id: productId,
+                                                                order_id: orderId,
+                                                                rating: rating,
+                                                                review_text: reviewText
+                                                            });
 
-                                                        console.log('Sending data:', {
-                                                            product_id: productId,
-                                                            order_id: orderId,
-                                                            rating: rating,
-                                                            review_text: reviewText
-                                                        });
-
-                                                        return fetch('/reviews', {
-                                                                method: 'POST',
-                                                                headers: {
-                                                                    'Content-Type': 'application/json',
-                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                                                                },
-                                                                body: JSON.stringify({
-                                                                    product_id: productId,
-                                                                    order_id: orderId,
-                                                                    rating: rating,
-                                                                    review_text: reviewText
+                                                            return fetch('/reviews', {
+                                                                    method: 'POST',
+                                                                    headers: {
+                                                                        'Content-Type': 'application/json',
+                                                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                                                    },
+                                                                    body: JSON.stringify({
+                                                                        product_id: productId,
+                                                                        order_id: orderId,
+                                                                        rating: rating,
+                                                                        review_text: reviewText
+                                                                    })
                                                                 })
-                                                            })
-                                                            .then(response => response.json())
-                                                            .then(data => {
-                                                                if (!data.success) {
-                                                                    throw new Error(data.message || 'Có lỗi xảy ra');
-                                                                }
-                                                                return data;
-                                                            });
-                                                    }
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        Swal.fire('Thành công!', 'Đánh giá của bạn đã được gửi', 'success');
-                                                        const reviewButton = document.querySelector(
-                                                            `button[onclick="showReviewForm('${productId}', '${orderId}', '${productName}')"]`);
-                                                        if (reviewButton) {
-                                                            reviewButton.disabled = true;
-                                                            reviewButton.textContent = 'Đã đánh giá';
+                                                                .then(response => response.json())
+                                                                .then(data => {
+                                                                    if (!data.success) {
+                                                                        throw new Error(data.message || 'Có lỗi xảy ra');
+                                                                    }
+                                                                    return data;
+                                                                });
                                                         }
-                                                    }
-                                                });
-                                            }
-
-                                            document.addEventListener('DOMContentLoaded', function() {
-
-                                                document.querySelectorAll('.cancel-order-link').forEach(function(link) {
-                                                    link.addEventListener('click', function(e) {
-                                                        e.preventDefault();
-                                                        const cancelCount = parseInt(this.getAttribute('data-cancel-count'), 10);
-
-                                                        if (cancelCount >= 2) {
-                                                            const message =
-                                                                `Hôm nay bạn đã hủy <strong>${cancelCount} đơn hàng</strong>.`;
-                                                            const confirmText = "Xác nhận hủy";
-                                                            const warning = cancelCount >= 3 ?
-                                                                '<span class="warning-text">CẢNH BÁO: Hủy quá 3 đơn/ngày sẽ khóa tài khoản 3 ngày!</span>' :
-                                                                '';
-
-                                                            Swal.fire({
-                                                                title: cancelCount >= 3 ? 'CẢNH BÁO HỦY ĐƠN!' :
-                                                                    'Xác nhận hủy đơn',
-                                                                html: `${message}<br>${warning}<br>${cancelCount >= 3 ? '<strong>Bạn có chắc chắn muốn tiếp tục?</strong>' : 'Bạn có chắc chắn muốn hủy đơn này?'}`,
-                                                                icon: cancelCount >= 3 ? 'warning' : 'question',
-                                                                iconColor: cancelCount >= 3 ? '#ff3333' : '#3085d6',
-                                                                showCancelButton: true,
-                                                                confirmButtonText: confirmText,
-                                                                cancelButtonText: 'Hủy bỏ',
-                                                                buttonsStyling: false,
-                                                                customClass: {
-                                                                    confirmButton: 'swal2-confirm-button',
-                                                                    cancelButton: 'swal2-cancel-button'
-                                                                },
-                                                                animation: true,
-                                                                allowOutsideClick: false
-                                                            }).then((result) => {
-                                                                if (result.isConfirmed) {
-                                                                    window.location.href = this.getAttribute('href');
-                                                                }
-                                                            });
-                                                        } else {
-                                                            window.location.href = this.getAttribute('href');
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            Swal.fire('Thành công!', 'Đánh giá của bạn đã được gửi', 'success');
+                                                            const reviewButton = document.querySelector(
+                                                                `button[onclick="showReviewForm('${productId}', '${orderId}', '${productName}')"]`);
+                                                            if (reviewButton) {
+                                                                reviewButton.disabled = true;
+                                                                reviewButton.textContent = 'Đã đánh giá';
+                                                            }
                                                         }
                                                     });
-                                                });
+                                                }
 
-                                                const orderRows = document.querySelectorAll('.order-row');
-                                                orderRows.forEach(row => {
-                                                    row.style.display = 'table-row';
-                                                });
+                                                document.addEventListener('DOMContentLoaded', function() {
 
-                                                const statusFilters = document.querySelectorAll('.status-filter');
-                                                statusFilters.forEach(filter => {
-                                                    filter.addEventListener('click', function() {
+                                                    document.querySelectorAll('.cancel-order-link').forEach(function(link) {
+                                                        link.addEventListener('click', function(e) {
+                                                            e.preventDefault();
+                                                            const cancelCount = parseInt(this.getAttribute('data-cancel-count'), 10);
 
-                                                        statusFilters.forEach(f => f.classList.remove('active'));
+                                                            if (cancelCount >= 2) {
+                                                                const message =
+                                                                    `Hôm nay bạn đã hủy <strong>${cancelCount} đơn hàng</strong>.`;
+                                                                const confirmText = "Xác nhận hủy";
+                                                                const warning = cancelCount >= 3 ?
+                                                                    '<span class="warning-text">CẢNH BÁO: Hủy quá 3 đơn/ngày sẽ khóa tài khoản 3 ngày!</span>' :
+                                                                    '';
 
-                                                        this.classList.add('active');
-
-
-                                                        const statusToFilter = this.getAttribute('data-status');
-
-
-                                                        orderRows.forEach(row => {
-                                                            const statusCell = row.querySelector('td:nth-child(4) span');
-                                                            const statusText = statusCell.textContent.trim();
-
-                                                            if (statusToFilter === 'all') {
-                                                                row.style.display = 'table-row';
+                                                                Swal.fire({
+                                                                    title: cancelCount >= 3 ? 'CẢNH BÁO HỦY ĐƠN!' :
+                                                                        'Xác nhận hủy đơn',
+                                                                    html: `${message}<br>${warning}<br>${cancelCount >= 3 ? '<strong>Bạn có chắc chắn muốn tiếp tục?</strong>' : 'Bạn có chắc chắn muốn hủy đơn này?'}`,
+                                                                    icon: cancelCount >= 3 ? 'warning' : 'question',
+                                                                    iconColor: cancelCount >= 3 ? '#ff3333' : '#3085d6',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonText: confirmText,
+                                                                    cancelButtonText: 'Hủy bỏ',
+                                                                    buttonsStyling: false,
+                                                                    customClass: {
+                                                                        confirmButton: 'swal2-confirm-button',
+                                                                        cancelButton: 'swal2-cancel-button'
+                                                                    },
+                                                                    animation: true,
+                                                                    allowOutsideClick: false
+                                                                }).then((result) => {
+                                                                    if (result.isConfirmed) {
+                                                                        window.location.href = this.getAttribute('href');
+                                                                    }
+                                                                });
                                                             } else {
-                                                                row.style.display = statusText === statusToFilter ?
-                                                                    'table-row' : 'none';
+                                                                window.location.href = this.getAttribute('href');
                                                             }
                                                         });
                                                     });
+
+                                                    const orderRows = document.querySelectorAll('.order-row');
+                                                    orderRows.forEach(row => {
+                                                        row.style.display = 'table-row';
+                                                    });
+
+                                                    const statusFilters = document.querySelectorAll('.status-filter');
+                                                    statusFilters.forEach(filter => {
+                                                        filter.addEventListener('click', function() {
+
+                                                            statusFilters.forEach(f => f.classList.remove('active'));
+
+                                                            this.classList.add('active');
+
+
+                                                            const statusToFilter = this.getAttribute('data-status');
+
+
+                                                            orderRows.forEach(row => {
+                                                                const statusCell = row.querySelector('td:nth-child(4) span');
+                                                                const statusText = statusCell.textContent.trim();
+
+                                                                if (statusToFilter === 'all') {
+                                                                    row.style.display = 'table-row';
+                                                                } else {
+                                                                    row.style.display = statusText === statusToFilter ?
+                                                                        'table-row' : 'none';
+                                                                }
+                                                            });
+                                                        });
+                                                    });
                                                 });
-                                            });
 
-                                            function showModal(modalId) {
-                                                const modal = document.getElementById(modalId);
-                                                modal.style.display = 'flex';
-                                            }
+                                                function showModal(modalId) {
+                                                    const modal = document.getElementById(modalId);
+                                                    modal.style.display = 'flex';
+                                                }
 
-                                            function hideModal(modalId) {
-                                                const modal = document.getElementById(modalId);
-                                                modal.style.display = 'none';
-                                            }
+                                                function hideModal(modalId) {
+                                                    const modal = document.getElementById(modalId);
+                                                    modal.style.display = 'none';
+                                                }
 
-                                            window.onclick = function(event) {
-                                                const modals = document.getElementsByClassName('modal');
-                                                for (let i = 0; i < modals.length; i++) {
-                                                    if (event.target === modals[i]) {
-                                                        modals[i].style.display = 'none';
+                                                window.onclick = function(event) {
+                                                    const modals = document.getElementsByClassName('modal');
+                                                    for (let i = 0; i < modals.length; i++) {
+                                                        if (event.target === modals[i]) {
+                                                            modals[i].style.display = 'none';
+                                                        }
                                                     }
                                                 }
-                                            }
 
-                                            document.addEventListener('DOMContentLoaded', function() {
-                                                const tableBody = document.getElementById('order-table-body');
-                                                const rows = Array.from(document.querySelectorAll('.order-row'));
-                                                const paginationControls = document.getElementById('pagination-controls');
-                                                const rowsPerPage = 10;
-                                                let currentPage = 1;
-
-
-                                                function displayRows() {
-                                                    const start = (currentPage - 1) * rowsPerPage;
-                                                    const end = start + rowsPerPage;
-                                                    rows.forEach(row => (row.style.display = 'none'));
-                                                    rows.slice(start, end).forEach(row => (row.style.display = ''));
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    const tableBody = document.getElementById('order-table-body');
+                                                    const rows = Array.from(document.querySelectorAll('.order-row'));
+                                                    const paginationControls = document.getElementById('pagination-controls');
+                                                    const rowsPerPage = 10;
+                                                    let currentPage = 1;
 
 
-                                                    updatePagination();
-                                                }
+                                                    function displayRows() {
+                                                        const start = (currentPage - 1) * rowsPerPage;
+                                                        const end = start + rowsPerPage;
+                                                        rows.forEach(row => (row.style.display = 'none'));
+                                                        rows.slice(start, end).forEach(row => (row.style.display = ''));
 
 
-                                                function updatePagination() {
-                                                    const totalPages = Math.ceil(rows.length / rowsPerPage);
-                                                    let paginationHTML = '';
+                                                        updatePagination();
+                                                    }
 
 
-                                                    paginationHTML += `
+                                                    function updatePagination() {
+                                                        const totalPages = Math.ceil(rows.length / rowsPerPage);
+                                                        let paginationHTML = '';
+
+
+                                                        paginationHTML += `
                                                         <a href="#" class="page-link ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">Previous</a>
                                                     `;
 
-                                                    for (let i = 1; i <= totalPages; i++) {
-                                                        paginationHTML += `
+                                                        for (let i = 1; i <= totalPages; i++) {
+                                                            paginationHTML += `
                                                             <a href="#" class="page-link ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</a>
                                                         `;
-                                                    }
+                                                        }
 
-                                                    paginationHTML += `
+                                                        paginationHTML += `
                                                         <a href="#" class="page-link ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">Next</a>
                                                     `;
 
-                                                    paginationControls.innerHTML = paginationHTML;
-                                                }
+                                                        paginationControls.innerHTML = paginationHTML;
+                                                    }
 
-                                                window.changePage = function(page) {
-                                                    if (page < 1 || page > Math.ceil(rows.length / rowsPerPage)) return;
-                                                    currentPage = page;
+                                                    window.changePage = function(page) {
+                                                        if (page < 1 || page > Math.ceil(rows.length / rowsPerPage)) return;
+                                                        currentPage = page;
+                                                        displayRows();
+                                                    };
+
                                                     displayRows();
-                                                };
+                                                });
+                                            </script>
+                                            <div class="tab-pane fade" id="liton_tab_1_4">
+                                                <div class="ltn__myaccount-tab-content-inner">
+                                                    <p>Các địa chỉ sau sẽ được sử dụng trên trang thanh toán theo mặc định.
+                                                    </p>
+                                                    <div class="row" id="addressList">
+                                                        @php
+                                                            $address = auth()->user()->address;
+                                                        @endphp
 
-                                                displayRows();
-                                            });
-                                        </script>
-                                        <div class="tab-pane fade" id="liton_tab_1_4">
-                                            <div class="ltn__myaccount-tab-content-inner">
-                                                <p>Các địa chỉ sau sẽ được sử dụng trên trang thanh toán theo mặc định.</p>
-                                                <div class="row" id="addressList">
-                                                    @php
-                                                        $address = auth()->user()->address;
-                                                    @endphp
+                                                        @if ($address)
+                                                            <div class="col-md-6 col-12 learts-mb-30"
+                                                                id="address-{{ $address->id }}">
+                                                                <h4> Địa chỉ
+                                                                    <small><a href="#" class="edit-address"
+                                                                            data-id="{{ $address->id }}"
+                                                                            data-address="{{ $address->address }}">edit</a></small>
+                                                                    <small><a href="#"
+                                                                            class="delete-address text-danger"
+                                                                            data-id="{{ $address->id }}">delete</a></small>
+                                                                </h4>
+                                                                <address>
+                                                                    <p><strong>{{ auth()->user()->fullname }}</strong></p>
+                                                                    <p class="address-text">{{ $address->address }}</p>
+                                                                    <p>Mobile:
+                                                                        {{ auth()->user()->phone_number ?? 'Chưa có' }}
+                                                                    </p>
+                                                                </address>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <!-- Nút Thêm Địa Chỉ -->
+                                                    <button class="btn btn-primary" id="addAddressBtn">Thêm địa
+                                                        chỉ</button>
 
-                                                    @if ($address)
-                                                        <div class="col-md-6 col-12 learts-mb-30"
-                                                            id="address-{{ $address->id }}">
-                                                            <h4> Địa chỉ
-                                                                <small><a href="#" class="edit-address"
-                                                                        data-id="{{ $address->id }}"
-                                                                        data-address="{{ $address->address }}">edit</a></small>
-                                                                <small><a href="#"
-                                                                        class="delete-address text-danger"
-                                                                        data-id="{{ $address->id }}">delete</a></small>
-                                                            </h4>
-                                                            <address>
-                                                                <p><strong>{{ auth()->user()->fullname }}</strong></p>
-                                                                <p class="address-text">{{ $address->address }}</p>
-                                                                <p>Mobile: {{ auth()->user()->phone_number ?? 'Chưa có' }}
-                                                                </p>
-                                                            </address>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                                <!-- Nút Thêm Địa Chỉ -->
-                                                <button class="btn btn-primary" id="addAddressBtn">Thêm địa chỉ</button>
-
-                                                <!-- Form thêm địa chỉ (Ẩn mặc định) -->
-                                                <div id="addAddressForm" style="display: none; margin-top: 10px;">
-                                                    <h4>Thêm địa chỉ mới</h4>
-                                                    <form id="newAddressForm" method="POST"
-                                                        action="{{ route('profile.address.store') }}">
-                                                        @csrf
-                                                        <input type="hidden" id="address_id" value="">
-                                                        <div class="form-group">
-                                                            <label for="address">Địa chỉ:</label>
-                                                            <input type="text" class="form-control" id="address">
-                                                        </div>
-                                                        <button type="submit" class="btn btn-success">Lưu</button>
-                                                        <button type="button" class="btn btn-secondary"
-                                                            id="cancelAddAddress">Hủy</button>
-                                                    </form>
+                                                    <!-- Form thêm địa chỉ (Ẩn mặc định) -->
+                                                    <div id="addAddressForm" style="display: none; margin-top: 10px;">
+                                                        <h4>Thêm địa chỉ mới</h4>
+                                                        <form id="newAddressForm" method="POST"
+                                                            action="{{ route('profile.address.store') }}">
+                                                            @csrf
+                                                            <input type="hidden" id="address_id" value="">
+                                                            <div class="form-group">
+                                                                <label for="address">Địa chỉ:</label>
+                                                                <input type="text" class="form-control"
+                                                                    id="address">
+                                                            </div>
+                                                            <button type="submit" class="btn btn-success">Lưu</button>
+                                                            <button type="button" class="btn btn-secondary"
+                                                                id="cancelAddAddress">Hủy</button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="liton_tab_1_5">
-                                            <div class="ltn__myaccount-tab-content-inner">
-                                                <div class="ltn__form-box">
-                                                    <form id="profileForm" action="{{ route('profile.update') }}"
-                                                        method="POST" enctype="multipart/form-data">
-                                                        @csrf
-                                                        @method('PUT')
+                                            <div class="tab-pane fade" id="liton_tab_1_5">
+                                                <div class="ltn__myaccount-tab-content-inner">
+                                                    <div class="ltn__form-box">
+                                                        <form id="profileForm" action="{{ route('profile.update') }}"
+                                                            method="POST" enctype="multipart/form-data">
+                                                            @csrf
+                                                            @method('PUT')
 
-                                                        <!-- Avatar -->
-                                                        <div class="avatar-upload-container">
-                                                            <label for="avatar">Ảnh đại diện</label>
-                                                            <div class="avatar-wrapper">
-                                                                @if (auth()->user()->avatar)
-                                                                    <img id="avatarPreview"
-                                                                        src="{{ asset(auth()->user()->avatar) }}"
-                                                                        alt="Avatar" class="avatar-img">
-                                                                @else
-                                                                    <img id="avatarPreview"
-                                                                        src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
-                                                                        alt="Default Avatar" class="avatar-img">
-                                                                @endif
-                                                                <input type="file" id="avatar" name="avatar"
-                                                                    accept="image/*" class="file-input">
-                                                                <button type="button" class="change-avatar-btn"
-                                                                    onclick="document.getElementById('avatar').click()">Đổi</button>
-                                                            </div>
-                                                        </div>
-                                                        <!-- Thông tin cá nhân -->
-                                                        <div class="row mb-50 profile-info">
-                                                            <div class="form-group col-md-6">
-                                                                <label for="fullname">Tên hiển thị:</label>
-                                                                <input type="text" name="fullname" id="fullname"
-                                                                    class="form-control"
-                                                                    value="{{ old('display_name', auth()->user()->fullname) }}">
-                                                            </div>
-
-                                                            <div class="form-group col-md-6">
-                                                                <label for="email">Email:</label>
-                                                                <input type="email" name="email" id="email"
-                                                                    class="form-control"
-                                                                    value="{{ old('email', auth()->user()->email) }}">
-                                                            </div>
-
-                                                            <div class="form-group col-md-6">
-                                                                <label for="phone_number">Số điện thoại:</label>
-                                                                <input type="text" name="phone_number"
-                                                                    id="phone_number" class="form-control"
-                                                                    value="{{ old('phone_number', auth()->user()->phone_number) }}">
-                                                            </div>
-
-                                                            <div class="form-group col-md-6">
-                                                                <label for="birthday">Ngày sinh:</label>
-                                                                <input type="date" name="birthday" id="birthday"
-                                                                    class="form-control"
-                                                                    value="{{ old('birthday', auth()->user()->birthday) }}">
-                                                            </div>
-
-                                                            <div class="form-group col-md-6">
-                                                                <label for="gender">Giới tính:</label>
-                                                                <select name="gender" id="gender"
-                                                                    class="form-control">
-                                                                    <option value="">-- Chọn giới tính --</option>
-                                                                    <option value="Nam"
-                                                                        {{ auth()->user()->gender == 'Nam' ? 'selected' : '' }}>
-                                                                        Nam</option>
-                                                                    <option value="Nữ"
-                                                                        {{ auth()->user()->gender == 'Nữ' ? 'selected' : '' }}>
-                                                                        Nữ</option>
-                                                                    <option value="Khác"
-                                                                        {{ auth()->user()->gender == 'Khác' ? 'selected' : '' }}>
-                                                                        Khác</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-
-
-                                                        <!-- Mật khẩu -->
-                                                        <fieldset
-                                                            style="border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-top: 30px;">
-                                                            <legend
-                                                                style="padding: 0 10px; font-weight: bold;margin-bottom: 10px;">
-                                                                Thay đổi
-                                                                mật khẩu</legend>
-
-                                                            <div class="password-group">
-                                                                <div class="form-row">
-                                                                    <label for="current_password">Mật khẩu hiện
-                                                                        tại:</label>
-                                                                    <input type="password" name="current_password"
-                                                                        id="current_password">
+                                                            <!-- Avatar -->
+                                                            <div class="avatar-upload-container">
+                                                                <label for="avatar">Ảnh đại diện</label>
+                                                                <div class="avatar-wrapper">
+                                                                    @if (auth()->user()->avatar)
+                                                                        <img id="avatarPreview"
+                                                                            src="{{ asset(auth()->user()->avatar) }}"
+                                                                            alt="Avatar" class="avatar-img">
+                                                                    @else
+                                                                        <img id="avatarPreview"
+                                                                            src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                                            alt="Default Avatar" class="avatar-img">
+                                                                    @endif
+                                                                    <input type="file" id="avatar" name="avatar"
+                                                                        accept="image/*" class="file-input">
+                                                                    <button type="button" class="change-avatar-btn"
+                                                                        onclick="document.getElementById('avatar').click()">Đổi</button>
                                                                 </div>
-                                                                <div class="form-row">
-                                                                    <label for="new_password">Mật khẩu mới:</label>
-                                                                    <input type="password" name="new_password"
-                                                                        id="new_password">
-                                                                </div>
-                                                                <div class="form-row">
-                                                                    <label for="new_password_confirmation">Nhập lại mật
-                                                                        khẩu:</label>
-                                                                    <input type="password"
-                                                                        name="new_password_confirmation"
-                                                                        id="new_password_confirmation">
-                                                                </div>
-                                                                <span id="password_error" class="error-text">Mật khẩu xác
-                                                                    nhận không khớp.</span>
                                                             </div>
-                                                        </fieldset>
+                                                            <!-- Thông tin cá nhân -->
+                                                            <div class="row mb-50 profile-info">
+                                                                <div class="form-group col-md-6">
+                                                                    <label for="fullname">Tên hiển thị:</label>
+                                                                    <input type="text" name="fullname" id="fullname"
+                                                                        class="form-control"
+                                                                        value="{{ old('display_name', auth()->user()->fullname) }}">
+                                                                </div>
+
+                                                                <div class="form-group col-md-6">
+                                                                    <label for="email">Email:</label>
+                                                                    <input type="email" name="email" id="email"
+                                                                        class="form-control"
+                                                                        value="{{ old('email', auth()->user()->email) }}">
+                                                                </div>
+
+                                                                <div class="form-group col-md-6">
+                                                                    <label for="phone_number">Số điện thoại:</label>
+                                                                    <input type="text" name="phone_number"
+                                                                        id="phone_number" class="form-control"
+                                                                        value="{{ old('phone_number', auth()->user()->phone_number) }}">
+                                                                </div>
+
+                                                                <div class="form-group col-md-6">
+                                                                    <label for="birthday">Ngày sinh:</label>
+                                                                    <input type="date" name="birthday" id="birthday"
+                                                                        class="form-control"
+                                                                        value="{{ old('birthday', auth()->user()->birthday) }}">
+                                                                </div>
+
+                                                                <div class="form-group col-md-6">
+                                                                    <label for="gender">Giới tính:</label>
+                                                                    <select name="gender" id="gender"
+                                                                        class="form-control">
+                                                                        <option value="">-- Chọn giới tính --
+                                                                        </option>
+                                                                        <option value="Nam"
+                                                                            {{ auth()->user()->gender == 'Nam' ? 'selected' : '' }}>
+                                                                            Nam</option>
+                                                                        <option value="Nữ"
+                                                                            {{ auth()->user()->gender == 'Nữ' ? 'selected' : '' }}>
+                                                                            Nữ</option>
+                                                                        <option value="Khác"
+                                                                            {{ auth()->user()->gender == 'Khác' ? 'selected' : '' }}>
+                                                                            Khác</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
 
 
-                                                        <!-- Nút lưu -->
-                                                        <div class="btn-wrapper">
-                                                            <button type="submit"
-                                                                class="btn theme-btn-1 btn-effect-1 text-uppercase">Lưu
-                                                                thay đổi</button>
-                                                        </div>
-                                                    </form>
+
+                                                            <!-- Mật khẩu -->
+                                                            <fieldset
+                                                                style="border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                                                                <legend
+                                                                    style="padding: 0 10px; font-weight: bold;margin-bottom: 10px;">
+                                                                    Thay đổi
+                                                                    mật khẩu</legend>
+
+                                                                <div class="password-group">
+                                                                    <div class="form-row">
+                                                                        <label for="current_password">Mật khẩu hiện
+                                                                            tại:</label>
+                                                                        <input type="password" name="current_password"
+                                                                            id="current_password">
+                                                                    </div>
+                                                                    <div class="form-row">
+                                                                        <label for="new_password">Mật khẩu mới:</label>
+                                                                        <input type="password" name="new_password"
+                                                                            id="new_password">
+                                                                    </div>
+                                                                    <div class="form-row">
+                                                                        <label for="new_password_confirmation">Nhập lại mật
+                                                                            khẩu:</label>
+                                                                        <input type="password"
+                                                                            name="new_password_confirmation"
+                                                                            id="new_password_confirmation">
+                                                                    </div>
+                                                                    <span id="password_error" class="error-text">Mật khẩu
+                                                                        xác
+                                                                        nhận không khớp.</span>
+                                                                </div>
+                                                            </fieldset>
+
+
+                                                            <!-- Nút lưu -->
+                                                            <div class="btn-wrapper">
+                                                                <button type="submit"
+                                                                    class="btn theme-btn-1 btn-effect-1 text-uppercase">Lưu
+                                                                    thay đổi</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -961,8 +1079,8 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- PRODUCT TAB AREA END -->
                     </div>
-                    <!-- PRODUCT TAB AREA END -->
                 </div>
             </div>
         </div>
@@ -1705,233 +1823,283 @@
         }
 
         .product-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .product-item {
-        transition: all 0.3s ease;
-    }
-    .product-item:hover {
-        background-color: #f1f3f5;
-        border-radius: 5px;
-        padding: 5px;
-    }
-    .product-image {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-        transition: transform 0.3s ease;
-    }
-    .product-item:hover .product-image {
-        transform: scale(1.1);
-    }
-    .product-name {
-    display: inline-block;
-    max-width: 180px; /* Có thể điều chỉnh để phù hợp */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-    .product-item:hover .product-name {
-        color: #007bff;
-    }
-
-
-
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(30, 41, 59, 0.7);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal.show {
-        display: flex;
-        animation: fadeIn 0.3s ease-out;
-    }
-    .modal-content {
-        background: #ffffff;
-        border-radius: 16px;
-        max-width: 700px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        padding: 24px;
-        position: relative;
-        transform: scale(0.8);
-        animation: scaleUp 0.3s ease-out forwards;
-    }
-    .close-btn {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: #f1f5f9;
-        border: none;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        font-size: 1.2rem;
-        color: #1e293b;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.2s;
-    }
-    .close-btn:hover {
-        background: #dbeafe;
-        transform: scale(1.1);
-    }
-    .modal-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1e3a8a;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    .section {
-        margin-bottom: 24px;
-        padding: 16px;
-        background: #f8fafc;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    .section h4 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2563eb;
-        margin-bottom: 12px;
-    }
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        font-size: 0.95rem;
-    }
-    .info-grid p {
-        margin: 0;
-        color: #1e293b;
-    }
-    .info-grid p strong {
-        color: #1e3a8a;
-    }
-    .status {
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-    }
-    .status.hoan-thanh {
-        background: #d1fae5;
-        color: #059669;
-    }
-    .status.cho-xac-nhan {
-        background: #fef3c7;
-        color: #d97706;
-    }
-    .status.unknown {
-        background: #f1f5f9;
-        color: #64748b;
-    }
-    .refund-image {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #e0e7ff;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    .refund-image:hover {
-        transform: scale(1.05);
-    }
-    .product-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .product-item {
-        display: flex;
-        gap: 16px;
-        padding: 12px;
-        border: 1px solid #e0e7ff;
-        border-radius: 12px;
-        background: #ffffff;
-        transition: all 0.2s ease;
-    }
-    .product-item:hover {
-        border-color: #2563eb;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-    }
-    .product-image {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #e0e7ff;
-    }
-    .product-details {
-        flex: 1;
-        font-size: 0.95rem;
-    }
-    .product-details p {
-        margin: 0 0 6px;
-        color: #1e293b;
-    }
-    .product-details p strong {
-        color: #1e3a8a;
-    }
-    .review-section {
-        margin-top: 8px;
-    }
-    .review-btn {
-        background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }
-    .review-btn:hover:not(:disabled) {
-        background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-        transform: scale(1.05);
-    }
-    .review-btn:disabled {
-        background: #e5e7eb;
-        cursor: not-allowed;
-    }
-    @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
-    @keyframes scaleUp {
-        0% { transform: scale(0.8); }
-        100% { transform: scale(1); }
-    }
-    @media (max-width: 600px) {
-        .modal-content {
-            width: 95%;
-            padding: 16px;
-        }
-        .info-grid {
-            grid-template-columns: 1fr;
-        }
-        .product-item {
+            display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            gap: 10px;
         }
+
+        .product-item {
+            transition: all 0.3s ease;
+        }
+
+        .product-item:hover {
+            background-color: #f1f3f5;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
         .product-image {
-            width: 80px;
-            height: 80px;
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            transition: transform 0.3s ease;
         }
-    }
+
+        .product-item:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .product-name {
+            display: inline-block;
+            max-width: 180px;
+            /* Có thể điều chỉnh để phù hợp */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-item:hover .product-name {
+            color: #007bff;
+        }
+
+
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 41, 59, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            position: relative;
+            transform: scale(0.8);
+            animation: scaleUp 0.3s ease-out forwards;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #dbeafe;
+            transform: scale(1.1);
+        }
+
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 12px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .info-grid p {
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .info-grid p strong {
+            color: #1e3a8a;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .status.hoan-thanh {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status.cho-xac-nhan {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status.unknown {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .refund-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .refund-image:hover {
+            transform: scale(1.05);
+        }
+
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 16px;
+            padding: 12px;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .product-item:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .product-details {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .product-details p {
+            margin: 0 0 6px;
+            color: #1e293b;
+        }
+
+        .product-details p strong {
+            color: #1e3a8a;
+        }
+
+        .review-section {
+            margin-top: 8px;
+        }
+
+        .review-btn {
+            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .review-btn:hover:not(:disabled) {
+            background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+        }
+
+        .review-btn:disabled {
+            background: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleUp {
+            0% {
+                transform: scale(0.8);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 95%;
+                padding: 16px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .product-image {
+                width: 80px;
+                height: 80px;
+            }
+        }
     </style>
 @endpush
