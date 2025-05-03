@@ -32,26 +32,27 @@
         }
 
         .coupon-btn {
-    position: relative;
-    padding: 10px 20px;
-    border: 2px solid #22C55E;
-    background-color: #fff;
-    color: #22C55E;
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 0 0 transparent;
-}
+            position: relative;
+            padding: 10px 20px;
+            border: 2px solid #22C55E;
+            background-color: #fff;
+            color: #22C55E;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 0 transparent;
+        }
 
-.coupon-btn:hover:not(:disabled),
-.coupon-btn:focus-visible:not(:disabled) {
-    background-color: #22C55E;
-    color: #22C55E;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    transform: translateY(-2px);
-}
+        .coupon-btn:hover:not(:disabled),
+        .coupon-btn:focus-visible:not(:disabled) {
+            background-color: #22C55E;
+            color: #22C55E;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            transform: translateY(-2px);
+        }
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -186,7 +187,10 @@
 
                                             <td class="cart-product-subtotal">
                                                 @php
-                                                    $price = $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->price;
+                                                    $price =
+                                                        $cart->productVariant->sale_price > 0
+                                                            ? $cart->productVariant->sale_price
+                                                            : $cart->productVariant->price;
                                                     $subtotal = $price * $cart->quantity;
                                                 @endphp
                                                 {{ number_format($subtotal) }}đ
@@ -209,7 +213,7 @@
                                                 <button type="button" class="btn btn-effect-2 coupon-btn" id="apply-coupon"
                                                     {{ $appliedCoupon ? 'disabled' : '' }}>
                                                     <span class="btn-text">Sử dụng mã giảm giá</span>
-                                                    
+
                                                 </button>
                                                 @if ($appliedCoupon)
                                                     <small id="applied-coupon-text">Đã áp dụng:
@@ -221,7 +225,7 @@
                                         <td>
                                             <button type="button" class="btn btn-effect-2 coupon-btn" id="show-coupons">
                                                 <span class="btn-text">Lấy mã giảm giá</span>
-                                               
+
                                             </button>
                                         </td>
                                     </tr>
@@ -607,8 +611,13 @@
                     return $(this).data('product-id');
                 }).get();
 
+                console.log('✅ Sản phẩm được chọn:', selectedProductIds);
+
                 let couponHtml = '';
+
                 coupons.forEach(coupon => {
+                    console.log(`👉 Đang kiểm tra mã: ${coupon.code}`);
+
                     const restriction = coupon.restriction || {};
                     let validProducts = [];
 
@@ -617,53 +626,88 @@
                             validProducts = Array.isArray(restriction.valid_products) ?
                                 restriction.valid_products :
                                 JSON.parse(restriction.valid_products);
+
+                            console.log(`✅ Sản phẩm hợp lệ cho mã ${coupon.code}:`, validProducts);
                         } catch (e) {
                             console.error(
-                                `Invalid JSON in valid_products for coupon ${coupon.code}:`,
-                                restriction.valid_products);
+                                `❌ Lỗi khi parse valid_products của mã ${coupon.code}:`,
+                                restriction.valid_products,
+                                e
+                            );
                             validProducts = [];
                         }
+                    } else {
+                        console.warn(`⚠️ Mã ${coupon.code} không có giới hạn sản phẩm.`);
                     }
 
-                    const isApplicable = selectedProductIds.length > 0 && validProducts.some(id =>
-                        selectedProductIds.includes(id)
+                    // const isApplicable =
+                    //     selectedProductIds.length > 0 &&
+                    //     validProducts.some(id => selectedProductIds.includes(id));
+
+                    // đoạn code trên đang so sánh 1 id với 1 chuỗi 1 = '1' đổi thành 1 = 1
+
+
+                    const isApplicable = selectedProductIds.length > 0 &&
+                        validProducts.some(id => selectedProductIds.includes(parseInt(id)));
+
+                    console.log(
+                        `➡️ Mã ${coupon.code} ${isApplicable ? 'áp dụng được' : 'không áp dụng được'}`
                     );
 
                     if (isApplicable) {
                         couponHtml += `
-                    <div class="coupon-item valid">
-                        <strong>code ${coupon.code}</strong><br>
-                        <small>${coupon.description}</small><br>
+                                <div class="coupon-item valid">
+                        <button class="copy-coupon-btn" data-coupon-code="${coupon.code}">
+                            📋 Sao chép
+                        </button>
+                        Mã giảm giá: <strong>${coupon.code}</strong><br>
                         <small>Giảm: ${coupon.discount_type === 'phan_tram' ? coupon.discount_value + '%' : new Intl.NumberFormat('vi-VN').format(coupon.discount_value) + 'đ'}</small>
                     </div>
-                `;
+
+            `;
                     }
                 });
+                $(document).on('click', '.copy-coupon-btn', function() {
+                    const code = $(this).data('coupon-code');
 
+                    // Tạo một input ẩn để copy
+                    const $tempInput = $('<input>');
+                    $('body').append($tempInput);
+                    $tempInput.val(code).select();
+                    document.execCommand('copy');
+                    $tempInput.remove();
+
+                    alert(`Đã sao chép mã giảm giá: ${code}`);
+                });
                 if (couponHtml === '') {
                     couponHtml = '<p>Không có mã giảm giá nào khả dụng cho sản phẩm đã chọn.</p>';
+                    console.warn('⚠️ Không có mã giảm giá nào hợp lệ được áp dụng.');
                 }
 
                 $('#coupon-list').html(couponHtml);
                 $('#coupon-overlay').fadeIn(300);
+                console.log('🎉 Hiển thị overlay mã giảm giá');
             });
 
+            // Đóng overlay
             $('#close-coupons').on('click', function() {
                 $('#coupon-overlay').fadeOut(300);
+                console.log('🔒 Đóng overlay mã giảm giá');
             });
 
             $(document).on('click', function(e) {
                 if ($(e.target).is('#coupon-overlay')) {
                     $('#coupon-overlay').fadeOut(300);
+                    console.log('🔒 Overlay bị đóng khi click ra ngoài');
                 }
             });
 
-            updateCartTotal();
-
+            // Kiểm tra mã đã áp dụng ban đầu
             if (!initialAppliedCoupon) {
                 $('#discount-row').remove();
                 $('#applied-coupon-text').remove();
                 $('#coupon-code, #apply-coupon').prop('disabled', false);
+                console.log('📌 Không có mã giảm giá nào được áp dụng ban đầu.');
             }
         });
 
@@ -1309,6 +1353,7 @@
             width: 150px;
             text-align: right;
         }
+
         .shopping-cart-main-table .cart-product-quantity {
             width: 170px;
             text-align: center;
