@@ -404,7 +404,7 @@
                                             <div class="product-price">
                                                 ${product.min_sale_price > 0 ? 
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_sale_price)}đ</span>
-                                                                        <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
+                                                                            <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</span>`
                                                 }
                                             </div>
@@ -653,52 +653,74 @@
         });
 
         $(document).off('click', '.qtybutton').on('click', '.qtybutton', function(e) {
-            if ($(this).hasClass('disabled')) {
+            const MAX_QUANTITY = 30;
+            const $button = $(this);
+            const $input = $button.siblings('input.cart-plus-minus-box');
+            let currentValue = parseInt($input.val()) || 0;
+            const maxStock = parseInt($input.attr('max')) || MAX_QUANTITY;
+
+            const finalMax = Math.min(MAX_QUANTITY, maxStock); // Giới hạn cuối cùng
+
+            // Nếu nút bị disable thì chặn sự kiện
+            if ($button.hasClass('disabled')) {
                 e.preventDefault();
                 return false;
             }
 
-            let $input = $(this).siblings('input.cart-plus-minus-box');
-            let currentValue = parseInt($input.val());
-            let maxStock = parseInt($input.attr('max'));
+            if ($button.hasClass('inc')) {
+                if (currentValue >= finalMax) {
+                    // Nếu maxStock < 30 thì hiển thị cảnh báo tồn kho
+                    if (maxStock < MAX_QUANTITY) {
+                        $('.quantity-warning')
+                            .text(`Chỉ còn ${maxStock} sản phẩm trong kho!`)
+                            .show();
 
-            if ($(this).hasClass('inc')) {
-                // Kiểm tra nếu đã đạt max stock
-                if (currentValue >= maxStock) {
-                    $(this).addClass('disabled').css({
+                        Toastify({
+                            text: `Chỉ còn ${maxStock} sản phẩm trong kho!`,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "#ff4444"
+                            }
+                        }).showToast();
+                    } else {
+                        // Nếu chạm 30 thì không cảnh báo
+                        $('.quantity-warning').hide();
+                    }
+
+                    // Disable nút tăng
+                    $button.addClass('disabled').css({
                         'opacity': '0.5',
                         'cursor': 'not-allowed',
                         'pointer-events': 'none'
                     });
-                    Toastify({
-                        text: `Chỉ còn ${maxStock} sản phẩm trong kho!`,
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        style: {
-                            background: "#ff4444"
-                        }
-                    }).showToast();
                     return false;
-                }
-
-                // Kiểm tra sau khi tăng
-                if (currentValue >= maxStock) {
-                    $(this).addClass('disabled').css({
-                        'opacity': '0.5',
-                        'cursor': 'not-allowed',
-                        'pointer-events': 'none'
+                } else {
+                    // Kích hoạt lại nút giảm
+                    $button.siblings('.dec').removeClass('disabled').css({
+                        'opacity': '1',
+                        'cursor': 'pointer',
+                        'pointer-events': 'auto'
                     });
+
+                    $('.quantity-warning').hide();
                 }
-            } else if ($(this).hasClass('dec') && currentValue > 1) {
-                // Kích hoạt lại nút tăng
-                $('.inc').removeClass('disabled').css({
-                    'opacity': '1',
-                    'cursor': 'pointer',
-                    'pointer-events': 'auto'
-                });
+            } else if ($button.hasClass('dec')) {
+                if (currentValue > 1) {
+                    // Kích hoạt lại nút tăng
+                    $button.siblings('.inc').removeClass('disabled').css({
+                        'opacity': '1',
+                        'cursor': 'pointer',
+                        'pointer-events': 'auto'
+                    });
+
+                    // Ẩn cảnh báo
+                    $('.quantity-warning').hide();
+                }
             }
         });
+
 
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();

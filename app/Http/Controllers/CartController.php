@@ -1079,6 +1079,12 @@ class CartController extends Controller
 
         $selectedVariantId = $request->product_variant_id ?? $product->variants->first()->id;
         $variant = ProductVariant::with('attributeValues.attribute')->find($selectedVariantId);
+        if (!$variant || $variant->stock <= 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sản phẩm đã hết hàng!'
+            ]);
+        }
 
         $requestQuantity = $request->quantity ?? 1;
 
@@ -1100,7 +1106,7 @@ class CartController extends Controller
             }
             return response()->json([
                 'status' => 'error',
-                'message' => "Chỉ có thể thêm thêm {$remainingStock} sản phẩm nữa vào giỏ hàng!"
+                'message' => "Chỉ có thể thêm {$remainingStock} sản phẩm nữa vào giỏ hàng!"
             ]);
         }
 
