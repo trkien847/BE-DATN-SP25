@@ -109,7 +109,7 @@
                 <div class="col header-menu-column justify-content-center">
                     <div class="sticky-logo">
                         <div class="site-logo">
-                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/logo-3.p') }}ng"
+                            <a href="{{ route('index') }}"><img src="{{ asset('client/img/1.png') }}"
                                     alt="Logo"></a>
                         </div>
                     </div>
