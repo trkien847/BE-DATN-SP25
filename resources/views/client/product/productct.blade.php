@@ -81,8 +81,13 @@
             margin-right: 5px;
         }
 
-        .variant-buttons button {
-            margin: 5px;
+        .variant-buttons button:hover:not(:disabled) {
+        background:rgb(37, 143, 103) !important;   /* Xanh đậm */
+        color: #fff !important;
+        border-color: rgb(37, 143, 103) !important;
+        box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+        transform: scale(1.08);
+        z-index: 2;
         }
 
         .fade-out {
@@ -515,7 +520,7 @@
                                                 <button id="add-to-cart-btn" class="theme-btn-1 btn btn-effect-1"
                                                     title="Add to Cart" data-product-id="{{ $product->id }}">
                                                     <i class="fas fa-shopping-cart"></i>
-                                                    <span>MUA NGAY</span>
+                                                    <span>THÊM VÀO GIỎ HÀNG</span>
                                                 </button>
                                             </li>
                                         </ul>
