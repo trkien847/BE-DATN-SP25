@@ -71,29 +71,214 @@
                                                     <div class="container">
                                                         <h1>Lịch Sử Mua Hàng</h1>
 
-                                                        <div class="filter-container">
-                                                            <h5>Lọc theo trạng thái</h5>
-                                                            <div class="status-filters">
-                                                                <div class="status-filter all-filter active"
-                                                                    data-status="all">Tất cả</div>
-                                                                <div class="status-filter" data-status="Chờ xác nhận">Chờ
-                                                                    xác nhận</div>
-                                                                <div class="status-filter" data-status="Chờ giao hàng">Chờ
-                                                                    giao hàng</div>
-                                                                <div class="status-filter" data-status="Đang giao hàng">Đang
-                                                                    giao hàng</div>
-                                                                <div class="status-filter" data-status="Đã giao hàng">Đã
-                                                                    giao hàng</div>
-                                                                <div class="status-filter" data-status="Hoàn thành">Hoàn
-                                                                    thành</div>
-                                                                <div class="status-filter" data-status="Đã hủy">Đã hủy</div>
-                                                                <div class="status-filter" data-status="Chờ hủy">Chờ hủy
+                                                    <div class="filter-container">
+                        <h5>Lọc theo trạng thái</h5>
+                        <div class="status-filters">
+                            <div class="status-filter all-filter active" data-status="all">Tất cả</div>
+                            <div class="status-filter" data-status="Chờ xác nhận">Chờ xác nhận</div>
+                            <div class="status-filter" data-status="Chờ giao hàng">Chờ giao hàng</div>
+                            <div class="status-filter" data-status="Đang giao hàng">Đang giao hàng</div>
+                            <div class="status-filter" data-status="Đã giao hàng">Đã giao hàng</div>
+                            <div class="status-filter" data-status="Hoàn thành">Hoàn thành</div>
+                            <div class="status-filter" data-status="Đã hủy">Đã hủy</div>
+                            <div class="status-filter" data-status="Chờ hủy">Chờ hủy</div>
+                            <div class="status-filter" data-status="Chờ hoàn tiền">Chờ hoàn tiền</div>
+                            <div class="status-filter" data-status="Chuyển khoản thành công">Chuyển khoản thành công</div>
+                        </div>
+                    </div>
+
+                                                    <table class="order-table" id="order-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sản phẩm</th>
+                                                                <th>Tổng giá trị</th>
+                                                                <th>Trạng thái</th>
+                                                                <th>Thanh toán</th>
+                                                                <th>Hành động</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="order-table-body">
+                                                            @foreach($orders as $order)
+                                                                <tr class="order-row" style="display: none;">
+                                                                <td>
+                                                                    <div class="product-list">
+                                                                        @foreach($order->items as $item)
+                                                                            <div class="product-item d-flex align-items-center mb-2">
+                                                                                <img src="{{ asset('upload/'.$item->product->thumbnail) }}" 
+                                                                                    alt="{{ $item->product->name }}" 
+                                                                                    class="product-image me-2" 
+                                                                                    data-bs-toggle="tooltip" 
+                                                                                    data-bs-placement="top" 
+                                                                                    title="{{ $item->product->name }}">
+                                                                                <span class="product-name">{{ $item->product->name }}</span>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </td>
+                                                                    <td>{{ number_format($order->total_amount) }} VNĐ</td>
+                                                                    <td>
+                                                                        @php
+                                                                            $statusName = $order->latestOrderStatus->name ?? 'Chưa có trạng thái';
+                                                                        @endphp
+                                                                        <span class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
+                                                                            {{ $statusName }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        @php
+                                                                            $paymentMethods = [
+                                                                                1 => ['name' => 'Tiền mặt', 'class' => 'bg-success'],
+                                                                                2 => ['name' => 'VNPAY', 'class' => 'bg-info']
+                                                                            ];
+                                                                            $payment = $paymentMethods[$order->payment_id] ?? ['name' => 'Không xác định', 'class' => 'bg-secondary'];
+                                                                        @endphp
+                                                                        <span class="badge {{ $payment['class'] }}">{{ $payment['name'] }}</span>
+                                                                    </td>
+                                                                    <td>
+                                                                    @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Đánh giá sản phẩm">
+                                                                            <i class="fas fa-comment"></i>
+                                                                        </a>
+                                                                    @else
+                                                                        <a href="#" class="action-icon" onclick="showModal('order{{ $order->id }}')" title="Xem chi tiết">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                    @endif
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
+                                                                            <a href="{{ route('order.cancel', $order->id) }}" 
+                                                                            class="action-icon cancel-order-link" 
+                                                                            data-cancel-count="{{ $cancelCountToday ?? 0 }}"
+                                                                            title="Hủy đơn hàng">
+                                                                                <i class="fas fa-times-circle"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành' && $order->completedStatusTimestamp() && \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
+                                                                            <a href="{{ route('order.return', $order->id) }}" class="action-icon" title="Hoàn hàng">
+                                                                                <i class="fas fa-undo"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
+                                                                            <a href="{{ route('order.refund.form', $order->id) }}" class="action-icon" title="Nhập thông tin tài khoản">
+                                                                                <i class="fas fa-money-check-alt"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                        @if(in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
+                                                                            <a href="{{ route('order.refund.confirm', $order->id) }}" class="action-icon" title="Xác nhận nhận tiền">
+                                                                                <i class="fas fa-check-circle"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+
+
+                                                    <div class="pagination" id="pagination-controls"></div>
+                                                    @foreach($orders as $order)
+                                                    <div id="order{{ $order->id }}" class="modal">
+                                                        <div class="modal-content">
+                                                            <button class="close-btn" onclick="hideModal('order{{ $order->id }}')">&times;</button>
+                                                            <div class="order-details">
+                                                                <h3 class="modal-title">Chi tiết đơn hàng #{{ $order->code }}</h3>
+
+                                                                <!-- Order Summary -->
+                                                                <div class="section">
+                                                                    <h4>Thông tin đơn hàng</h4>
+                                                                    <div class="info-grid">
+                                                                        <p><strong>Mã đơn hàng:</strong> {{ $order->code }}</p>
+                                                                        <p><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y H:i:s') }}</p>
+                                                                        <p><strong>Trạng thái:</strong> <span class="status {{ Str::slug($order->latestOrderStatus->name ?? 'unknown') }}">{{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}</span></p>
+                                                                        <p><strong>Tổng cộng:</strong> {{ number_format($order->total_amount) }} VNĐ</p>
+                                                                        @if($order->coupon_code)
+                                                                            <p><strong>Mã giảm giá:</strong> {{ $order->coupon_code }} (Giảm {{ $order->coupon_discount_value }}{{ $order->coupon_discount_type === 'percent' ? '%' : ' VNĐ' }})</p>
+                                                                        @endif
+                                                                    </div>
                                                                 </div>
-                                                                <div class="status-filter" data-status="Chờ hoàn tiền">Chờ
-                                                                    hoàn tiền</div>
-                                                                <div class="status-filter"
-                                                                    data-status="Chuyển khoản thành công">Chuyển khoản thành
-                                                                    công</div>
+
+                                                                <!-- Customer Information -->
+                                                                <div class="section">
+                                                                    <h4>Thông tin khách hàng</h4>
+                                                                    <div class="info-grid">
+                                                                        <p><strong>Họ và tên:</strong> {{ $order->user->fullname ?? 'Không có' }}</p>
+                                                                        <p><strong>Số điện thoại:</strong> {{ $order->user->phone_number ?? 'Không có' }}</p>
+                                                                        <p><strong>Email:</strong> {{ $order->user->email ?? 'Không có' }}</p>
+                                                                        <p><strong>Địa chỉ giao hàng:</strong> 
+                                                                            {{ $order->address }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Payment Information -->
+                                                                <div class="section">
+                                                                    <h4>Thông tin thanh toán</h4>
+                                                                    <div class="info-grid">
+                                                                        <p><strong>Phương thức:</strong> {{ $order->payment_method === 'cash' ? 'Tiền mặt' : 'VNPay' }}</p>
+                                                                        <p><strong>Trạng thái:</strong> {{ $order->payment_status ?? 'Chưa thanh toán' }}</p>
+                                                                    </div>
+                                                                    @if($order->refund_proof_image)
+                                                                        <p><strong>Ảnh hoàn tiền:</strong></p>
+                                                                        <img src="{{ asset('upload/' . $order->refund_proof_image) }}" 
+                                                                            class="refund-image" 
+                                                                            alt="Ảnh chứng minh hoàn tiền" 
+                                                                            onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')">
+                                                                    @endif
+                                                                </div>
+
+                                                                <!-- Product List -->
+                                                                <div class="section">
+                                                                    <h4>Danh sách sản phẩm</h4>
+                                                                    <div class="product-list">
+                                                                        @foreach($order->items as $item)
+                                                                            <div class="product-item">
+                                                                                <img src="{{ asset('upload/'.$item->product->thumbnail) }}" alt="{{ $item->name }}" class="product-image">
+                                                                                <div class="product-details">
+                                                                                    <p><strong><a href="{{ route('products.productct', $item->id) }}">{{ $item->name }}</a></strong></p>
+                                                                                    <p><strong>Biến thể:</strong> {{ $item->name_variant ?? 'Không có' }} 
+                                                                                        @if($item->attributes_variant)({{ $item->attributes_variant }})@endif</p>
+                                                                                    <p><strong>Giá:</strong> {{ number_format($item->price_variant ?? $item->price) }} VNĐ</p>
+                                                                                    <p><strong>Số lượng:</strong> {{ $item->quantity }}</p>
+                                                                                    @if($item->product && $item->product->importProducts->isNotEmpty())
+                                                                                        <p><strong>Ngày sản xuất:</strong> 
+                                                                                            {{ $item->product->importProducts->first()->manufacture_date ? 
+                                                                                            \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y') : 
+                                                                                            'Không có' }}</p>
+                                                                                        <p><strong>Hạn sử dụng:</strong> 
+                                                                                            @php
+                                                                                                $expiryDate = $item->product->importProducts->first()->expiry_date;
+                                                                                                $daysUntilExpiry = $expiryDate ? \Carbon\Carbon::parse($expiryDate)->diffInDays(now()) : null;
+                                                                                            @endphp
+                                                                                            <span class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                                                                                {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                                                                                @if($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                                                                                    (Còn {{ $daysUntilExpiry }} ngày)
+                                                                                                @endif
+                                                                                            </span>
+                                                                                        </p>
+                                                                                    @else
+                                                                                        <p><strong>Ngày sản xuất:</strong> Không có</p>
+                                                                                        <p><strong>Hạn sử dụng:</strong> Không có</p>
+                                                                                    @endif
+                                                                                    @if(($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                        <div class="review-section">
+                                                                                            <button class="btn btn-sm btn-primary review-btn" 
+                                                                                                    onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
+                                                                                                    {{ App\Models\Reviews::where('product_id', $item->product_id)
+                                                                                                        ->where('order_id', $order->id)
+                                                                                                        ->where('user_id', auth()->id())
+                                                                                                        ->exists() ? 'disabled' : '' }}>
+                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)
+                                                                                                    ->where('order_id', $order->id)
+                                                                                                    ->where('user_id', auth()->id())
+                                                                                                    ->exists() ? 'Đã đánh giá' : 'Đánh giá sản phẩm' }}
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -1520,45 +1705,233 @@
         }
 
         .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .product-item {
+        transition: all 0.3s ease;
+    }
+    .product-item:hover {
+        background-color: #f1f3f5;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .product-image {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        transition: transform 0.3s ease;
+    }
+    .product-item:hover .product-image {
+        transform: scale(1.1);
+    }
+    .product-name {
+    display: inline-block;
+    max-width: 180px; /* Có thể điều chỉnh để phù hợp */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+    .product-item:hover .product-name {
+        color: #007bff;
+    }
 
+
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(30, 41, 59, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.show {
+        display: flex;
+        animation: fadeIn 0.3s ease-out;
+    }
+    .modal-content {
+        background: #ffffff;
+        border-radius: 16px;
+        max-width: 700px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        padding: 24px;
+        position: relative;
+        transform: scale(0.8);
+        animation: scaleUp 0.3s ease-out forwards;
+    }
+    .close-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+        color: #1e293b;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.2s;
+    }
+    .close-btn:hover {
+        background: #dbeafe;
+        transform: scale(1.1);
+    }
+    .modal-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .section {
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .section h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2563eb;
+        margin-bottom: 12px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        font-size: 0.95rem;
+    }
+    .info-grid p {
+        margin: 0;
+        color: #1e293b;
+    }
+    .info-grid p strong {
+        color: #1e3a8a;
+    }
+    .status {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    .status.hoan-thanh {
+        background: #d1fae5;
+        color: #059669;
+    }
+    .status.cho-xac-nhan {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    .status.unknown {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    .refund-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e0e7ff;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .refund-image:hover {
+        transform: scale(1.05);
+    }
+    .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .product-item {
+        display: flex;
+        gap: 16px;
+        padding: 12px;
+        border: 1px solid #e0e7ff;
+        border-radius: 12px;
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+    .product-item:hover {
+        border-color: #2563eb;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e0e7ff;
+    }
+    .product-details {
+        flex: 1;
+        font-size: 0.95rem;
+    }
+    .product-details p {
+        margin: 0 0 6px;
+        color: #1e293b;
+    }
+    .product-details p strong {
+        color: #1e3a8a;
+    }
+    .review-section {
+        margin-top: 8px;
+    }
+    .review-btn {
+        background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .review-btn:hover:not(:disabled) {
+        background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        transform: scale(1.05);
+    }
+    .review-btn:disabled {
+        background: #e5e7eb;
+        cursor: not-allowed;
+    }
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+    @keyframes scaleUp {
+        0% { transform: scale(0.8); }
+        100% { transform: scale(1); }
+    }
+    @media (max-width: 600px) {
+        .modal-content {
+            width: 95%;
+            padding: 16px;
+        }
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
         .product-item {
-            transition: all 0.3s ease;
+            flex-direction: column;
+            align-items: flex-start;
         }
-
-        .product-item:hover {
-            background-color: #f1f3f5;
-            border-radius: 5px;
-            padding: 5px;
-        }
-
         .product-image {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-            transition: transform 0.3s ease;
+            width: 80px;
+            height: 80px;
         }
-
-        .product-item:hover .product-image {
-            transform: scale(1.1);
-        }
-
-        .product-name {
-            display: inline-block;
-            max-width: 180px;
-            /* Có thể điều chỉnh để phù hợp */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .product-item:hover .product-name {
-            color: #007bff;
-        }
+    }
     </style>
 @endpush

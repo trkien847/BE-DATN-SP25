@@ -23,42 +23,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     @stack('css')
-    <style>
-         .video-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            overflow: hidden;
-            opacity: 1; 
-            transition: opacity 1s ease; 
-        }
-
-        .video-overlay video {
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .product-image {
-            transition: transform 0.2s;
-        }
-
-        .product-image:hover {
-            transform: scale(1.05);
-        }
-        
-    </style>
 </head>
 
 <body>
@@ -99,74 +63,6 @@
     <!-- preloader area end -->
 
     <!-- All JS Plugins -->
-    <script>
-         document.addEventListener('DOMContentLoaded', function () {
-            const productLinks = document.querySelectorAll('.product-link');
-            // const videoOverlay = document.getElementById('video-overlay');
-            // const transitionVideo = document.getElementById('transition-video');
-            const mainContent = document.getElementById('main-content');
-
-            // productLinks.forEach(link => {
-            //     link.addEventListener('click', function (event) {
-            //         event.preventDefault();
-            //         event.stopPropagation();
-            //         const targetUrl = this.getAttribute('href');
-            //         console.log('Product link clicked, target URL:', targetUrl);
-
-            //         // Ẩn toàn bộ body
-            //         mainContent.classList.add('hidden-content');
-
-            //         // Hiển thị video overlay
-            //         videoOverlay.style.display = 'flex';
-            //         console.log('Video overlay set to display: flex');
-
-            //         // Phát video
-            //         transitionVideo.play().then(() => {
-            //             console.log('Video started playing');
-            //         }).catch(error => {
-            //             console.error('Video playback failed:', error);
-            //         });
-
-            //        // Hiệu ứng mờ dần và chuyển hướng khi video kết thúc
-            //        transitionVideo.onended = function () {
-            //             console.log('Video ended, starting fade-out');
-            //             videoOverlay.style.opacity = '0'; // Kích hoạt mờ dần
-            //             setTimeout(() => {
-            //                 console.log('Fade-out complete, redirecting to:', targetUrl);
-            //                 window.location.href = targetUrl;
-            //             }, 1000); // Chờ 1 giây (khớp với transition)
-            //         };
-
-            //         // Dự phòng: Chuyển hướng sau 10 giây nếu video không phát
-            //         setTimeout(() => {
-            //             if (videoOverlay.style.display === 'flex') {
-            //                 console.warn('Video timeout, forcing redirect');
-            //                 window.location.href = targetUrl;
-            //             }
-            //         }, 10000);
-
-            //         // Xử lý lỗi video
-            //         transitionVideo.onerror = function () {
-            //             console.error('Video failed to load');
-            //         };
-
-            //         // Kiểm tra xem video có hiển thị không
-            //         transitionVideo.onloadeddata = function () {
-            //             console.log('Video data loaded, should be visible');
-            //         };
-            //     });
-            // });
-
-            // Reset trạng thái khi trang được hiển thị lại
-            window.addEventListener('pageshow', function () {
-                videoOverlay.style.display = 'none';
-                mainContent.classList.remove('hidden-content');
-                transitionVideo.pause();
-                transitionVideo.currentTime = 0;
-                console.log('Page reset');
-            });
-        });
-    </script>
     <script src="{{ asset('client/js/plugins.js') }}"></script>
     <!-- Main JS -->
     <script src="{{ asset('client/js/main.js') }}"></script>

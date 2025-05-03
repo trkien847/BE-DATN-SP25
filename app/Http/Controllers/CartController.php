@@ -706,7 +706,7 @@ class CartController extends Controller
             ]);
         }
 
-        return redirect()->route('orderHistory')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
+        return redirect()->route('profile')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
     }
 
     public function refundDetails(Request $request, $orderId)
@@ -784,33 +784,17 @@ class CartController extends Controller
             'note' => 'Đã nhận được tiền hoàn',
         ]);
 
-        return redirect()->route('orderHistory')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
+        return redirect()->route('profile')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
     }
 
     public function cancelOrder(Request $request, $orderId)
     {
         $user = Auth::user();
-        $order = Order::where('user_id', $user->id)->findOrFail($orderId);
+        $order = Order::where('user_id', $user->id)
+            ->with(['items.product', 'latestOrderStatus'])
+            ->findOrFail($orderId);
+            
         $currentStatus = $order->latestOrderStatus->name;
-
-        $today = Carbon::today();
-        $cancelCountToday = OrderOrderStatus::whereHas('order', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })
-            ->whereIn('order_status_id', [5, 7])
-            ->whereDate('created_at', $today)
-            ->count();
-
-        if ($cancelCountToday >= 3) {
-            $user->status = 'banned';
-            $user->banned_until = Carbon::now()->addDays(3);
-            $user->save();
-
-            Auth::logout();
-            return redirect()->route('login')->withErrors([
-                'error' => 'Tài khoản của bạn đã bị khóa 3 ngày do vi phạm quy định hủy đơn quá số lần cho phép.'
-            ]);
-        }
 
         if ($request->isMethod('post')) {
             $request->validate([
@@ -852,7 +836,7 @@ class CartController extends Controller
                 event(new OrderCancelRequested($user, $order, $request->cancel_reason));
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
@@ -865,7 +849,7 @@ class CartController extends Controller
                 : $cart->productVariant->price;
             return $cart->quantity * $price;
         });
-        return view('client.cart.cancel', compact('order', 'carts', 'subtotal', 'cancelCountToday'));
+        return view('client.cart.cancel', compact('order', 'carts', 'subtotal'));
     }
 
     // từ chối yêu cầu hủy
@@ -1042,7 +1026,7 @@ class CartController extends Controller
                 }
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
