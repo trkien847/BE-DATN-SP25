@@ -32,7 +32,12 @@
                         <span class="mini-cart-quantity">
                             {{ $cart->quantity }} x
                             <span class="mini-cart-price">
-                                {{ number_format($cart->productVariant->sale_price ?? $cart->product->sale_price, 2) }}đ
+                                @php
+                                    $price = $cart->productVariant->sale_price > 0 ? 
+                                        $cart->productVariant->sale_price : 
+                                        $cart->productVariant->price;
+                                @endphp
+                                {{ number_format($price) }}đ
                             </span>
                         </span>
                     </div>

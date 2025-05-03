@@ -68,8 +68,8 @@
                                         <div class="tab-pane fade" id="liton_tab_1_2">
                                             <div class="ltn__myaccount-tab-content-inner">
                                                 <div class="table-responsive">
-                                                <div class="container">
-                                                    <h1>Lịch Sử Mua Hàng</h1>
+                                                    <div class="container">
+                                                        <h1>Lịch Sử Mua Hàng</h1>
 
                                                     <div class="filter-container">
                         <h5>Lọc theo trạng thái</h5>
@@ -281,28 +281,257 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        <table class="order-table" id="order-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Sản phẩm</th>
+                                                                    <th>Số lượng</th>
+                                                                    <th>Tổng giá trị</th>
+                                                                    <th>Trạng thái</th>
+                                                                    <th>Thanh toán</th>
+                                                                    <th>Hành động</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="order-table-body">
+                                                                @foreach ($orders as $order)
+                                                                    <tr class="order-row" style="display: none;">
+                                                                        <td>
+                                                                            <div class="product-list">
+                                                                                @foreach ($order->items as $item)
+                                                                                    <div
+                                                                                        class="product-item d-flex align-items-center mb-2">
+                                                                                        <img src="{{ asset('upload/' . $item->product->thumbnail) }}"
+                                                                                            alt="{{ $item->product->name }}"
+                                                                                            class="product-image me-2"
+                                                                                            data-bs-toggle="tooltip"
+                                                                                            data-bs-placement="top"
+                                                                                            title="{{ $item->product->name }}">
+                                                                                        <span
+                                                                                            class="product-name">{{ $item->product->name }}</span>
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>{{ $order->items->sum('quantity') }}</td>
+                                                                        <td>{{ number_format($order->total_amount) }} VNĐ
+                                                                        </td>
+                                                                        <td>
+                                                                            @php
+                                                                                $statusName =
+                                                                                    $order->latestOrderStatus->name ??
+                                                                                    'Chưa có trạng thái';
+                                                                            @endphp
+                                                                            <span
+                                                                                class="{{ $statusName === 'Đã hủy' ? 'text-danger' : ($statusName === 'Chờ hủy' ? 'text-warning' : 'text-success') }}">
+                                                                                {{ $statusName }}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            @php
+                                                                                $paymentMethods = [
+                                                                                    1 => [
+                                                                                        'name' => 'Tiền mặt',
+                                                                                        'class' => 'bg-success',
+                                                                                    ],
+                                                                                    2 => [
+                                                                                        'name' => 'VNPAY',
+                                                                                        'class' => 'bg-info',
+                                                                                    ],
+                                                                                ];
+                                                                                $payment = $paymentMethods[
+                                                                                    $order->payment_id
+                                                                                ] ?? [
+                                                                                    'name' => 'Không xác định',
+                                                                                    'class' => 'bg-secondary',
+                                                                                ];
+                                                                            @endphp
+                                                                            <span
+                                                                                class="badge {{ $payment['class'] }}">{{ $payment['name'] }}</span>
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                <a href="#" class="action-icon"
+                                                                                    onclick="showModal('order{{ $order->id }}')"
+                                                                                    title="Đánh giá sản phẩm">
+                                                                                    <i class="fas fa-comment"></i>
+                                                                                </a>
+                                                                            @else
+                                                                                <a href="#" class="action-icon"
+                                                                                    onclick="showModal('order{{ $order->id }}')"
+                                                                                    title="Xem chi tiết">
+                                                                                    <i class="fas fa-eye"></i>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if (in_array($order->latestOrderStatus->name ?? '', ['Chờ xác nhận', 'Chờ giao hàng']))
+                                                                                <a href="{{ route('order.cancel', $order->id) }}"
+                                                                                    class="action-icon cancel-order-link"
+                                                                                    data-cancel-count="{{ $cancelCountToday ?? 0 }}"
+                                                                                    title="Hủy đơn hàng">
+                                                                                    <i class="fas fa-times-circle"></i>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if (
+                                                                                ($order->latestOrderStatus->name ?? '') === 'Hoàn thành' &&
+                                                                                    $order->completedStatusTimestamp() &&
+                                                                                    \Carbon\Carbon::parse($order->completedStatusTimestamp())->diffInDays(\Carbon\Carbon::now()) <= 7)
+                                                                                <a href="{{ route('order.return', $order->id) }}"
+                                                                                    class="action-icon" title="Hoàn hàng">
+                                                                                    <i class="fas fa-undo"></i>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if (in_array($order->latestOrderStatus->name ?? '', ['Chờ hoàn tiền']))
+                                                                                <a href="{{ route('order.refund.form', $order->id) }}"
+                                                                                    class="action-icon"
+                                                                                    title="Nhập thông tin tài khoản">
+                                                                                    <i class="fas fa-money-check-alt"></i>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if (in_array($order->latestOrderStatus->name ?? '', ['Chuyển khoản thành công']))
+                                                                                <a href="{{ route('order.refund.confirm', $order->id) }}"
+                                                                                    class="action-icon"
+                                                                                    title="Xác nhận nhận tiền">
+                                                                                    <i class="fas fa-check-circle"></i>
+                                                                                </a>
+                                                                            @endif
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+
+
+                                                        <div class="pagination" id="pagination-controls"></div>
+                                                        @foreach ($orders as $order)
+                                                            <div id="order{{ $order->id }}" class="modal">
+                                                                <div class="modal-content">
+                                                                    <button class="close-btn"
+                                                                        onclick="hideModal('order{{ $order->id }}')">×</button>
+                                                                    <div class="order-details">
+                                                                        <h3>Chi tiết đơn hàng {{ $order->code }}</h3>
+                                                                        <p><strong>Ngày mua:</strong>
+                                                                            {{ $order->created_at->format('d/m/Y H:i:s') }}
+                                                                        </p>
+                                                                        <p><strong>Trạng thái:</strong>
+                                                                            {{ $order->latestOrderStatus->name ?? 'Chưa có trạng thái' }}
+                                                                        </p>
+                                                                        <p><strong>Mã đơn hàng:</strong>
+                                                                            {{ $order->code }}</p>
+                                                                        @if ($order->refund_proof_image)
+                                                                            <p>
+                                                                                <strong>Ảnh hoàn tiền:</strong>
+                                                                                <img src="{{ asset('upload/' . $order->refund_proof_image) }}"
+                                                                                    class="img-thumbnail"
+                                                                                    alt="Ảnh chứng minh hoàn tiền"
+                                                                                    width="100px" height="100px"
+                                                                                    onclick="showFullImage('{{ asset('upload/' . $order->refund_proof_image) }}')"
+                                                                                    style="cursor: pointer;">
+                                                                            </p>
+                                                                        @endif
+
+                                                                        <h4>Thông tin sản phẩm:</h4>
+                                                                        <ul>
+                                                                            @foreach ($order->items as $item)
+                                                                                <li>
+                                                                                    <strong><a
+                                                                                            href="{{ route('products.productct', $item->id) }}">Sản
+                                                                                            phẩm:</a></strong>
+                                                                                    {{ $item->name }} <br>
+                                                                                    <strong>Biến thể:</strong>
+                                                                                    {{ $item->name_variant ?? 'Không có' }}
+                                                                                    @if ($item->attributes_variant)
+                                                                                        ({{ $item->attributes_variant }})
+                                                                                    @endif <br>
+                                                                                    <strong>Giá:</strong>
+                                                                                    {{ number_format($item->price_variant ?? $item->price) }}
+                                                                                    VNĐ <br>
+                                                                                    <strong>Số lượng:</strong>
+                                                                                    {{ $item->quantity }} <br>
+                                                                                    @if ($item->product && $item->product->importProducts->isNotEmpty())
+                                                                                        <strong>Ngày sản xuất:</strong>
+                                                                                        {{ $item->product->importProducts->first()->manufacture_date
+                                                                                            ? \Carbon\Carbon::parse($item->product->importProducts->first()->manufacture_date)->format('d/m/Y')
+                                                                                            : 'Không có' }}
+                                                                                        <br>
+                                                                                        <strong>Hạn sử dụng:</strong>
+                                                                                        @php
+                                                                                            $expiryDate = $item->product->importProducts->first()
+                                                                                                ->expiry_date;
+                                                                                            $daysUntilExpiry = $expiryDate
+                                                                                                ? \Carbon\Carbon::parse(
+                                                                                                    $expiryDate,
+                                                                                                )->diffInDays(now())
+                                                                                                : null;
+                                                                                        @endphp
+                                                                                        <span
+                                                                                            class="{{ $daysUntilExpiry && $daysUntilExpiry <= 30 ? 'text-danger' : '' }}">
+                                                                                            {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('d/m/Y') : 'Không có' }}
+                                                                                            @if ($daysUntilExpiry && $daysUntilExpiry <= 30)
+                                                                                                (Còn {{ $daysUntilExpiry }}
+                                                                                                ngày)
+                                                                                            @endif
+                                                                                        </span>
+                                                                                    @else
+                                                                                        <strong>Ngày sản xuất:</strong>
+                                                                                        Không có <br>
+                                                                                        <strong>Hạn sử dụng:</strong> Không
+                                                                                        có
+                                                                                    @endif
+                                                                                    @if (($order->latestOrderStatus->name ?? '') === 'Hoàn thành')
+                                                                                        <div class="review-section mt-2">
+                                                                                            <button
+                                                                                                class="btn btn-sm btn-primary"
+                                                                                                onclick="showReviewForm('{{ $item->product_id }}', '{{ $order->id }}', '{{ $item->name }}')"
+                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                    ? 'disabled'
+                                                                                                    : '' }}>
+                                                                                                {{ App\Models\Reviews::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists()
+                                                                                                    ? 'Đã đánh giá'
+                                                                                                    : 'Đánh giá sản phẩm' }}
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                </li>
+                                                                            @endforeach
+                                                                        </ul>
+
+                                                                        @if ($order->coupon_code)
+                                                                            <p><strong>Mã giảm giá:</strong>
+                                                                                {{ $order->coupon_code }}
+                                                                                (Giảm {{ $order->coupon_discount_value }}
+                                                                                {{ $order->coupon_discount_type === 'percent' ? '%' : 'VNĐ' }})
+                                                                            </p>
+                                                                        @endif
+                                                                        <p><strong>Tổng cộng:</strong>
+                                                                            {{ number_format($order->total_amount) }} VNĐ
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
                                                     </div>
-                                                    @endforeach
-                                                </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
                                         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                                         <script>
-                                             
-                                             document.addEventListener('DOMContentLoaded', function() {
+                                            document.addEventListener('DOMContentLoaded', function() {
                                                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                                                 var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                                                     return new bootstrap.Tooltip(tooltipTriggerEl);
                                                 });
                                             });
 
-                                        function showReviewForm(productId, orderId, productName) {
-                                            console.log('Debug values:', { productId, orderId, productName });
-                                            Swal.fire({
-                                                        title: `Đánh giá sản phẩm ${productName}`,
-                                                        html: `
+                                            function showReviewForm(productId, orderId, productName) {
+                                                console.log('Debug values:', {
+                                                    productId,
+                                                    orderId,
+                                                    productName
+                                                });
+                                                Swal.fire({
+                                                    title: `Đánh giá sản phẩm ${productName}`,
+                                                    html: `
                                                             <div class="rating-stars mb-3">
                                                                 <span class="star" data-rating="1">★</span>
                                                                 <span class="star" data-rating="2">★</span>
@@ -314,75 +543,75 @@
                                                             <textarea id="swal-input-review" class="swal2-textarea" 
                                                                     placeholder="Nhập nhận xét của bạn" rows="3"></textarea>
                                                         `,
-                                                        showCancelButton: true,
-                                                        confirmButtonText: 'Gửi đánh giá',
-                                                        cancelButtonText: 'Hủy',
-                                                        didOpen: () => {
-                                                            
-                                                            const stars = Swal.getPopup().querySelectorAll('.star');
-                                                            const ratingInput = Swal.getPopup().querySelector('#rating-value');
-                                                            const reviewText = Swal.getPopup().querySelector('#swal-input-review');
+                                                    showCancelButton: true,
+                                                    confirmButtonText: 'Gửi đánh giá',
+                                                    cancelButtonText: 'Hủy',
+                                                    didOpen: () => {
 
-                                                            
-                                                            const initialRating = parseInt(ratingInput.value);
-                                                            for (let i = 0; i < initialRating; i++) {
-                                                                stars[i].classList.add('active');
-                                                            }
+                                                        const stars = Swal.getPopup().querySelectorAll('.star');
+                                                        const ratingInput = Swal.getPopup().querySelector('#rating-value');
+                                                        const reviewText = Swal.getPopup().querySelector('#swal-input-review');
 
-                                                            
-                                                            stars.forEach(star => {
-                                                                star.addEventListener('click', function() {
-                                                                    const rating = parseInt(this.getAttribute('data-rating'));
-                                                                    ratingInput.value = rating;
 
-                                                                    stars.forEach(s => s.classList.remove('active'));
-                                                                    for (let i = 0; i < rating; i++) {
-                                                                        stars[i].classList.add('active');
-                                                                    }
-                                                                });
+                                                        const initialRating = parseInt(ratingInput.value);
+                                                        for (let i = 0; i < initialRating; i++) {
+                                                            stars[i].classList.add('active');
+                                                        }
 
-                                                                star.addEventListener('mouseover', function() {
-                                                                    const rating = parseInt(this.getAttribute('data-rating'));
-                                                                    for (let i = 0; i < rating; i++) {
-                                                                        stars[i].style.color = '#f1c40f';
-                                                                    }
-                                                                });
 
-                                                                star.addEventListener('mouseout', function() {
-                                                                    stars.forEach(s => {
-                                                                        if (!s.classList.contains('active')) {
-                                                                            s.style.color = '#ccc';
-                                                                        }
-                                                                    });
-                                                                });
-                                                            });
+                                                        stars.forEach(star => {
+                                                            star.addEventListener('click', function() {
+                                                                const rating = parseInt(this.getAttribute('data-rating'));
+                                                                ratingInput.value = rating;
 
-                                                            
-                                                            reviewText.addEventListener('input', function() {
-                                                                if (this.value.trim() !== '') {
-                                                                    this.style.borderColor = '#28a745';
-                                                                } else {
-                                                                    this.style.borderColor = '#ccc';
+                                                                stars.forEach(s => s.classList.remove('active'));
+                                                                for (let i = 0; i < rating; i++) {
+                                                                    stars[i].classList.add('active');
                                                                 }
                                                             });
-                                                        },
-                                                        preConfirm: () => {
-                                                            const rating = document.getElementById('rating-value').value;
-                                                            const reviewText = document.getElementById('swal-input-review').value;
-                                                            
-                                                            if (!reviewText.trim()) {
-                                                                Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
-                                                                return false;
-                                                            }
 
-                                                            console.log('Sending data:', {  
-                                                                product_id: productId,
-                                                                order_id: orderId,
-                                                                rating: rating,
-                                                                review_text: reviewText
+                                                            star.addEventListener('mouseover', function() {
+                                                                const rating = parseInt(this.getAttribute('data-rating'));
+                                                                for (let i = 0; i < rating; i++) {
+                                                                    stars[i].style.color = '#f1c40f';
+                                                                }
                                                             });
 
-                                                            return fetch('/reviews', {
+                                                            star.addEventListener('mouseout', function() {
+                                                                stars.forEach(s => {
+                                                                    if (!s.classList.contains('active')) {
+                                                                        s.style.color = '#ccc';
+                                                                    }
+                                                                });
+                                                            });
+                                                        });
+
+
+                                                        reviewText.addEventListener('input', function() {
+                                                            if (this.value.trim() !== '') {
+                                                                this.style.borderColor = '#28a745';
+                                                            } else {
+                                                                this.style.borderColor = '#ccc';
+                                                            }
+                                                        });
+                                                    },
+                                                    preConfirm: () => {
+                                                        const rating = document.getElementById('rating-value').value;
+                                                        const reviewText = document.getElementById('swal-input-review').value;
+
+                                                        if (!reviewText.trim()) {
+                                                            Swal.showValidationMessage('Vui lòng nhập nội dung đánh giá');
+                                                            return false;
+                                                        }
+
+                                                        console.log('Sending data:', {
+                                                            product_id: productId,
+                                                            order_id: orderId,
+                                                            rating: rating,
+                                                            review_text: reviewText
+                                                        });
+
+                                                        return fetch('/reviews', {
                                                                 method: 'POST',
                                                                 headers: {
                                                                     'Content-Type': 'application/json',
@@ -402,84 +631,88 @@
                                                                 }
                                                                 return data;
                                                             });
+                                                    }
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        Swal.fire('Thành công!', 'Đánh giá của bạn đã được gửi', 'success');
+                                                        const reviewButton = document.querySelector(
+                                                            `button[onclick="showReviewForm('${productId}', '${orderId}', '${productName}')"]`);
+                                                        if (reviewButton) {
+                                                            reviewButton.disabled = true;
+                                                            reviewButton.textContent = 'Đã đánh giá';
                                                         }
-                                                    }).then((result) => {
-                                                        if (result.isConfirmed) {
-                                                            Swal.fire('Thành công!', 'Đánh giá của bạn đã được gửi', 'success');
-                                                            const reviewButton = document.querySelector(`button[onclick="showReviewForm('${productId}', '${orderId}', '${productName}')"]`);
-                                                            if (reviewButton) {
-                                                                reviewButton.disabled = true;
-                                                                reviewButton.textContent = 'Đã đánh giá';
-                                                            }
-                                                        }
-                                                    });
-                                                }   
+                                                    }
+                                                });
+                                            }
 
                                             document.addEventListener('DOMContentLoaded', function() {
 
                                                 document.querySelectorAll('.cancel-order-link').forEach(function(link) {
-                                                link.addEventListener('click', function(e) {
-                                                    e.preventDefault(); 
-                                                    const cancelCount = parseInt(this.getAttribute('data-cancel-count'), 10);
-                                                    
-                                                    if (cancelCount >= 2) {
-                                                        const message = `Hôm nay bạn đã hủy <strong>${cancelCount} đơn hàng</strong>.`;
-                                                        const confirmText = "Xác nhận hủy";
-                                                        const warning = cancelCount >= 3 
-                                                            ? '<span class="warning-text">CẢNH BÁO: Hủy quá 3 đơn/ngày sẽ khóa tài khoản 3 ngày!</span>'
-                                                            : '';
+                                                    link.addEventListener('click', function(e) {
+                                                        e.preventDefault();
+                                                        const cancelCount = parseInt(this.getAttribute('data-cancel-count'), 10);
 
-                                                        Swal.fire({
-                                                            title: cancelCount >= 3 ? 'CẢNH BÁO HỦY ĐƠN!' : 'Xác nhận hủy đơn',
-                                                            html: `${message}<br>${warning}<br>${cancelCount >= 3 ? '<strong>Bạn có chắc chắn muốn tiếp tục?</strong>' : 'Bạn có chắc chắn muốn hủy đơn này?'}`,
-                                                            icon: cancelCount >= 3 ? 'warning' : 'question',
-                                                            iconColor: cancelCount >= 3 ? '#ff3333' : '#3085d6',
-                                                            showCancelButton: true,
-                                                            confirmButtonText: confirmText,
-                                                            cancelButtonText: 'Hủy bỏ',
-                                                            buttonsStyling: false,
-                                                            customClass: {
-                                                                confirmButton: 'swal2-confirm-button',
-                                                                cancelButton: 'swal2-cancel-button'
-                                                            },
-                                                            animation: true,
-                                                            allowOutsideClick: false
-                                                        }).then((result) => {
-                                                            if (result.isConfirmed) {
-                                                                window.location.href = this.getAttribute('href');
-                                                            }
-                                                        });
-                                                    } else {
-                                                        window.location.href = this.getAttribute('href');
-                                                    }
+                                                        if (cancelCount >= 2) {
+                                                            const message =
+                                                                `Hôm nay bạn đã hủy <strong>${cancelCount} đơn hàng</strong>.`;
+                                                            const confirmText = "Xác nhận hủy";
+                                                            const warning = cancelCount >= 3 ?
+                                                                '<span class="warning-text">CẢNH BÁO: Hủy quá 3 đơn/ngày sẽ khóa tài khoản 3 ngày!</span>' :
+                                                                '';
+
+                                                            Swal.fire({
+                                                                title: cancelCount >= 3 ? 'CẢNH BÁO HỦY ĐƠN!' :
+                                                                    'Xác nhận hủy đơn',
+                                                                html: `${message}<br>${warning}<br>${cancelCount >= 3 ? '<strong>Bạn có chắc chắn muốn tiếp tục?</strong>' : 'Bạn có chắc chắn muốn hủy đơn này?'}`,
+                                                                icon: cancelCount >= 3 ? 'warning' : 'question',
+                                                                iconColor: cancelCount >= 3 ? '#ff3333' : '#3085d6',
+                                                                showCancelButton: true,
+                                                                confirmButtonText: confirmText,
+                                                                cancelButtonText: 'Hủy bỏ',
+                                                                buttonsStyling: false,
+                                                                customClass: {
+                                                                    confirmButton: 'swal2-confirm-button',
+                                                                    cancelButton: 'swal2-cancel-button'
+                                                                },
+                                                                animation: true,
+                                                                allowOutsideClick: false
+                                                            }).then((result) => {
+                                                                if (result.isConfirmed) {
+                                                                    window.location.href = this.getAttribute('href');
+                                                                }
+                                                            });
+                                                        } else {
+                                                            window.location.href = this.getAttribute('href');
+                                                        }
+                                                    });
                                                 });
-                                            });
-                                                
+
                                                 const orderRows = document.querySelectorAll('.order-row');
                                                 orderRows.forEach(row => {
                                                     row.style.display = 'table-row';
                                                 });
-                                                
+
                                                 const statusFilters = document.querySelectorAll('.status-filter');
                                                 statusFilters.forEach(filter => {
                                                     filter.addEventListener('click', function() {
-                                                       
+
                                                         statusFilters.forEach(f => f.classList.remove('active'));
-                                                    
+
                                                         this.classList.add('active');
-                                                        
-                                                       
+
+
                                                         const statusToFilter = this.getAttribute('data-status');
-                                                        
-                                                       
+
+
                                                         orderRows.forEach(row => {
                                                             const statusCell = row.querySelector('td:nth-child(4) span');
                                                             const statusText = statusCell.textContent.trim();
-                                                            
+
                                                             if (statusToFilter === 'all') {
                                                                 row.style.display = 'table-row';
                                                             } else {
-                                                                row.style.display = statusText === statusToFilter ? 'table-row' : 'none';
+                                                                row.style.display = statusText === statusToFilter ?
+                                                                    'table-row' : 'none';
                                                             }
                                                         });
                                                     });
@@ -505,30 +738,30 @@
                                                 }
                                             }
 
-                                            document.addEventListener('DOMContentLoaded', function () {
+                                            document.addEventListener('DOMContentLoaded', function() {
                                                 const tableBody = document.getElementById('order-table-body');
                                                 const rows = Array.from(document.querySelectorAll('.order-row'));
                                                 const paginationControls = document.getElementById('pagination-controls');
-                                                const rowsPerPage = 10; 
+                                                const rowsPerPage = 10;
                                                 let currentPage = 1;
 
-                                                
+
                                                 function displayRows() {
                                                     const start = (currentPage - 1) * rowsPerPage;
                                                     const end = start + rowsPerPage;
-                                                    rows.forEach(row => (row.style.display = 'none')); 
+                                                    rows.forEach(row => (row.style.display = 'none'));
                                                     rows.slice(start, end).forEach(row => (row.style.display = ''));
 
-                                                   
+
                                                     updatePagination();
                                                 }
 
-                                               
+
                                                 function updatePagination() {
                                                     const totalPages = Math.ceil(rows.length / rowsPerPage);
                                                     let paginationHTML = '';
 
-                                                    
+
                                                     paginationHTML += `
                                                         <a href="#" class="page-link ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">Previous</a>
                                                     `;
@@ -546,7 +779,7 @@
                                                     paginationControls.innerHTML = paginationHTML;
                                                 }
 
-                                                window.changePage = function (page) {
+                                                window.changePage = function(page) {
                                                     if (page < 1 || page > Math.ceil(rows.length / rowsPerPage)) return;
                                                     currentPage = page;
                                                     displayRows();
@@ -570,7 +803,8 @@
                                                                 <small><a href="#" class="edit-address"
                                                                         data-id="{{ $address->id }}"
                                                                         data-address="{{ $address->address }}">edit</a></small>
-                                                                <small><a href="#" class="delete-address text-danger"
+                                                                <small><a href="#"
+                                                                        class="delete-address text-danger"
                                                                         data-id="{{ $address->id }}">delete</a></small>
                                                             </h4>
                                                             <address>
@@ -615,9 +849,15 @@
                                                         <div class="avatar-upload-container">
                                                             <label for="avatar">Ảnh đại diện</label>
                                                             <div class="avatar-wrapper">
-                                                                <img id="avatarPreview"
-                                                                    src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('admin/images/users/dummy-avatar.png') }}"
-                                                                    alt="Avatar" class="avatar-img">
+                                                                @if (auth()->user()->avatar)
+                                                                    <img id="avatarPreview"
+                                                                        src="{{ asset(auth()->user()->avatar) }}"
+                                                                        alt="Avatar" class="avatar-img">
+                                                                @else
+                                                                    <img id="avatarPreview"
+                                                                        src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                                        alt="Default Avatar" class="avatar-img">
+                                                                @endif
                                                                 <input type="file" id="avatar" name="avatar"
                                                                     accept="image/*" class="file-input">
                                                                 <button type="button" class="change-avatar-btn"
@@ -677,7 +917,9 @@
                                                         <!-- Mật khẩu -->
                                                         <fieldset
                                                             style="border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-top: 30px;">
-                                                            <legend style="padding: 0 10px; font-weight: bold;margin-bottom: 10px;">Thay đổi
+                                                            <legend
+                                                                style="padding: 0 10px; font-weight: bold;margin-bottom: 10px;">
+                                                                Thay đổi
                                                                 mật khẩu</legend>
 
                                                             <div class="password-group">
@@ -1119,309 +1361,330 @@
 
 
 
-         /* Table Styles */
-    .order-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .text-danger {
-        color: #dc3545;
-        font-weight: bold;
-    }
-
-    .order-details ul li {
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-        line-height: 1.6;
-    }
-    .order-table th,
-    .order-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-    white-space: nowrap; /* Ngăn không cho xuống dòng */
-    vertical-align: middle; /* Căn giữa theo chiều dọc cho đẹp */
-}
-
-
-    .order-table th {
-        background-color:rgb(0, 157, 115);
-        color: white;
-        font-weight: 600;
-    }
-
-    .order-table tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    .detail-btn,
-    .cancel-btn,
-    .return-btn {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        margin-right: 5px;
-    }
-
-    .detail-btn {
-        background-color:rgb(0, 157, 115);
-        color: white;
-    }
-
-    .detail-btn:hover {
-        background-color: rgb(0, 157, 115);
-    }
-
-    .cancel-btn {
-        background-color: #f44336;
-        color: white;
-    }
-
-    .cancel-btn:hover {
-        background-color: #da190b;
-    }
-
-    .return-btn {
-        background-color: #ff9800;
-        color: white;
-    }
-
-    .return-btn:hover {
-        background-color: #e68a00;
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 600px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        position: relative;
-        animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-50px);
-            opacity: 0;
+        /* Table Styles */
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        to {
-            transform: translateY(0);
-            opacity: 1;
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
         }
-    }
 
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 24px;
-        color: #888;
-        cursor: pointer;
-        border: none;
-        background: none;
-    }
+        .order-details ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            line-height: 1.6;
+        }
 
-    .close-btn:hover {
-        color: #333;
-    }
+        .order-table th,
+        .order-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap;
+            /* Ngăn không cho xuống dòng */
+            vertical-align: middle;
+            /* Căn giữa theo chiều dọc cho đẹp */
+        }
 
-    .order-details h3 {
-        color: #4CAF50;
-        margin-bottom: 15px;
-    }
 
-    .order-details p {
-        margin: 8px 0;
-        font-size: 16px;
-    }
+        .order-table th {
+            background-color: rgb(0, 157, 115);
+            color: white;
+            font-weight: 600;
+        }
 
-    .order-details ul {
-        list-style: none;
-        padding: 0;
-    }
+        .order-table tr:hover {
+            background-color: #f5f5f5;
+        }
 
-    .order-details ul li {
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
+        .detail-btn,
+        .cancel-btn,
+        .return-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 5px;
+        }
 
-    .order-details ul li:last-child {
-        border-bottom: none;
-    }
+        .detail-btn {
+            background-color: rgb(0, 157, 115);
+            color: white;
+        }
 
-    .status-cancelled {
-        color: #ff0000;
-    }
-    .status-pending-cancel {
-        color: #ffc107; 
-    }
-    .status-default {
-        color: #28a745; 
-    }
+        .detail-btn:hover {
+            background-color: rgb(0, 157, 115);
+        }
 
-    .order-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
 
-.order-table th, .order-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
+        .cancel-btn:hover {
+            background-color: #da190b;
+        }
 
-.order-table th {
-    background-color:rgb(0, 0, 0);
-}
+        .return-btn {
+            background-color: #ff9800;
+            color: white;
+        }
 
-.action-icon {
-    margin: 0 5px;
-    color: #333;    
-    font-size: 18px;
-    text-decoration: none;
-}
+        .return-btn:hover {
+            background-color: #e68a00;
+        }
 
-.action-icon:hover {
-    color: #007bff;
-}
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
 
-.pagination .page-link {
-    padding: 8px 12px;
-    margin: 0 5px;
-    border: 1px solid #ddd;
-    color: #007bff;
-    text-decoration: none;
-}
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
 
-.pagination .page-link:hover {
-    background-color:rgb(0, 0, 0);
-}
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
-.pagination .page-link.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
 
-.pagination .page-link.disabled {
-    color: #ccc;
-    cursor: not-allowed;
-}
+        .close-btn:hover {
+            color: #333;
+        }
 
-.filter-container {
-    margin-bottom: 50px;
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    width: 100%;
-    box-sizing: border-box;
-}
-    .status-filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .status-filter {
-        padding: 8px 15px;
-        border-radius: 20px;
-        background-color: #e9ecef;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .status-filter:hover {
-        background-color: #dae0e5;
-    }
-    .status-filter.active {
-        background-color: #007bff;
-        color: white;
-    }
-    .all-filter {
-        font-weight: bold;
-    }
-    @media (max-width: 768px) {
+        .order-details h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .order-details p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        .order-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .order-details ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-details ul li:last-child {
+            border-bottom: none;
+        }
+
+        .status-cancelled {
+            color: #ff0000;
+        }
+
+        .status-pending-cancel {
+            color: #ffc107;
+        }
+
+        .status-default {
+            color: #28a745;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .order-table th,
+        .order-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .order-table th {
+            background-color: rgb(0, 0, 0);
+        }
+
+        .action-icon {
+            margin: 0 5px;
+            color: #333;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .action-icon:hover {
+            color: #007bff;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination .page-link {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .pagination .page-link:hover {
+            background-color: rgb(0, 0, 0);
+        }
+
+        .pagination .page-link.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination .page-link.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .filter-container {
+            margin-bottom: 50px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         .status-filters {
-            flex-direction: column;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-    }
 
-    .swal2-confirm-button {
-        background-color: #d33;
-        color: white;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .swal2-cancel-button {
-        background-color: #3085d6;
-        color: white;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .rating-stars {
-        font-size: 24px;
-    }
+        .status-filter {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-    .rating-stars .star {
-        cursor: pointer;
-        color: #ddd;
-    }
+        .status-filter:hover {
+            background-color: #dae0e5;
+        }
 
-    .rating-stars .star.active {
-        color: #ffd700;
-    }
+        .status-filter.active {
+            background-color: #007bff;
+            color: white;
+        }
 
-    .rating-stars {
+        .all-filter {
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .status-filters {
+                flex-direction: column;
+            }
+        }
+
+        .swal2-confirm-button {
+            background-color: #d33;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+
+        .swal2-cancel-button {
+            background-color: #3085d6;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+
+        .rating-stars {
+            font-size: 24px;
+        }
+
+        .rating-stars .star {
+            cursor: pointer;
+            color: #ddd;
+        }
+
+        .rating-stars .star.active {
+            color: #ffd700;
+        }
+
+        .rating-stars {
             display: flex;
             gap: 5px;
             cursor: pointer;
             margin-bottom: 1rem;
         }
+
         .star {
             font-size: 30px;
             color: #ccc;
             transition: transform 0.2s ease, color 0.3s ease;
         }
+
         .star:hover {
             transform: scale(1.2);
         }
+
         .star.active {
             color: #f1c40f;
         }
+
         .swal2-popup {
-            width: 700px !important; /* Tăng chiều rộng để chứa nội dung */
+            width: 700px !important;
+            /* Tăng chiều rộng để chứa nội dung */
             overflow-x: hidden !important;
-            max-width: 90vw; /* Giới hạn tối đa để không vượt màn hình nhỏ */
+            max-width: 90vw;
+            /* Giới hạn tối đa để không vượt màn hình nhỏ */
             border-radius: 10px;
         }
+
         .swal2-textarea {
             width: 500px;
             padding: 10px;
@@ -1430,11 +1693,13 @@
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             resize: none;
         }
+
         .swal2-textarea:focus {
             outline: none;
             border-color: #28a745;
             box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
         }
+
         .swal2-textarea:not(:placeholder-shown) {
             border-color: #28a745;
         }

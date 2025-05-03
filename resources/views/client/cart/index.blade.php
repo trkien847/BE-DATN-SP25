@@ -169,12 +169,12 @@
                                             </td>
                                             <td class="cart-product-info">
                                                 <h4><a
-                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ \Illuminate\Support\Str::limit($cart->product->name) }}</a>
+                                                        href="{{ route('products.productct', $cart->product->id) }}">{{ $cart->product->name }}</a>
                                                 </h4>
                                                 <p class="text-sm text-gray-500">{{ $variantName }}</p>
                                             </td>
                                             <td class="cart-product-price">
-                                                {{ number_format($cart->productVariant->sale_price) }}
+                                                {{ number_format($cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->price) }}đ
                                             </td>
 
                                             <td class="cart-product-quantity">
@@ -185,7 +185,11 @@
                                             </td>
 
                                             <td class="cart-product-subtotal">
-                                                {{ number_format(($cart->productVariant->sale_price && $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->sell_price) * $cart->quantity) }}đ
+                                                @php
+                                                    $price = $cart->productVariant->sale_price > 0 ? $cart->productVariant->sale_price : $cart->productVariant->price;
+                                                    $subtotal = $price * $cart->quantity;
+                                                @endphp
+                                                {{ number_format($subtotal) }}đ
                                             </td>
 
                                             <td class="cart-product-attributes" style="display: none;">

@@ -328,6 +328,9 @@
 @push('js')
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script>
+        const routes = {
+            category_show: '{{ route('category.show', ':id') }}'
+        };
         $(document).ready(function() {
             // Lấy categoryId và subcategoryId từ URL
             function getCategoryAndSubcategoryFromUrl() {
@@ -354,6 +357,7 @@
                 let selectedBrands = $('.brand-checkbox:checked').map((_, el) => el.value).get();
                 let selectedPrices = $('.price-checkbox:checked').map((_, el) => el.value).get();
                 let sortOption = $('#sortSelect').val();
+
                 $.ajax({
                     url: `/search/${categoryId}/${subcategoryId}`,
                     method: "GET",
@@ -364,45 +368,65 @@
                         sort: sortOption
                     },
                     success: function(response) {
-                        console.log(response);
-                        let productsHtml = response.products.map(product => `
-                    <div class="col-xl-4 col-sm-6 col-6">
-                        <div class="ltn__product-item ltn__product-item-3 text-center">
-                            <div class="product-img">
-                                <a href="#"><img src="/upload/${product.thumbnail}" alt="#"></a>
-                                <div class="product-badge">
-                                    <ul>
-                                        ${product.min_sale_price > 0 ? 
-                                            `<li class="sale-badge">-${Math.round(((product.min_price - product.min_sale_price) / product.min_price) * 100)}%</li>` 
-                                            : ''
-                                        }
-                                    </ul>
-                                </div>
-                                <div class="product-hover-action">
-                                    <ul>
-                                        <li>
-                                            <a href="#" class="quick-view-btn" data-id="${product.id}" title="Quick View" data-bs-toggle="modal" data-bs-target="#quick_view_modal">
-                                                <i class="far fa-eye"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="product-info">
-                                <h2 class="product-title"><a href="/products/${product.id}/productct">${product.name}</a></h2>
-                                <div class="product-price">
-                                    ${product.min_sale_price > 0 ? 
-                                        `<span>${new Intl.NumberFormat().format(product.min_sale_price)}đ</span> 
-                                                                                            <del>${new Intl.NumberFormat().format(product.min_price)}đ</del>` :
-                                        `<span>${new Intl.NumberFormat().format(product.min_price)}đ</span>`
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                        console.log("Response:", response);
 
-                        $('#product-list').html(productsHtml);
+                        // Kiểm tra cấu trúc của response
+                        if (response.products && response.products.data) {
+                            let productsHtml = response.products.data.map(product => `
+                                <div class="col-xl-4 col-sm-6 col-6">
+                                    <div class="ltn__product-item ltn__product-item-3 text-center">
+                                        <div class="product-img">
+                                            <a href="/products/${product.id}/productct">
+                                                <img src="/upload/${product.thumbnail}" alt="${product.name}">
+                                            </a>
+                                            <div class="product-badge">
+                                                <ul>
+                                                    ${product.min_sale_price > 0 ? 
+                                                        `<li class="sale-badge">-${Math.round(((product.min_price - product.min_sale_price) / product.min_price) * 100)}%</li>` 
+                                                        : ''
+                                                    }
+                                                </ul>
+                                            </div>
+                                            <div class="product-hover-action">
+                                                <ul>
+                                                    <li>
+                                                        <a href="#" class="quick-view-btn" data-id="${product.id}" title="Quick View" data-bs-toggle="modal" data-bs-target="#quick_view_modal">
+                                                            <i class="far fa-eye"></i>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="product-info">
+                                            <h2 class="product-title">
+                                                <a href="/products/${product.id}/productct">${product.name}</a>
+                                            </h2>
+                                            <div class="product-price">
+                                                ${product.min_sale_price > 0 ? 
+                                                    `<span>${new Intl.NumberFormat('vi-VN').format(product.min_sale_price)}đ</span>
+                                                        <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
+                                                    `<span>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</span>`
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+
+                            $('#product-list').html(productsHtml);
+
+                            // Cập nhật phân trang nếu có
+                            if (response.products.links) {
+                                $('.ltn__pagination').html(response.products.links);
+                            }
+                        } else {
+                            $('#product-list').html(
+                                '<div class="col-12"><p class="text-center">Không tìm thấy sản phẩm phù hợp</p></div>'
+                                );
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error("Lỗi khi tìm kiếm:", xhr);
                     }
                 });
             }
@@ -421,71 +445,108 @@
                         $('#quick_view_modal').attr('data-product-id', response
                             .id);
                         $('#quick_view_modal .modal-product-img').html(`
-                <a href="{{ route('products.productct', ':id') }}" target="_blank">
-                    <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
-                </a>
-            `.replace(':id', response.id));
+                            <a href="{{ route('products.productct', ':id') }}" target="_blank">
+                                <img src="/upload/${response.thumbnail}" alt="${response.name}" class="w-full h-auto rounded-lg">
+                            </a>
+                        `.replace(':id', response.id));
 
                         $('#quick_view_modal h3').text(response.name);
-                        $('#quick_view_modal .product-price span')
-                            .css('font-size', '30px')
-                            .text(new Intl.NumberFormat().format(response.sale_price) + 'đ');
+                        if (response.variants && response.variants.length > 0) {
+                            // Tìm giá thấp nhất trong các variants
+                            let minPrice = Math.min(...response.variants.map(v => v.price));
+                            let minSalePrice = Math.min(...response.variants
+                                .filter(v => v.sale_price > 0)
+                                .map(v => v.sale_price) || [0]);
 
-                        $('#quick_view_modal .product-price del')
-                            .css('font-size', '30px')
-                            .text(new Intl.NumberFormat().format(response.sell_price) + 'đ');
+                            // Hiển thị giá
+                            if (minSalePrice > 0) {
+                                $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minSalePrice)}đ</span>
+                        <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</del>
+                    `);
+                            } else {
+                                $('#quick_view_modal .product-price').html(`
+                        <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(minPrice)}đ</span>
+                    `);
+                            }
+                        }
 
                         let categoriesHtml = response.categories.map(category =>
-                            `<a href="#">${category.name}</a>`
+                            `<a href="${routes.category_show.replace(':id', category.id)}" class="category-link">
+                                ${category.name}
+                            </a>`
                         ).join(", ");
                         $('#quick_view_modal .modal-product-meta span').html(categoriesHtml);
 
                         // Làm mới danh sách biến thể
                         if (response.variants && response.variants.length > 0) {
                             let variantsHtml = '<div class="variant-buttons">';
+
+                            // Tìm variant có giá thấp nhất
+                            let lowestPriceVariant = response.variants.reduce((lowest,
+                                current) => {
+                                let currentFinalPrice = current.sale_price > 0 ? current
+                                    .sale_price : current.price;
+                                let lowestFinalPrice = lowest.sale_price > 0 ? lowest
+                                    .sale_price : lowest.price;
+                                return currentFinalPrice < lowestFinalPrice ? current :
+                                    lowest;
+                            }, response.variants[0]);
+
                             variantsHtml += response.variants.map((variant, index) => {
                                 let shapeAttr = variant.attributes.find(attr => attr
-                                    .attribute?.name
-                                    .includes('Hình'));
+                                    .attribute?.name.includes('Hình'));
                                 let weightAttr = variant.attributes.find(attr => attr
-                                    .attribute
-                                    ?.name.includes('Khối'));
-
+                                    .attribute?.name.includes('Khối'));
                                 let variantName = [shapeAttr?.value, weightAttr?.value]
-                                    .filter(
-                                        Boolean).join(' ') || 'Không có thuộc tính';
+                                    .filter(Boolean).join(' ') || 'Không có thuộc tính';
+
+                                // Thêm class active cho variant có giá thấp nhất
+                                let isLowestPrice = variant.id === lowestPriceVariant
+                                    .id ? 'active' : '';
 
                                 return `
-                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200"
-                            data-product-id="${response.id}"
-                            data-variant-id="${variant.id}"
-                            data-price="${variant.price}"
-                            data-sale-price="${variant.sale_price}"
-                            data-stock="${variant.stock}"
-                            data-variant-index="${index}">
-                            ${variantName || 'Không có thuộc tính'}
-                        </button>
-                    `;
+                                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
+                                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
+                                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
+                                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200 ${isLowestPrice}"
+                                            data-product-id="${response.id}"
+                                            data-variant-id="${variant.id}"
+                                            data-price="${variant.price}"
+                                            data-sale-price="${variant.sale_price}"
+                                            data-stock="${variant.stock}">
+                                            ${variantName}
+                                        </button>
+                                    `;
                             }).join('');
                             variantsHtml += '</div>';
+
                             $('#quick_view_modal .modal-product-variants .variant-list').html(
                                 variantsHtml);
 
+                            // Tự động trigger click vào variant có giá thấp nhất
+                            setTimeout(() => {
+                                $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
+                                    .trigger('click');
+                            }, 100);
+
                             // Xóa sự kiện cũ và gắn sự kiện mới
                             $('.variant-btn').off('click').on('click', function() {
-                                const variantPrice = $(this).data('sale-price') || $(
-                                    this).data(
-                                    'price');
+                                const variantPrice = $(this).data('price');
+                                const variantSalePrice = $(this).data('sale-price');
                                 const variantStock = $(this).data('stock');
 
-                                // Cập nhật giá chính
-                                $('#quick_view_modal .product-price span').text(
-                                    new Intl.NumberFormat().format(variantPrice) +
-                                    'đ'
-                                );
+                                // Cập nhật hiển thị giá
+                                if (variantSalePrice > 0) {
+                                    $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantSalePrice)}đ</span>
+                                    <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</del>
+                                `);
+                                } else {
+                                    $('#quick_view_modal .product-price').html(`
+                                    <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</span>
+                                `);
+                                }
 
                                 if (variantStock > 0) {
                                     $('.cart-plus-minus-box')

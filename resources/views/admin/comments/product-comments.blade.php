@@ -33,8 +33,15 @@
                                     <tr data-comment-id="{{ $parentComment->id }}" class="parent-comment">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $parentComment->user->avatar ?? asset('images/default-avatar.png') }}"
-                                                    class="rounded-circle me-2" width="32">
+                                                @if ($parentComment->user && $parentComment->user->avatar)
+                                                    <img src="{{ asset($parentComment->user->avatar) }}"
+                                                        class="rounded-circle me-2" alt="Avatar"
+                                                        style="width: 32px; height: 32px; object-fit: cover;">
+                                                @else
+                                                    <img src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                        class="rounded-circle me-2" alt="Default Avatar"
+                                                        style="width: 32px; height: 32px; object-fit: cover;">
+                                                @endif
                                                 <div>
                                                     <h6 class="mb-0">{{ $parentComment->user->fullname ?? 'Ẩn danh' }}
                                                     </h6>
@@ -76,8 +83,15 @@
                                         <tr data-comment-id="{{ $childComment->id }}" class="child-comment">
                                             <td class="border-0">
                                                 <div class="d-flex align-items-center ms-4">
-                                                    <img src="{{ $childComment->user->avatar ?? asset('images/default-avatar.png') }}"
-                                                        class="rounded-circle me-2" width="28">
+                                                    @if ($childComment->user && $childComment->user->avatar)
+                                                        <img src="{{ asset($childComment->user->avatar) }}"
+                                                            class="rounded-circle me-2" alt="Avatar"
+                                                            style="width: 28px; height: 28px; object-fit: cover;">
+                                                    @else
+                                                        <img src="{{ asset('admin/images/users/dummy-avatar.jpg') }}"
+                                                            class="rounded-circle me-2" alt="Default Avatar"
+                                                            style="width: 28px; height: 28px; object-fit: cover;">
+                                                    @endif
                                                     <div>
                                                         <h6 class="mb-0">{{ $childComment->user->fullname ?? 'Ẩn danh' }}
                                                         </h6>

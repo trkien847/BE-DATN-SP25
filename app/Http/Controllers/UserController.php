@@ -56,7 +56,6 @@ class UserController extends Controller
         $user = User::create([
             'fullname' => $fullName,
             'email' => $request->email,
-            'avatar' => '/admin/images/users/dummy-avatar.png',
             'password' => Hash::make($request->password),
             'role_id' => 1,
         ]);
