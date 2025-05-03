@@ -706,7 +706,7 @@ class CartController extends Controller
             ]);
         }
 
-        return redirect()->route('orderHistory')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
+        return redirect()->route('profile')->with('success', 'Thông tin tài khoản đã được lưu thành công!');
     }
 
     public function refundDetails(Request $request, $orderId)
@@ -784,13 +784,16 @@ class CartController extends Controller
             'note' => 'Đã nhận được tiền hoàn',
         ]);
 
-        return redirect()->route('orderHistory')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
+        return redirect()->route('profile')->with('success', 'Xác nhận nhận tiền hoàn thành công!');
     }
 
     public function cancelOrder(Request $request, $orderId)
     {
         $user = Auth::user();
-        $order = Order::where('user_id', $user->id)->findOrFail($orderId);
+        $order = Order::where('user_id', $user->id)
+            ->with(['items.product', 'latestOrderStatus'])
+            ->findOrFail($orderId);
+            
         $currentStatus = $order->latestOrderStatus->name;
 
         if ($request->isMethod('post')) {
@@ -833,7 +836,7 @@ class CartController extends Controller
                 event(new OrderCancelRequested($user, $order, $request->cancel_reason));
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hủy đơn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
@@ -1023,7 +1026,7 @@ class CartController extends Controller
                 }
             }
 
-            return redirect()->route('orderHistory')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
+            return redirect()->route('profile')->with('success', 'Yêu cầu hoàn hàng đã được gửi thành công!');
         }
 
         $carts = Cart::where('user_id', auth()->id())
