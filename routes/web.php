@@ -55,7 +55,7 @@ Route::get('/Lien_he', function () {
   return view('client.home.Lien_he', compact('carts', 'subtotal'));
 })->name('Lien_he');
 
-// /orders/statistics /admin/productct
+// /orders/statistics /admin/imports/cancel/
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/shop/{categoryId?}/{subcategoryId?}', [ShopListController::class, 'show'])
   ->where(['categoryId' => '[0-9]+', 'subcategoryId' => '[0-9]+'])
