@@ -82,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
   Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
   Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
-
+  Route::post('/cart/check-quantity', [CartController::class, 'checkQuantity'])->name('cart.check-quantity');
 
   Route::post('/checkout', [CartController::class, 'showCheckout'])->name('checkout');
   Route::get('/checkout', [CartController::class, 'showCheckout'])->name('checkout.get');

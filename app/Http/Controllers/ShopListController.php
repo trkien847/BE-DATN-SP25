@@ -21,13 +21,20 @@ class ShopListController extends Controller
     }
     public function show($categoryId = null, $subcategoryId = null)
     {
-        $categories = $this->categoryService->getAllCategories()->where('is_active', true)->where('status', 'approved');
+        $categories = $this->categoryService->getAllCategories()
+            ->where('is_active', true)
+            ->where('status', 'approved');
+
         $sevenDaysAgo = Carbon::now()->subDays(30);
+
         $productTop = OrderItem::with(['product.variants' => function ($query) {
-            $query->whereNull('deleted_at');
+            $query->where('stock', '>', 0); // Chỉ lấy biến thể còn hàng
         }])
             ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+                $query->where('is_active', 1)
+                    ->whereHas('variants', function ($query) {
+                        $query->where('stock', '>', 0);
+                    });
             })
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -39,7 +46,7 @@ class ShopListController extends Controller
 
         $carts = Cart::with(['product', 'productVariant'])
             ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+                $query->where('is_active', 1);
             })
             ->where('user_id', auth()->id())
             ->get();
@@ -51,21 +58,23 @@ class ShopListController extends Controller
             return $cart->quantity * $price;
         });
 
-        // Modify base query to include only products with active variants
-        $productsQuery = Product::whereNull('deleted_at')->selectRaw(
-            'products.*, 
+        // Base product query: chỉ lấy sản phẩm đang active và có biến thể còn hàng
+        $productsQuery = Product::where('is_active', 1)
+            ->selectRaw(
+                'products.*, 
             (SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id AND stock > 0) as min_price, 
             (SELECT MIN(sale_price) FROM product_variants WHERE product_variants.product_id = products.id AND sale_price > 0 AND stock > 0) as min_sale_price'
-        )->whereHas('variants', function ($query) {
-            $query->where('stock', '>', 0);
-        });
+            )
+            ->whereHas('variants', function ($query) {
+                $query->where('stock', '>', 0);
+            });
 
         if ($categoryId) {
             $category = Category::findOrFail($categoryId);
 
             if ($subcategoryId) {
-                $subcategory = CategoryType::where('category_types.id', $subcategoryId)
-                    ->where('category_types.category_id', $category->id)
+                $subcategory = CategoryType::where('id', $subcategoryId)
+                    ->where('category_id', $category->id)
                     ->firstOrFail();
 
                 $products = $productsQuery->whereHas('categoryTypes', function ($query) use ($subcategoryId) {
@@ -74,9 +83,10 @@ class ShopListController extends Controller
                     $query->where('stock', '>', 0);
                 }])->paginate(12);
 
-                $brands = Brand::whereIn('id', Product::whereHas('variants', function ($query) {
-                    $query->where('stock', '>', 0);
-                })->pluck('brand_id'))
+                $brands = Brand::whereIn('id', Product::where('is_active', 1)
+                    ->whereHas('variants', function ($query) {
+                        $query->where('stock', '>', 0);
+                    })->pluck('brand_id'))
                     ->get();
 
                 return view('client.shopList.index', compact('category', 'subcategory', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
@@ -88,9 +98,10 @@ class ShopListController extends Controller
                 $query->where('stock', '>', 0);
             }])->paginate(12);
 
-            $brands = Brand::whereIn('id', Product::whereHas('variants', function ($query) {
-                $query->where('stock', '>', 0);
-            })->pluck('brand_id'))
+            $brands = Brand::whereIn('id', Product::where('is_active', 1)
+                ->whereHas('variants', function ($query) {
+                    $query->where('stock', '>', 0);
+                })->pluck('brand_id'))
                 ->get();
 
             return view('client.shopList.index', compact('category', 'products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
@@ -100,26 +111,32 @@ class ShopListController extends Controller
             $query->where('stock', '>', 0);
         }])->paginate(12);
 
-        $brands = Brand::whereIn('id', Product::whereHas('variants', function ($query) {
-            $query->where('stock', '>', 0);
-        })->pluck('brand_id'))
+        $brands = Brand::whereIn('id', Product::where('is_active', 1)
+            ->whereHas('variants', function ($query) {
+                $query->where('stock', '>', 0);
+            })->pluck('brand_id'))
             ->get();
 
         return view('client.shopList.index', compact('products', 'categories', 'brands', 'productTop', 'carts', 'subtotal'));
     }
+
     public function search(Request $request, $categoryId = null, $subcategoryId = null)
     {
         $categories = $this->categoryService->getAllCategories();
         $category = null;
         $subcategory = null;
         $sevenDaysAgo = Carbon::now()->subDays(30);
+
         $productTop = OrderItem::with(['product.variants' => function ($query) {
-            $query->whereNull('deleted_at');
+            $query->where('stock', '>', 0);
         }])
             ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+                $query->where('is_active', 1)
+                    ->whereHas('variants', function ($q) {
+                        $q->where('stock', '>', 0);
+                    });
             })
-            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
             ->selectRaw('SUM(quantity) as total_sold')
             ->groupBy('product_id')
@@ -128,7 +145,7 @@ class ShopListController extends Controller
             ->get();
 
         // Truy vấn cơ bản với giá - chỉ lấy từ variants có stock > 0
-        $query = Product::whereNull('deleted_at')->selectRaw("
+        $query = Product::where('is_active', 1)->selectRaw("
         products.*,
         (SELECT MIN(price) FROM product_variants 
          WHERE product_variants.product_id = products.id 
@@ -137,7 +154,7 @@ class ShopListController extends Controller
          WHERE product_variants.product_id = products.id 
          AND sale_price > 0 
          AND stock > 0) as min_sale_price
-            ")->whereHas('variants', function ($query) {
+    ")->whereHas('variants', function ($query) {
             $query->where('stock', '>', 0);
         });
 
@@ -173,7 +190,7 @@ class ShopListController extends Controller
             $query->whereIn('brand_id', $request->brand);
         }
 
-        // Lọc theo khoảng giá thực tế (sale_price nếu có, ngược lại là price)
+        // Lọc theo khoảng giá
         if (!empty($request->price_range)) {
             $priceFilters = [
                 'under_100' => [0, 100000],
@@ -216,12 +233,10 @@ class ShopListController extends Controller
             }
         }
 
-        // Lấy sản phẩm với variants có stock > 0
         $products = $query->with(['variants' => function ($query) {
             $query->where('stock', '>', 0);
         }])->paginate(12);
 
-        // Trả về Ajax hoặc view
         if ($request->ajax()) {
             return response()->json(['products' => $products]);
         }

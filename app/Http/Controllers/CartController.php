@@ -794,7 +794,7 @@ class CartController extends Controller
         $order = Order::where('user_id', $user->id)
             ->with(['items.product', 'latestOrderStatus'])
             ->findOrFail($orderId);
-            
+
         $currentStatus = $order->latestOrderStatus->name;
 
         if ($request->isMethod('post')) {
@@ -1081,13 +1081,32 @@ class CartController extends Controller
         $selectedVariantId = $request->product_variant_id ?? $product->variants->first()->id;
         $variant = ProductVariant::with('attributeValues.attribute')->find($selectedVariantId);
 
+        $requestQuantity = $request->quantity ?? 1;
+
         $cartItem = Cart::where('user_id', $user->id)
             ->where('product_id', $product->id)
             ->where('product_variant_id', $selectedVariantId)
             ->first();
 
+        $currentCartQuantity = $cartItem ? $cartItem->quantity : 0;
+        $totalQuantity = $currentCartQuantity + $requestQuantity;
+
+        if ($totalQuantity > $variant->stock) {
+            $remainingStock = $variant->stock - $currentCartQuantity;
+            if ($remainingStock <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Bạn đã thêm tối đa số lượng có thể cho sản phẩm này!"
+                ]);
+            }
+            return response()->json([
+                'status' => 'error',
+                'message' => "Chỉ có thể thêm thêm {$remainingStock} sản phẩm nữa vào giỏ hàng!"
+            ]);
+        }
+
         if ($cartItem) {
-            $cartItem->quantity += $request->quantity ?? 1;
+            $cartItem->quantity = $totalQuantity;
             $cartItem->save();
         } else {
             Cart::create([
@@ -1161,12 +1180,20 @@ class CartController extends Controller
 
     public function update(Request $request)
     {
-        $cart = Cart::find($request->cart_id);
+        $cart = Cart::with('productVariant')->find($request->cart_id);
 
         if (!$cart) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Sản phẩm không tồn tại trong giỏ hàng!'
+            ]);
+        }
+
+        // Kiểm tra số lượng tồn kho
+        if ($request->quantity > $cart->productVariant->stock) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Chỉ còn {$cart->productVariant->stock} sản phẩm trong kho!"
             ]);
         }
 
@@ -1186,6 +1213,30 @@ class CartController extends Controller
             'message' => 'Cập nhật giỏ hàng thành công!',
             'subtotal' => number_format($subtotal, 2) . 'đ',
             'cart_count' => $carts->sum('quantity')
+        ]);
+    }
+    public function checkQuantity(Request $request)
+    {
+        $cart = Cart::with('productVariant')->find($request->cart_id);
+
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sản phẩm không tồn tại trong giỏ hàng!'
+            ]);
+        }
+
+        // Kiểm tra số lượng tồn kho
+        if ($request->quantity > $cart->productVariant->stock) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Chỉ còn {$cart->productVariant->stock} sản phẩm trong kho!",
+                'old_quantity' => $cart->quantity
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success'
         ]);
     }
 }

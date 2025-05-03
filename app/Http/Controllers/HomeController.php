@@ -33,11 +33,15 @@ class HomeController extends Controller
             ->where('status', 'approved');
 
         $sevenDaysAgo = Carbon::now()->subDays(30);
+
         $productBestSale = OrderItem::with(['product.variants' => function ($query) {
-            $query->whereNull('deleted_at');
+            $query->where('stock', '>', 0);  // Chỉ lấy biến thể còn hàng
         }])
             ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+                $query->where('is_active', 1)
+                    ->whereHas('variants', function ($q) {
+                        $q->where('stock', '>', 0); // Chỉ lấy sản phẩm có biến thể còn hàng
+                    });
             })
             ->where('created_at', '>=', $sevenDaysAgo)
             ->select('product_id')
@@ -47,7 +51,10 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
-        $productTop = Product::whereNull('deleted_at')
+        $productTop = Product::where('is_active', 1)
+            ->whereHas('variants', function ($query) {
+                $query->where('stock', '>', 0); // Không dùng deleted_at
+            })
             ->orderBy('views', 'desc')
             ->take(6)
             ->get();
@@ -61,7 +68,7 @@ class HomeController extends Controller
             'productVariant.attributeValues.attribute',
         ])
             ->whereHas('product', function ($query) {
-                $query->whereNull('deleted_at');
+                $query->where('is_active', 1);
             })
             ->where('user_id', auth()->id())
             ->get();
