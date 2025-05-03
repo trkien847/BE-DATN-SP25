@@ -43,6 +43,7 @@ class CartController extends Controller
                     ->orWhere('end_date', '>=', now());
             })
             ->get();
+            
 
         $appliedCoupon = session('applied_coupon');
         if ($appliedCoupon) {
