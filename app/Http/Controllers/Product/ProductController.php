@@ -1051,15 +1051,6 @@ class ProductController extends Controller
 
 
 
-
-
-
-
-
-
-
-
-
     // biến thể
     public function attributesList(Request $request)
     {

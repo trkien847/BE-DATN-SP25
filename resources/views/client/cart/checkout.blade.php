@@ -356,13 +356,27 @@
                             <img src="{{ $product['thumbnail'] }}" alt="{{ $product['name'] }}">
                             <div class="flex-1">
                                 <p class="text-sm font-semibold text-gray-800 truncate">{{ $product['name'] }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ $product['name_variant'] }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ $product['name_variant'] ?? 'Mặc định' }}</p>
                             </div>
                             <div class="flex flex-col items-end min-w-[90px] space-y-0.5">
                             <div class="text-sm text-gray-600 space-y-0.5">
-                            <div><span class="text-gray-500">Giá bán:</span> <span class="text-red-600 font-bold">30,000đ</span></div>
-                            <div><span class="text-gray-500">Giá gốc:</span> <span class="line-through text-gray-400">39,000đ</span></div>
-                            <div><span class="text-gray-500">Số lượng:</span> <span class="text-gray-800 font-medium">x7</span></div>
+                            <div class="text-sm text-gray-600 space-y-0.5">
+                        <div>
+                            <span class="text-gray-500">Giá bán:</span>
+                            <span class="text-red-600 font-bold">
+                            {{ number_format($product['sell_price'] ?? $product['original_price'] ?? $product['price']) }}đ
+                            </span>
+                        </div>
+                        <div>
+                        <span class="text-gray-500">Giá gốc:</span>
+                        <span class="line-through text-gray-400">
+                        {{ number_format($product['price']) }}đ
+                        </span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Số lượng:</span>
+                            <span class="text-gray-800 font-medium">x{{ $product['quantity'] }}</span>
+                        </div>
                         </div>
 
                         </div>
