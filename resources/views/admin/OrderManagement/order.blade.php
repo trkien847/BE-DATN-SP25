@@ -158,10 +158,14 @@
         color: #007bff;
     }
     .no-wrap {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    select option:disabled {
+        color: #ccc;
+        background-color: #f5f5f5;
+    }
 </style>
 
 <div class="container">
@@ -260,23 +264,26 @@
                             </ul>
                         </td>
                         <td class="status-cancelled">
-                            <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
-                                @php
-                                $latestStatus = $order->orderStatuses->sortByDesc('created_at')->first();
-                                $currentStatus = $latestStatus ? $latestStatus->orderStatus->name : '';
-                                @endphp
-                                <option value="1" {{ $currentStatus == 'Chờ xác nhận' ? 'selected' : '' }}>Chờ xác nhận</option>
-                                <option value="2" {{ $currentStatus == 'Chờ giao hàng' ? 'selected' : '' }}>Chờ giao hàng</option>
-                                <option value="3" {{ $currentStatus == 'Đang giao hàng' ? 'selected' : '' }}>Đang giao hàng</option>
-                                <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
-                                <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-                                <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
-                                <option><hr></option>
-                                <option value="" {{ $currentStatus == 'Chờ hủy' ? 'selected' : '' }}>Chờ hủy</option>
-                                <option value="" {{ $currentStatus == 'Chờ hoàn tiền' ? 'selected' : '' }}>Chờ hoàn tiền</option>
-                                <option value="" {{ $currentStatus == 'Xác nhận thông tin' ? 'selected' : '' }}>Xác nhận thông tin</option>
-                                <option value="" {{ $currentStatus == 'Chuyển khoản thành công' ? 'selected' : '' }}>Chuyển khoản thành công</option>
-                                <option value="" {{ $currentStatus == 'Yêu cầu hoàn hàng' ? 'selected' : '' }}>Yêu cầu hoàn hàng</option>
+                        <select name="status" class="form-select form-select-xs text-xs status-select" data-order-id="{{ $order->id }}">
+                        @php
+                            $latestStatus = $order->orderStatuses->sortByDesc('created_at')->first();
+                            $currentStatus = $latestStatus ? $latestStatus->orderStatus->name : '';
+                        @endphp
+                                <optgroup label="Trạng thái chính">
+                                    <option value="1" {{ $currentStatus == 'Chờ xác nhận' ? 'selected' : '' }}>Chờ xác nhận</option>
+                                    <option value="2" {{ $currentStatus   == 'Chờ giao hàng' ? 'selected' : '' }}>Chờ giao hàng</option>
+                                    <option value="3" {{ $currentStatus == 'Đang giao hàng' ? 'selected' : '' }}>Đang giao hàng</option>
+                                    <option value="4" {{ $currentStatus == 'Đã giao hàng' ? 'selected' : '' }}>Đã giao hàng</option>
+                                    <option value="6" {{ $currentStatus == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+                                    <option value="7" {{ $currentStatus == 'Đã hủy' ? 'selected' : '' }}>Đã hủy</option>
+                                </optgroup>
+                                <optgroup label="Trạng thái khác">
+                                    <option value="" {{ $currentStatus == 'Chờ hủy' ? 'selected' : '' }}>Chờ hủy</option>
+                                    <option value="" {{ $currentStatus == 'Chờ hoàn tiền' ? 'selected' : '' }}>Chờ hoàn tiền</option>
+                                    <option value="" {{ $currentStatus == 'Xác nhận thông tin' ? 'selected' : '' }}>Xác nhận thông tin</option>
+                                    <option value="" {{ $currentStatus == 'Chuyển khoản thành công' ? 'selected' : '' }}>Chuyển khoản thành công</option>
+                                    <option value="" {{ $currentStatus == 'Yêu cầu hoàn hàng' ? 'selected' : '' }}>Yêu cầu hoàn hàng</option>
+                                </optgroup>
                             </select>
                             <div class="evidence-upload" style="display: none;">
                                 <input type="file" class="evidence-file" accept="image/*">
@@ -354,35 +361,55 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
      document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
-    });
-const modifiedBy = {{ $currentUserId ?? 'null' }};
+    const modifiedBy = {{ $currentUserId ?? 'null' }};
 
-function attachStatusEvents() {
-    document.querySelectorAll('.status-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const orderId = this.dataset.orderId;
-            const statusId = this.value;
-            const evidenceUpload = this.closest('td').querySelector('.evidence-upload');
-            const evidenceFile = this.closest('td').querySelector('.evidence-file');
+    function updateOptions(select) {
+        const selectedValue = parseInt(select.value) || 0;
+        const options = select.querySelectorAll('option');
 
-            if (statusId == 6 || statusId == 7) {
-                evidenceUpload.style.display = 'block';
-                evidenceFile.addEventListener('change', function() {
-                    if (this.files && this.files[0]) {
-                        uploadStatus(orderId, statusId, this.files[0]);
-                    }
-                }, { once: true });
+        options.forEach(option => {
+            const optionValue = option.value;
+            if (optionValue === '' || (optionValue && parseInt(optionValue) < selectedValue)) {
+                option.disabled = true;
             } else {
-                evidenceUpload.style.display = 'none';
-                uploadStatus(orderId, statusId, null);
+                option.disabled = false;
+            }
+            if (!optionValue && option.innerHTML.includes('<hr>')) {
+                option.disabled = true;
             }
         });
-    });
-}
+    }
+
+    function attachStatusEvents() {
+        document.querySelectorAll('.status-select').forEach(select => {
+            updateOptions(select); // Khởi tạo trạng thái ban đầu
+            select.addEventListener('change', function() {
+                const orderId = this.dataset.orderId;
+                const statusId = this.value;
+                const evidenceUpload = this.closest('td').querySelector('.evidence-upload');
+                const evidenceFile = this.closest('td').querySelector('.evidence-file');
+
+                updateOptions(this); // Cập nhật trạng thái option khi thay đổi filterOrders
+
+                if (statusId == 6 || statusId == 7) {
+                    evidenceUpload.style.display = 'block';
+                    evidenceFile.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            uploadStatus(orderId, statusId, this.files[0]);
+                        }
+                    }, { once: true });
+                } else {
+                    evidenceUpload.style.display = 'none';
+                    uploadStatus(orderId, statusId, null);
+                }
+            });
+        });
+    }
 
 function attachDetailEvents() {
     document.querySelectorAll('.detail-btn').forEach(button => {
@@ -439,7 +466,7 @@ function attachDetailEvents() {
                     ? new Date(item.manufacture_date).toLocaleDateString('vi-VN') 
                     : 'Không có';
 
-                // Tính thời gian hết hạn (days_until_expiry)
+                // Tính thời gian hết hạn (days_until_expiry) attachStatusEvents
                 let expiryDays = item.days_until_expiry !== null ? item.days_until_expiry : 'Không có';
                 let expiryClass = '';
 
@@ -483,15 +510,15 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
     if (customerName) url.searchParams.append('customer_name', customerName);
 
     Swal.fire({
-                imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
-                imageWidth: 200, 
-                imageHeight: 100, 
-                imageAlt: 'Đang Say Gex...', 
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+        imageUrl: 'https://th.bing.com/th/id/R.8019ed81282258112700446dfa572f4b?rik=YV9%2bwXN8AeFcQQ&pid=ImgRaw&r=0',
+        imageWidth: 200,
+        imageHeight: 100,
+        imageAlt: 'Đang Say Gex...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     const startTime = Date.now();
 
@@ -526,9 +553,11 @@ function filterOrders(status = '', startDate = '', endDate = '', customerName = 
         }
 
         attachDetailEvents();
+        attachStatusEvents(); // Gọi lại để áp dụng logic vô hiệu hóa option
+        window.reinitializePagination();
 
         const elapsedTime = Date.now() - startTime;
-        const minDisplayTime = 1000; 
+        const minDisplayTime = 1000;
 
         if (elapsedTime < minDisplayTime) {
             setTimeout(() => {

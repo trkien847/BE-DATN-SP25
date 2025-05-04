@@ -234,7 +234,7 @@
     <div>
         <div class="ltn__utilize-overlay"></div>
 
-        <!-- SLIDER AREA START (slider-3) -->
+        <!-- SLIDER AREA START (slider-3) -- THANH MENU Ở TRÊN-->
         <div class="ltn__slider-area ltn__slider-3---  section-bg-1--- mt-30">
             <div class="container">
                 <div class="row">
@@ -296,25 +296,25 @@
                                         <div class="row">
 
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                                            <div class="slide-item-info">
-                                                                                                <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                                    <h5
-                                                                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                                        Giảm giá đến 50% chỉ hôm nay!</h5>
-                                                                                                    <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
-                                                                                                    </h1>
-                                                                                                    <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
-                                                                                                    <div class="slide-brief animated d-none">
-                                                                                                        <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
-                                                                                                            phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
-                                                                                                    </div>
-                                                                                                    <div class="btn-wrapper  animated">
-                                                                                                        <a href="{{ route('category.show') }}"
-                                                                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div> -->
+                                                                                                                                <div class="slide-item-info">
+                                                                                                                                    <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                                                        <h5
+                                                                                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                                                            Giảm giá đến 50% chỉ hôm nay!</h5>
+                                                                                                                                        <h1 class="slide-title  animated">Tiêu chuẩn vàng <br>Pre-Workout
+                                                                                                                                        </h1>
+                                                                                                                                        <h5 class="color-orange  animated">Giá chỉ từ &16.99</h5>
+                                                                                                                                        <div class="slide-brief animated d-none">
+                                                                                                                                            <p>Chúng tôi cam kết cung cấp các sản phẩm chất lượng cao với giá cả
+                                                                                                                                                phải chăng. Đặt sức khỏe của bạn lên hàng đầu.</p>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="btn-wrapper  animated">
+                                                                                                                                            <a href="{{ route('category.show') }}"
+                                                                                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua ngay</a>
+                                                                                                                                        </div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            </div> -->
 
 
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
@@ -333,26 +333,26 @@
                                     <div class="container">
                                         <div class="row">
                                             <!-- <div class="col-lg-7 col-md-7 col-sm-7 align-self-center">
-                                                                                            <div class="slide-item-info">
-                                                                                                <div class="slide-item-info-inner ltn__slide-animation">
-                                                                                                    <h4
-                                                                                                        class="slide-sub-title ltn__secondary-color animated text-uppercase">
-                                                                                                        Chào mừng đến với cửa hàng của chúng tôi</h4>
-                                                                                                    <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
-                                                                                                    </h1>
-                                                                                                    <div class="slide-brief animated d-none">
-                                                                                                        <p>Predictive analytics is drastically changing the real
-                                                                                                            estate industry. In the past, providing data for quick
-                                                                                                        </p>
-                                                                                                    </div>
-                                                                                                    <div class="btn-wrapper  animated">
-                                                                                                        <a href="shop.html"
-                                                                                                            class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
-                                                                                                            now</a>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div> -->
+                                                                                                                                <div class="slide-item-info">
+                                                                                                                                    <div class="slide-item-info-inner ltn__slide-animation">
+                                                                                                                                        <h4
+                                                                                                                                            class="slide-sub-title ltn__secondary-color animated text-uppercase">
+                                                                                                                                            Chào mừng đến với cửa hàng của chúng tôi</h4>
+                                                                                                                                        <h1 class="slide-title  animated">Gold Standard <br>Pre-Workout
+                                                                                                                                        </h1>
+                                                                                                                                        <div class="slide-brief animated d-none">
+                                                                                                                                            <p>Predictive analytics is drastically changing the real
+                                                                                                                                                estate industry. In the past, providing data for quick
+                                                                                                                                            </p>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="btn-wrapper  animated">
+                                                                                                                                            <a href="shop.html"
+                                                                                                                                                class="theme-btn-1 btn btn-effect-1 text-uppercase">Shop
+                                                                                                                                                now</a>
+                                                                                                                                        </div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            </div> -->
                                             <div class="col-lg-5 col-md-5 col-sm-5 align-self-center">
                                                 <div class="slide-item-img">
                                                     <!-- <a href="shop.html"><img src="{{ asset('client/img/slider/62.jpg') }}" alt="Image"></a> -->
@@ -367,6 +367,8 @@
                 </div>
             </div>
         </div>
+
+        
         <!-- SLIDER AREA END -->
 
         <!-- FEATURE AREA START ( Feature - 3) -->
@@ -439,7 +441,7 @@
                                 <span class="char"> </span>
                                 <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
                             </h1>
-                            <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
+                            <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.</p>
                         </div>
                         <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                             <div class="nav">
@@ -448,6 +450,7 @@
                                         class="{{ $loop->first ? 'active show' : '' }}">
                                         {{ $category->name }}
                                     </a>
+                                    
                                 @endforeach
                             </div>
                         </div>
@@ -458,20 +461,20 @@
                                     id="liton_tab_3_{{ $index + 1 }}">
                                     <div class="ltn__product-tab-content-inner">
                                         <div class="row ltn__tab-product-slider-one-active slick-arrow-1">
-                                            @foreach ($category->products as $product)
+                                            @foreach ($category->products->where('is_active', 1) as $product)
                                                 @php
-                                                    // Get variants with stock > 0
+                                                    // Lọc variants còn hàng
                                                     $availableVariants = $product->variants->filter(function (
                                                         $variant,
                                                     ) {
-                                                        return $variant->stock > 0;
+                                                        return $variant->stock > 0 && $variant->deleted_at === null;
                                                     });
 
-                                                    // Only proceed if product has variants with stock
                                                     if ($availableVariants->isEmpty()) {
                                                         continue;
                                                     }
 
+                                                    // Tính giá thấp nhất từ các biến thể còn hàng
                                                     $salePrice = $availableVariants
                                                         ->where('sale_price', '>', 0)
                                                         ->min('sale_price');
@@ -520,14 +523,35 @@
                                                                 <a href="{{ route('products.productct', $product->id) }}"
                                                                     class="product-link">{{ $product->name }}</a>
                                                             </h2>
+                                                            <div class="product-ratting d-flex justify-content-center">
+                                                                @php
+                                                                    $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                                                    $fullStars = floor($avgRating);
+                                                                    $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                                                    $emptyStars = 5 - $fullStars - $halfStar;
+                                                                @endphp
+                                                                <ul>
+                                                                    @for ($i = 0; $i < $fullStars; $i++)
+                                                                        <li><i class="fas fa-star text-warning"></i></li>
+                                                                    @endfor
+                                                                    @if ($halfStar)
+                                                                        <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                                                    @endif
+                                                                    @for ($i = 0; $i < $emptyStars; $i++)
+                                                                        <li><i class="far fa-star text-warning"></i></li>
+                                                                    @endfor
+                                                                    <li class="ms-2 text-dark" style="font-size:14px;">({{ $avgRating }})</li>
+                                                                </ul>
+                                                            </div>
                                                             <div class="product-price">
                                                                 @if (!empty($salePrice) && $salePrice > 0)
-                                                                    <del class="text-danger fs-6 d-block mb-2">
-                                                                        {{ number_format($regularPrice) }} VND
-                                                                    </del>
+                                                                   
                                                                     <span class="text-success fs-6 d-block mb-2">
-                                                                        {{ number_format($salePrice) }} VND
+                                                                        {{ number_format($salePrice) }} đ
                                                                     </span>
+                                                                    <del class="text-danger fs-6 d-block mb-2">
+                                                                        {{ number_format($regularPrice) }} đ
+                                                                    </del>
                                                                 @else
                                                                     <span>{{ number_format($regularPrice) }}đ</span>
                                                                 @endif
@@ -597,7 +621,8 @@
         <!-- ABOUT US AREA END -->
 
         <!-- COUNTDOWN AREA START -->
-        <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120" data-bs-bg="{{ asset('client/img/haha.png') }}">
+        <div class="ltn__call-to-action-area section-bg-1 bg-image pt-120 pb-120"
+            data-bs-bg="{{ asset('client/img/haha.png') }}">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-7 col-md-6 col-sm-4">
@@ -610,8 +635,8 @@
                                 <h1 class="section-title">Mua thuốc với<br>giá giảm 50%</h1>
                                 <p>Nhận thêm tiền hoàn lại với các ưu đãi và giảm giá đặc biệt</p>
                             </div>
-                            <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
-                            </div>
+                            {{-- <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
+                            </div> --}}
                             <div class="btn-wrapper animated">
                                 <a href="{{ route('category.show') }}"
                                     class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua
@@ -646,8 +671,8 @@
                                     <a href="{{ route('products.productct', $product->product->id) }}">
                                         <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                             alt="{{ $product->name }} " width="250px" height="200px">
-
                                     </a>
+                                    
                                     <div class="product-badge">
                                         <ul>
                                             @if (!empty($product->sale_price) && $product->sale_price > 0)
@@ -677,9 +702,38 @@
                                 <div class="product-info">
                                     <h2 class="product-title">
                                         <a
-                                            href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
+                                            href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}
+                                        </a> 
                                     </h2>
-                                    <div class="product-price">
+                                    
+                                    <div class="product-ratting d-flex justify-content-center">
+                                        @php
+                                            $avgRating = 0;
+                                    
+                                            if ($product->reviews && $product->reviews->count()) {
+                                                $avgRating = round($product->reviews->avg('rating'), 1);
+                                            }
+                                    
+                                            $fullStars = floor($avgRating);
+                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                        @endphp
+                                        <ul>
+                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                <li><i class="fas fa-star text-warning"></i></li>
+                                            @endfor
+                                            @if ($halfStar)
+                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                            @endif
+                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                <li><i class="far fa-star text-warning"></i></li>
+                                            @endfor
+                                            <li class="ms-2 text-dark" style="font-size:14px;">({{$avgRating}})</li>
+                                        </ul>
+                                    </div>
+                                    
+
+                                    <div class="product-price  justify-content-center">
                                         @php
                                             $variants = $product->product->variants ?? collect();
                                             $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
@@ -687,7 +741,7 @@
                                         @endphp
                                         @if (!empty($salePrice) && $salePrice > 0)
                                             <span>{{ number_format($salePrice) }}đ</span>
-                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                            <span><del style="color: red">{{ number_format($regularPrice) }}đ</del></span>
                                         @else
                                             <span>{{ number_format($regularPrice) }}đ</span>
                                         @endif
@@ -740,12 +794,40 @@
                                     <h2 class="product-title"><a
                                             href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                     </h2>
+                                    <div class="product-ratting d-flex justify-content-start">
+                                        @php
+                                            $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                            $fullStars = floor($avgRating);
+                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                        @endphp
+                                        <ul>
+                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                <li><i class="fas fa-star text-warning"></i></li>
+                                            @endfor
+                                            @if ($halfStar)
+                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                            @endif
+                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                <li><i class="far fa-star text-warning"></i></li>
+                                            @endfor
+                                            <li class="ms-2 text-dark" style="font-size:14px;">({{ $avgRating }})</li>
+                                        </ul>
+                                    </div>
                                     <div class="product-price">
 
 
-                                        @if (!empty($salePrice) && $salePrice > 0)
+                                        {{-- @if (!empty($salePrice) && $salePrice > 0)
                                             <span>{{ number_format($salePrice) }}đ</span>
                                             <del>{{ number_format($regularPrice) }}đ</del>
+                                        @else
+                                            <span>{{ number_format($regularPrice) }}đ</span>
+                                        @endif --}}
+
+                                       
+                                        @if (!empty($salePrice) && $salePrice > 0)
+                                            <span>{{ number_format($salePrice) }}đ</span>
+                                            <del style="color: red">{{  ($regularPrice)}}đ</del>
                                         @else
                                             <span>{{ number_format($regularPrice) }}đ</span>
                                         @endif
@@ -896,32 +978,40 @@
                     if (response.variants && response.variants.length > 0) {
                         let variantsHtml = '<div class="variant-buttons">';
 
-                        // Tìm variant có giá thấp nhất
-                        let lowestPriceVariant = response.variants.reduce((lowest, current) => {
-                            let currentFinalPrice = current.sale_price > 0 ? current
-                                .sale_price : current.price;
-                            let lowestFinalPrice = lowest.sale_price > 0 ? lowest.sale_price :
-                                lowest.price;
-                            return currentFinalPrice < lowestFinalPrice ? current : lowest;
-                        }, response.variants[0]);
+                        // Lọc chỉ lấy variants còn hàng
+                        let availableVariants = response.variants.filter(v => v.stock > 0);
 
-                        variantsHtml += response.variants.map((variant, index) => {
-                            let shapeAttr = variant.attributes.find(attr => attr.attribute?.name
-                                .includes('Hình'));
-                            let weightAttr = variant.attributes.find(attr => attr.attribute
-                                ?.name.includes('Khối'));
-                            let variantName = [shapeAttr?.value, weightAttr?.value].filter(
-                                Boolean).join(' ') || 'Không có thuộc tính';
+                        // Trong phần success của ajax quick view
+                        if (availableVariants.length > 0) {
+                            let variantsHtml = '<div class="variant-buttons">';
 
-                            // Thêm class active cho variant có giá thấp nhất
-                            let isLowestPrice = variant.id === lowestPriceVariant.id ?
-                                'active' : '';
+                            // Tìm variant có giá thấp nhất (kể cả không có sale_price)
+                            let lowestPriceVariant = availableVariants.reduce((lowest, current) => {
+                                // Lấy giá cuối cùng của mỗi variant (sale_price nếu có, không thì lấy price)
+                                let currentFinalPrice = current.sale_price > 0 ? current
+                                    .sale_price : current.price;
+                                let lowestFinalPrice = lowest.sale_price > 0 ? lowest
+                                    .sale_price : lowest.price;
 
-                            return `
-                                    <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                                        text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                                        text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                                        hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200 ${isLowestPrice}"
+                                // So sánh để tìm variant có giá cuối cùng thấp nhất
+                                return currentFinalPrice < lowestFinalPrice ? current : lowest;
+                            }, availableVariants[0]);
+
+                            // Chỉ hiển thị các variant còn hàng
+                            variantsHtml += availableVariants.map((variant) => {
+                                let shapeAttr = variant.attributes.find(attr => attr.attribute
+                                    ?.name.includes('Hình'));
+                                let weightAttr = variant.attributes.find(attr => attr.attribute
+                                    ?.name.includes('Khối'));
+                                let variantName = [shapeAttr?.value, weightAttr?.value].filter(
+                                    Boolean).join(' ') || 'Không có thuộc tính';
+
+                                // Đánh dấu active cho variant có giá thấp nhất
+                                let isLowestPrice = variant.id === lowestPriceVariant.id ?
+                                    'active' : '';
+
+                                return `
+                                    <button class="btn btn-outline-primary variant-btn ${isLowestPrice}"
                                         data-product-id="${response.id}"
                                         data-variant-id="${variant.id}"
                                         data-price="${variant.price}"
@@ -930,16 +1020,19 @@
                                         ${variantName}
                                     </button>
                                 `;
-                        }).join('');
-                        variantsHtml += '</div>';
+                            }).join('');
 
-                        $('#quick_view_modal .modal-product-variants .variant-list').html(variantsHtml);
+                            variantsHtml += '</div>';
+                            $('#quick_view_modal .modal-product-variants .variant-list').html(
+                                variantsHtml);
 
-                        // Tự động trigger click vào variant có giá thấp nhất
-                        setTimeout(() => {
-                            $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
-                                .trigger('click');
-                        }, 100);
+                            // Tự động trigger click vào variant có giá thấp nhất
+                            setTimeout(() => {
+                                $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
+                                    .trigger('click');
+                            }, 100);
+                        }
+
 
                         // Xóa sự kiện cũ và gắn sự kiện mới
                         $('.variant-btn').off('click').on('click', function() {
@@ -994,6 +1087,105 @@
             });
         });
 
+        // Xử lý sự kiện click cho variant buttons
+        $(document).off('click', '.variant-btn').on('click', '.variant-btn', function() {
+            const variantPrice = $(this).data('price');
+            const variantSalePrice = $(this).data('sale-price');
+            const variantStock = $(this).data('stock');
+
+            // Cập nhật hiển thị giá
+            if (variantSalePrice > 0) {
+                $('#quick_view_modal .product-price').html(`
+            <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantSalePrice)}đ</span>
+            <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</del>
+        `);
+            } else {
+                $('#quick_view_modal .product-price').html(`
+            <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</span>
+        `);
+            }
+
+            // Cập nhật trạng thái nút và số lượng
+            if (variantStock > 0) {
+                $('.cart-plus-minus-box')
+                    .val(1)
+                    .attr('max', variantStock)
+                    .prop('disabled', false);
+                $('#quick-add-to-cart-btn').prop('disabled', false);
+
+                // Kích hoạt nút tăng nếu số lượng < stock
+                $('.inc').removeClass('disabled').css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                });
+            } else {
+                $('.cart-plus-minus-box')
+                    .val(0)
+                    .attr('max', 0)
+                    .prop('disabled', true);
+                $('#quick-add-to-cart-btn').prop('disabled', true);
+
+                // Vô hiệu hóa nút tăng nếu hết hàng
+                $('.inc').addClass('disabled').css({
+                    'opacity': '0.5',
+                    'cursor': 'not-allowed',
+                    'pointer-events': 'none'
+                });
+            }
+
+            $('.variant-btn').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        $(document).off('click', '.qtybutton').on('click', '.qtybutton', function(e) {
+            if ($(this).hasClass('disabled')) {
+                e.preventDefault();
+                return false;
+            }
+
+            let $input = $(this).siblings('input.cart-plus-minus-box');
+            let currentValue = parseInt($input.val());
+            let maxStock = parseInt($input.attr('max'));
+
+            if ($(this).hasClass('inc')) {
+                // Kiểm tra nếu đã đạt max stock
+                if (currentValue >= maxStock) {
+                    $(this).addClass('disabled').css({
+                        'opacity': '0.5',
+                        'cursor': 'not-allowed',
+                        'pointer-events': 'none'
+                    });
+                    Toastify({
+                        text: `Chỉ còn ${maxStock} sản phẩm trong kho!`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#ff4444"
+                        }
+                    }).showToast();
+                    return false;
+                }
+
+                // Kiểm tra sau khi tăng
+                if (currentValue >= maxStock) {
+                    $(this).addClass('disabled').css({
+                        'opacity': '0.5',
+                        'cursor': 'not-allowed',
+                        'pointer-events': 'none'
+                    });
+                }
+            } else if ($(this).hasClass('dec') && currentValue > 1) {
+                // Kích hoạt lại nút tăng
+                $('.inc').removeClass('disabled').css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                });
+            }
+        });
+
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();
             @if (!auth()->check())
@@ -1013,12 +1205,12 @@
                 }).showToast();
                 return;
             @endif
-            let selectedButton = $('.variant-btn.active'); // Lấy nút biến thể được chọn
+            let selectedButton = $('.variant-btn.active');
             let productId = selectedButton.length ? selectedButton.data('product-id') : $('#quick_view_modal').data(
-                'product-id'); // Dùng product_id từ nút, nếu không có thì dùng từ modal
-            let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') :
-                null; // Lấy variant_id từ nút
-            let quantity = $('.cart-plus-minus-box').val();
+                'product-id');
+            let selectedVariantId = selectedButton.length ? selectedButton.data('variant-id') : null;
+            let quantity = parseInt($('.cart-plus-minus-box').val());
+            let maxStock = parseInt($('.cart-plus-minus-box').attr('max'));
             $.ajax({
                 url: "{{ route('cart.add') }}",
                 type: "POST",
@@ -1069,6 +1261,23 @@
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
+                    } else {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "#ff4444",
+                                color: "white"
+                            }
+                        }).showToast();
+
+                        // Nếu server trả về số lượng có sẵn, cập nhật input
+                        if (response.available_quantity) {
+                            $('.cart-plus-minus-box').val(response.available_quantity);
+                        }
                     }
                 },
                 error: function(xhr) {
@@ -1149,13 +1358,32 @@
             margin: 15px 0;
         }
 
+        .variant-btn {
+            padding: 5px 15px;
+            font-size: 14px;
+            margin: 5px;
+            min-width: 80px;
+            border: 1px solid #ddd;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .variant-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .variant-btn:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+
         .variant-buttons {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
-            /* tương đương gap-2 của Bootstrap */
-            margin-top: 0.5rem;
-            /* tương đương mt-2 */
+            gap: 5px;
+            margin-top: 10px;
         }
 
         .ltn__product-item {

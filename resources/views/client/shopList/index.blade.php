@@ -118,6 +118,7 @@
                                                         <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                             alt="{{ $product->name }}"
                                                             style="width: 250px; height: 200px; object-fit: cover;">
+                                                            
                                                     </a>
 
                                                     <div class="product-badge">
@@ -129,7 +130,7 @@
                                                                             100,
                                                                     );
                                                                 @endphp
-                                                                <li class="sale-badge">-{{ $discount }}%</li>
+                                                                <li class="sale-badge bg-danger">-{{ $discount }}%</li>
                                                             @endif
                                                         </ul>
                                                     </div>
@@ -152,10 +153,30 @@
                                                         <a
                                                             href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
+                                                    <div class="product-ratting d-flex justify-content-center">
+                                                        @php
+                                                            $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                                            $fullStars = floor($avgRating);
+                                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                                        @endphp
+                                                        <ul>
+                                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                                <li><i class="fas fa-star text-warning"></i></li>
+                                                            @endfor
+                                                            @if ($halfStar)
+                                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                                            @endif
+                                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                                <li><i class="far fa-star text-warning"></i></li>
+                                                            @endfor
+                                                            <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
+                                                        </ul>
+                                                    </div>
                                                     <div class="product-price">
                                                         @if (!empty($salePrice) && $salePrice > 0)
                                                             <span>{{ number_format($salePrice) }}đ</span>
-                                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                                            <del style="color: red">{{ number_format($regularPrice) }}đ</del>
                                                         @else
                                                             <span>{{ number_format($regularPrice) }}đ</span>
                                                         @endif
@@ -215,12 +236,12 @@
                         <div class="widget ltn__tagcloud-widget ltn__size-widget">
                             <h4 class="ltn__widget-title ltn__widget-title-border">Giá tiền</h4>
                             <ul>
-                                @foreach ([
-            'under_100' => 'Dưới 100.000đ',
-            '100_300' => '100.000đ - 300.000đ',
-            '300_500' => '300.000đ - 500.000đ',
-            'above_500' => 'Trên 500.000đ',
-        ] as $value => $label)
+                             @foreach ([
+                            'under_100' => 'Dưới 100.000đ',
+                            '100_300' => '100.000đ - 300.000đ',
+                            '300_500' => '300.000đ - 500.000đ',
+                            'above_500' => 'Trên 500.000đ',
+                            ] as $value => $label)
                                     <li>
                                         <label>
                                             <input type="checkbox" name="price_range[]" value="{{ $value }}"
@@ -231,6 +252,9 @@
                                 @endforeach
                             </ul>
                         </div>
+
+
+                        
                         <!-- Top Rated Product Widget -->
                         <div class="widget ltn__top-rated-product-widget">
                             <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
@@ -256,6 +280,7 @@
                                                 <h6><a
                                                         href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
                                                 </h6>
+                                                
                                                 <div class="product-price">
                                                     @php
                                                         $variants = $product->product->variants ?? collect();
@@ -277,11 +302,12 @@
                                 @endforeach
                             </ul>
                         </div>
+
                         <!-- Banner Widget -->
-                        <div class="widget ltn__banner-widget">
+                        {{-- <div class="widget ltn__banner-widget">
                             <a href="shop.html"><img src="{{ asset('client/img/banner/banner-2.jpg') }}"
                                     alt="#"></a>
-                        </div>
+                        </div> --}}
 
                     </aside>
                 </div>
@@ -301,7 +327,7 @@
                             <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                            <a class="btn btn-effect-3 btn-white" href="{{ route('index') }}">
                                 Khám phá sản phẩm <i class="icon-next"></i>
                             </a>
                         </div>
@@ -404,7 +430,7 @@
                                             <div class="product-price">
                                                 ${product.min_sale_price > 0 ? 
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_sale_price)}đ</span>
-                                                        <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
+                                                                        <del>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</del>` :
                                                     `<span>${new Intl.NumberFormat('vi-VN').format(product.min_price)}đ</span>`
                                                 }
                                             </div>
@@ -422,7 +448,7 @@
                         } else {
                             $('#product-list').html(
                                 '<div class="col-12"><p class="text-center">Không tìm thấy sản phẩm phù hợp</p></div>'
-                                );
+                            );
                         }
                     },
                     error: function(xhr) {
@@ -482,34 +508,48 @@
                         if (response.variants && response.variants.length > 0) {
                             let variantsHtml = '<div class="variant-buttons">';
 
-                            // Tìm variant có giá thấp nhất
-                            let lowestPriceVariant = response.variants.reduce((lowest,
-                                current) => {
-                                let currentFinalPrice = current.sale_price > 0 ? current
-                                    .sale_price : current.price;
-                                let lowestFinalPrice = lowest.sale_price > 0 ? lowest
-                                    .sale_price : lowest.price;
-                                return currentFinalPrice < lowestFinalPrice ? current :
-                                    lowest;
-                            }, response.variants[0]);
+                            let availableVariants = response.variants.filter(v => v.stock > 0);
 
-                            variantsHtml += response.variants.map((variant, index) => {
-                                let shapeAttr = variant.attributes.find(attr => attr
-                                    .attribute?.name.includes('Hình'));
-                                let weightAttr = variant.attributes.find(attr => attr
-                                    .attribute?.name.includes('Khối'));
-                                let variantName = [shapeAttr?.value, weightAttr?.value]
-                                    .filter(Boolean).join(' ') || 'Không có thuộc tính';
+                            // Trong phần success của ajax quick view
+                            if (availableVariants.length > 0) {
+                                let variantsHtml = '<div class="variant-buttons">';
 
-                                // Thêm class active cho variant có giá thấp nhất
-                                let isLowestPrice = variant.id === lowestPriceVariant
-                                    .id ? 'active' : '';
+                                // Tìm variant có giá thấp nhất (kể cả không có sale_price)
+                                let lowestPriceVariant = availableVariants.reduce((lowest,
+                                    current) => {
+                                    // Lấy giá cuối cùng của mỗi variant (sale_price nếu có, không thì lấy price)
+                                    let currentFinalPrice = current.sale_price > 0 ?
+                                        current
+                                        .sale_price : current.price;
+                                    let lowestFinalPrice = lowest.sale_price > 0 ?
+                                        lowest
+                                        .sale_price : lowest.price;
 
-                                return `
-                                        <button class="btn btn-outline-primary variant-btn border border-solid border-primary-500  
-                                            text-primary-500 disabled:border-neutral-200 disabled:text-neutral-600 disabled:!bg-white 
-                                            text-sm px-4 py-2 items-center rounded-lg h-8 min-w-[82px] md:h-8 !bg-primary-50 
-                                            hover:border-primary-500 hover:text-primary-500 md:hover:border-primary-200 md:hover:text-primary-200 ${isLowestPrice}"
+                                    // So sánh để tìm variant có giá cuối cùng thấp nhất
+                                    return currentFinalPrice < lowestFinalPrice ?
+                                        current : lowest;
+                                }, availableVariants[0]);
+
+                                // Chỉ hiển thị các variant còn hàng
+                                variantsHtml += availableVariants.map((variant) => {
+                                    let shapeAttr = variant.attributes.find(attr => attr
+                                        .attribute
+                                        ?.name.includes('Hình'));
+                                    let weightAttr = variant.attributes.find(attr =>
+                                        attr.attribute
+                                        ?.name.includes('Khối'));
+                                    let variantName = [shapeAttr?.value, weightAttr
+                                        ?.value
+                                    ].filter(
+                                        Boolean).join(' ') || 'Không có thuộc tính';
+
+                                    // Đánh dấu active cho variant có giá thấp nhất
+                                    let isLowestPrice = variant.id ===
+                                        lowestPriceVariant.id ?
+                                        'active' : '';
+
+                                    return `
+                                        <button class="btn btn-outline-primary variant-btn ${isLowestPrice}"
                                             data-product-id="${response.id}"
                                             data-variant-id="${variant.id}"
                                             data-price="${variant.price}"
@@ -518,17 +558,19 @@
                                             ${variantName}
                                         </button>
                                     `;
-                            }).join('');
-                            variantsHtml += '</div>';
+                                }).join('');
 
-                            $('#quick_view_modal .modal-product-variants .variant-list').html(
-                                variantsHtml);
+                                variantsHtml += '</div>';
+                                $('#quick_view_modal .modal-product-variants .variant-list')
+                                    .html(
+                                        variantsHtml);
 
-                            // Tự động trigger click vào variant có giá thấp nhất
-                            setTimeout(() => {
-                                $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
-                                    .trigger('click');
-                            }, 100);
+                                // Tự động trigger click vào variant có giá thấp nhất
+                                setTimeout(() => {
+                                    $(`.variant-btn[data-variant-id="${lowestPriceVariant.id}"]`)
+                                        .trigger('click');
+                                }, 100);
+                            }
 
                             // Xóa sự kiện cũ và gắn sự kiện mới
                             $('.variant-btn').off('click').on('click', function() {
@@ -584,6 +626,106 @@
                 });
             });
         });
+
+        // Xử lý sự kiện click cho variant buttons
+        $(document).off('click', '.variant-btn').on('click', '.variant-btn', function() {
+            const variantPrice = $(this).data('price');
+            const variantSalePrice = $(this).data('sale-price');
+            const variantStock = $(this).data('stock');
+
+            // Cập nhật hiển thị giá
+            if (variantSalePrice > 0) {
+                $('#quick_view_modal .product-price').html(`
+            <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantSalePrice)}đ</span>
+            <del style="font-size: 18px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</del>
+        `);
+            } else {
+                $('#quick_view_modal .product-price').html(`
+            <span style="font-size: 24px">${new Intl.NumberFormat('vi-VN').format(variantPrice)}đ</span>
+        `);
+            }
+
+            // Cập nhật trạng thái nút và số lượng
+            if (variantStock > 0) {
+                $('.cart-plus-minus-box')
+                    .val(1)
+                    .attr('max', variantStock)
+                    .prop('disabled', false);
+                $('#quick-add-to-cart-btn').prop('disabled', false);
+
+                // Kích hoạt nút tăng nếu số lượng < stock
+                $('.inc').removeClass('disabled').css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                });
+            } else {
+                $('.cart-plus-minus-box')
+                    .val(0)
+                    .attr('max', 0)
+                    .prop('disabled', true);
+                $('#quick-add-to-cart-btn').prop('disabled', true);
+
+                // Vô hiệu hóa nút tăng nếu hết hàng
+                $('.inc').addClass('disabled').css({
+                    'opacity': '0.5',
+                    'cursor': 'not-allowed',
+                    'pointer-events': 'none'
+                });
+            }
+
+            $('.variant-btn').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        $(document).off('click', '.qtybutton').on('click', '.qtybutton', function(e) {
+            if ($(this).hasClass('disabled')) {
+                e.preventDefault();
+                return false;
+            }
+
+            let $input = $(this).siblings('input.cart-plus-minus-box');
+            let currentValue = parseInt($input.val());
+            let maxStock = parseInt($input.attr('max'));
+
+            if ($(this).hasClass('inc')) {
+                // Kiểm tra nếu đã đạt max stock
+                if (currentValue >= maxStock) {
+                    $(this).addClass('disabled').css({
+                        'opacity': '0.5',
+                        'cursor': 'not-allowed',
+                        'pointer-events': 'none'
+                    });
+                    Toastify({
+                        text: `Chỉ còn ${maxStock} sản phẩm trong kho!`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#ff4444"
+                        }
+                    }).showToast();
+                    return false;
+                }
+
+                // Kiểm tra sau khi tăng
+                if (currentValue >= maxStock) {
+                    $(this).addClass('disabled').css({
+                        'opacity': '0.5',
+                        'cursor': 'not-allowed',
+                        'pointer-events': 'none'
+                    });
+                }
+            } else if ($(this).hasClass('dec') && currentValue > 1) {
+                // Kích hoạt lại nút tăng
+                $('.inc').removeClass('disabled').css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                });
+            }
+        });
+
         $(document).on('click', '#quick-add-to-cart-btn', function(e) {
             e.preventDefault();
             @if (!auth()->check())
@@ -659,6 +801,23 @@
                             stopOnFocus: true
                         }).showToast();
                         $('#quick_view_modal').modal('hide');
+                    } else {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "#ff4444",
+                                color: "white"
+                            }
+                        }).showToast();
+
+                        // Nếu server trả về số lượng có sẵn, cập nhật input
+                        if (response.available_quantity) {
+                            $('.cart-plus-minus-box').val(response.available_quantity);
+                        }
                     }
                 },
                 error: function(xhr) {
@@ -705,6 +864,34 @@
             margin-top: 0.5rem;
             padding-bottom: 20px
                 /* tương đương mt-2 */
+        }
+
+        .variant-btn {
+            padding: 5px 15px;
+            font-size: 14px;
+            margin: 5px;
+            min-width: 80px;
+            border: 1px solid #ddd;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .variant-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .variant-btn:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .variant-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
         }
     </style>
 @endpush

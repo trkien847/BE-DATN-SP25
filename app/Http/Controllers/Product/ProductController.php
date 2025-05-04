@@ -963,7 +963,7 @@ class ProductController extends Controller
         $product->is_active = 0;
         $product->save();
 
-        return redirect()->route('products.list')->with('success', 'Sản phẩm này đã bị cho tham gia trò chơi SAYGEX!');
+        return redirect()->route('products.list')->with('success');
     }
 
     public function storeOrder(Request $request)
@@ -1048,15 +1048,6 @@ class ProductController extends Controller
             })
         ]);
     }
-
-
-
-
-
-
-
-
-
 
 
 
