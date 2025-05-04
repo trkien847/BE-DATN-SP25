@@ -305,19 +305,25 @@
                     <div class="form-group mb-3">
                         <label><i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> Địa chỉ nhận hàng</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <select name="province" id="province" class="form-select" required>
+                        <div class="form-group mb-3">
+                        <select name="province" id="province" class="form-select" required>
                                 <option value="">Chọn tỉnh/thành phố</option>
                             </select>
-                            <select name="district" id="district" class="form-select" required>
+                       </div>
+                       <div class="form-group mb-3">
+                       <select name="district" id="district" class="form-select" required>
                                 <option value="">Chọn quận/huyện</option>
                             </select>
-                            <select name="ward" id="ward" class="form-select" required>
+                       </div>
+                       <div class="form-group mb-3">
+                       <select name="ward" id="ward" class="form-select" required>
                                 <option value="">Chọn phường/xã</option>
                             </select>
+                       </div>
                         </div>
                     </div>
                     <div class="form-group mb-3">
-                        <input type="text" name="address" id="address_detail" class="form-control" placeholder="Nhập địa chỉ cụ thể" value="{{ $userAddress ? $userAddress->address : '' }}" required>
+                        <input type="text" name="address" id="address_detail" class="form-control" placeholder="Địa chỉ chi tiết" value="{{ $userAddress ? $userAddress->address : '' }}" required>
                     </div>
 
                     <div class="form-group mb-3">
