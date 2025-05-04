@@ -542,33 +542,40 @@
             $(document).ready(function() {
                 const MAX_QUANTITY = 30; // Giới hạn số lượng tối đa
 
-                // Hàm kiểm tra số lượng và cập nhật trạng thái checkbox
                 function checkCartQuantities() {
                     $('#cart-items tr').each(function() {
                         const $row = $(this);
+                        const $tdCheckbox = $row.find(
+                        'td:first-child'); // Lấy td đầu tiên chứa checkbox
                         const $input = $row.find('.cart-plus-minus-box');
-                        const $checkbox = $row.find('.cart-item-checkbox');
                         const $warning = $row.find('.quantity-warning');
                         const quantity = parseInt($input.val());
+                        const cartId = $row.data('cart-id');
+                        const productId = $row.data('product-id');
+
+                        // Xóa checkbox cũ nếu có
+                        $tdCheckbox.find('.cart-item-checkbox').remove();
 
                         if (quantity > MAX_QUANTITY) {
-                            // Loại bỏ checkbox khỏi DOM
-                            $checkbox.remove();
-                            $warning.text('Tối đa 30 sản phẩm!').show();
-                        } else if (quantity === MAX_QUANTITY) {
-                            // Hiển thị cảnh báo nhưng không loại bỏ checkbox
-                            if (!$checkbox.parent().length) {
-                                $row.find('.checkbox-container').append(
-                                    '<input type="checkbox" class="cart-item-checkbox">');
-                            }
+                            // Hiển thị cảnh báo khi vượt quá số lượng
                             $warning.text('Tối đa 30 sản phẩm!').show();
                         } else {
-                            // Hiển thị lại checkbox và ẩn cảnh báo
-                            if (!$checkbox.parent().length) {
-                                $row.find('.checkbox-container').append(
-                                    '<input type="checkbox" class="cart-item-checkbox">');
+                            // Tạo checkbox mới với các thuộc tính cần thiết
+                            const newCheckbox = $('<input>', {
+                                type: 'checkbox',
+                                class: 'cart-item-checkbox',
+                                'data-cart-id': cartId,
+                                'data-product-id': productId
+                            });
+
+                            // Thêm checkbox mới vào td
+                            $tdCheckbox.append(newCheckbox);
+
+                            if (quantity === MAX_QUANTITY) {
+                                $warning.text('Tối đa 30 sản phẩm!').show();
+                            } else {
+                                $warning.hide();
                             }
-                            $warning.hide();
                         }
                     });
 
