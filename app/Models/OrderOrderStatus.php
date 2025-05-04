@@ -13,7 +13,7 @@ class OrderOrderStatus extends Model
     protected $fillable = [
         'order_id',
         'order_status_id',
-        'modified_by',
+        'modified_by', 
         'note',
         'evidence',
         'customer_confirmation',
