@@ -695,8 +695,13 @@
                     return $(this).data('product-id');
                 }).get();
 
+                console.log('✅ Sản phẩm được chọn:', selectedProductIds);
+
                 let couponHtml = '';
+
                 coupons.forEach(coupon => {
+                    console.log(`👉 Đang kiểm tra mã: ${coupon.code}`);
+
                     const restriction = coupon.restriction || {};
                     let validProducts = [];
 
@@ -705,53 +710,88 @@
                             validProducts = Array.isArray(restriction.valid_products) ?
                                 restriction.valid_products :
                                 JSON.parse(restriction.valid_products);
+
+                            console.log(`✅ Sản phẩm hợp lệ cho mã ${coupon.code}:`, validProducts);
                         } catch (e) {
                             console.error(
-                                `Invalid JSON in valid_products for coupon ${coupon.code}:`,
-                                restriction.valid_products);
+                                `❌ Lỗi khi parse valid_products của mã ${coupon.code}:`,
+                                restriction.valid_products,
+                                e
+                            );
                             validProducts = [];
                         }
+                    } else {
+                        console.warn(`⚠️ Mã ${coupon.code} không có giới hạn sản phẩm.`);
                     }
 
-                    const isApplicable = selectedProductIds.length > 0 && validProducts.some(id =>
-                        selectedProductIds.includes(id)
+                    // const isApplicable =
+                    //     selectedProductIds.length > 0 &&
+                    //     validProducts.some(id => selectedProductIds.includes(id));
+
+                    // đoạn code trên đang so sánh 1 id với 1 chuỗi 1 = '1' đổi thành 1 = 1
+
+
+                    const isApplicable = selectedProductIds.length > 0 &&
+                        validProducts.some(id => selectedProductIds.includes(parseInt(id)));
+
+                    console.log(
+                        `➡️ Mã ${coupon.code} ${isApplicable ? 'áp dụng được' : 'không áp dụng được'}`
                     );
 
                     if (isApplicable) {
                         couponHtml += `
-                    <div class="coupon-item valid">
-                        <strong>code ${coupon.code}</strong><br>
-                        <small>${coupon.description}</small><br>
+                                <div class="coupon-item valid">
+                        <button class="copy-coupon-btn" data-coupon-code="${coupon.code}">
+                            📋 Sao chép
+                        </button>
+                        Mã giảm giá: <strong>${coupon.code}</strong><br>
                         <small>Giảm: ${coupon.discount_type === 'phan_tram' ? coupon.discount_value + '%' : new Intl.NumberFormat('vi-VN').format(coupon.discount_value) + 'đ'}</small>
                     </div>
-                `;
+
+            `;
                     }
                 });
+                $(document).on('click', '.copy-coupon-btn', function() {
+                    const code = $(this).data('coupon-code');
 
+                    // Tạo một input ẩn để copy
+                    const $tempInput = $('<input>');
+                    $('body').append($tempInput);
+                    $tempInput.val(code).select();
+                    document.execCommand('copy');
+                    $tempInput.remove();
+
+                    alert(`Đã sao chép mã giảm giá: ${code}`);
+                });
                 if (couponHtml === '') {
                     couponHtml = '<p>Không có mã giảm giá nào khả dụng cho sản phẩm đã chọn.</p>';
+                    console.warn('⚠️ Không có mã giảm giá nào hợp lệ được áp dụng.');
                 }
 
                 $('#coupon-list').html(couponHtml);
                 $('#coupon-overlay').fadeIn(300);
+                console.log('🎉 Hiển thị overlay mã giảm giá');
             });
 
+            // Đóng overlay
             $('#close-coupons').on('click', function() {
                 $('#coupon-overlay').fadeOut(300);
+                console.log('🔒 Đóng overlay mã giảm giá');
             });
 
             $(document).on('click', function(e) {
                 if ($(e.target).is('#coupon-overlay')) {
                     $('#coupon-overlay').fadeOut(300);
+                    console.log('🔒 Overlay bị đóng khi click ra ngoài');
                 }
             });
 
-            updateCartTotal();
-
+            // Kiểm tra mã đã áp dụng ban đầu
             if (!initialAppliedCoupon) {
                 $('#discount-row').remove();
                 $('#applied-coupon-text').remove();
                 $('#coupon-code, #apply-coupon').prop('disabled', false);
+                console.log('📌 Không có mã giảm giá nào được áp dụng ban đầu.');
             }
         });
 

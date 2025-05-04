@@ -113,45 +113,51 @@
         transform: scale(1.03);
     }
     .order-summary {
-        background: #f8fafc;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .order-summary-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border: 1px solid #e0e7ff;
-        border-radius: 12px;
-        background: #ffffff;
-        margin-bottom: 12px;
-        padding: 12px;
-        transition: all 0.3s ease;
-        opacity: 0;
-        animation: fadeIn 0.5s ease-out forwards;
-    }
-    .order-summary-item:nth-child(1) { animation-delay: 0.3s; }
-    .order-summary-item:nth-child(2) { animation-delay: 0.4s; }
-    .order-summary-item:nth-child(3) { animation-delay: 0.5s; }
-    .order-summary-item:hover {
-        border-color: #2563eb;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
-        transform: scale(1.01);
-    }
-    .order-summary-item img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #e0e7ff;
-    }
-    .order-summary-item .text-base {
-        font-size: 1.05rem;
-    }
-    .order-summary .flex-1 {
-        min-width: 0;
-    }
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    max-width: 480px;
+    margin: auto;
+}
+
+.order-summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    border: 1px solid #e0e7ff;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 16px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.order-summary-item:nth-child(1) { animation-delay: 0.3s; }
+
+.order-summary-item:hover {
+    border-color: #2563eb;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+    transform: scale(1.01);
+}
+
+.order-summary-item img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e0e7ff;
+}
+
+.order-summary-item .text-base {
+    font-size: 1.05rem;
+}
+
+.order-summary .flex-1 {
+    min-width: 0;
+}
     .alert-danger {
         background: #fee2e2;
         color: #dc2626;
@@ -350,33 +356,51 @@
                             <img src="{{ $product['thumbnail'] }}" alt="{{ $product['name'] }}">
                             <div class="flex-1">
                                 <p class="text-sm font-semibold text-gray-800 truncate">{{ $product['name'] }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ $product['name_variant'] }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ $product['name_variant'] ?? 'Mặc định' }}</p>
                             </div>
-                            <div class="flex flex-col items-end min-w-[90px]">
-                                <span class="text-base text-red-600 font-bold">{{ number_format($product['price'] * $product['quantity']) }}đ</span>
-                                <span class="text-xs text-gray-400 line-through">{{ number_format($product['price'] * $product['quantity'] * 1.3) }}đ</span>
-                                <span class="text-xs text-gray-500">x{{ $product['quantity'] }}</span>
-                            </div>
+                            <div class="flex flex-col items-end min-w-[90px] space-y-0.5">
+                            <div class="text-sm text-gray-600 space-y-0.5">
+                            <div class="text-sm text-gray-600 space-y-0.5">
+                        <div>
+                            <span class="text-gray-500">Giá bán:</span>
+                            <span class="text-red-600 font-bold">
+                            {{ number_format($product['sell_price'] ?? $product['original_price'] ?? $product['price']) }}đ
+                            </span>
+                        </div>
+                        <div>
+                        <span class="text-gray-500">Giá gốc:</span>
+                        <span class="line-through text-gray-400">
+                        {{ number_format($product['price']) }}đ
+                        </span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Số lượng:</span>
+                            <span class="text-gray-800 font-medium">x{{ $product['quantity'] }}</span>
+                        </div>
+                        </div>
+
+                        </div>
                         </div>
                     @endforeach
                 </div>
                 <div class="border-t border-gray-200 pt-3">
                     <div class="flex justify-between text-sm text-gray-700 mb-2">
-                        <span>Tạm tính</span>
+                        <span>Tạm tính :</span>
                         <span>{{ number_format($grandTotal + ($discount ?? 0)) }}đ</span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-700 mb-2">
-                        <span>Giảm giá trực tiếp</span>
+                        <span>Giảm giá trực tiếp :</span>
                         <span class="text-red-600">-{{ number_format($discount ?? 0) }}đ</span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-700 mb-2">
-                        <span>Giảm giá voucher</span>
+                        <span>Giảm giá voucher :</span>
                         <span>0đ</span>
                     </div>
-                    <div class="flex justify-between text-sm font-semibold text-gray-800">
-                        <span>Thành tiền</span>
-                        <span class="text-red-600">{{ number_format($grandTotal) }}đ</span>
-                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500">Tổng thanh toán :</span>
+                    <span class="text-[22px] font-semibold text-[#f44336] underline decoration-1 decoration-[#f44336]" style="color: rgb(59, 185, 145);"><h3>{{ number_format($grandTotal) }}đ</h3></span>
+                </div>
+                </div>
                 </div>
             </div>
         </div>

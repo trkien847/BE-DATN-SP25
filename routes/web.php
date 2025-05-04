@@ -24,8 +24,8 @@ use App\Http\Controllers\UserController;
 use App\Models\Cart;
 use App\Models\ProductImportDetail;
 use App\Models\User;
-
-///admin/orders
+ 
+///admin/orders productct
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 Route::get('/loginForm', [UserController::class, 'showLogin'])->name('login');

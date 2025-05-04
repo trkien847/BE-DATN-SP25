@@ -255,8 +255,14 @@
                                                                 <div class="section">
                                                                     <h4>Thông tin thanh toán</h4>
                                                                     <div class="info-grid">
-                                                                        <p><strong>Phương thức:</strong> {{ $order->payment_method === 'cash' ? 'Tiền mặt' : 'VNPay' }}</p>
-                                                                        <p><strong>Trạng thái:</strong> {{ $order->payment_status ?? 'Chưa thanh toán' }}</p>
+                                                                        <p><strong>Phương thức:</strong>{{ [1 => 'Tiền mặt', 2 => 'VNPay'][$order->payment_id] ?? 'Không xác định' }}</p>
+                                                                        <p><strong>Trạng thái:</strong> 
+                                                                            @if(isset($order->latestOrderStatus) && $order->latestOrderStatus->name === 'Hoàn thành' || $order->payment_id == 2)
+                                                                                Thanh toán
+                                                                            @else
+                                                                                Chưa thanh toán
+                                                                            @endif
+                                                                        </p>
                                                                     </div>
                                                                     @if($order->refund_proof_image)
                                                                         <p><strong>Ảnh hoàn tiền:</strong></p>
@@ -537,22 +543,29 @@
 
                                             function showModal(modalId) {
                                                 const modal = document.getElementById(modalId);
-                                                modal.style.display = 'flex';
+                                                modal.style.display = 'flex'; // Hiển thị modal
+                                                setTimeout(() => {
+                                                    modal.classList.add('show'); // Thêm lớp show để kích hoạt hiệu ứng
+                                                }, 10); // Delay nhỏ để đảm bảo transition hoạt động
                                             }
 
                                             function hideModal(modalId) {
                                                 const modal = document.getElementById(modalId);
-                                                modal.style.display = 'none';
+                                                modal.classList.remove('show'); // Xóa lớp show để chạy hiệu ứng ẩn
+                                                setTimeout(() => {
+                                                    modal.style.display = 'none'; // Ẩn modal sau khi hiệu ứng hoàn tất
+                                                }, 300); // Thời gian khớp với transition (0.3s)
                                             }
 
+                                            // Xử lý click bên ngoài modal
                                             window.onclick = function(event) {
                                                 const modals = document.getElementsByClassName('modal');
                                                 for (let i = 0; i < modals.length; i++) {
                                                     if (event.target === modals[i]) {
-                                                        modals[i].style.display = 'none';
+                                                        hideModal(modals[i].id); // Gọi hideModal để chạy hiệu ứng
                                                     }
                                                 }
-                                            }
+                                            };
 
                                             document.addEventListener('DOMContentLoaded', function() {
                                                 const tableBody = document.getElementById('order-table-body');

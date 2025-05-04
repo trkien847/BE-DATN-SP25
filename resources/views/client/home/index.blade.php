@@ -234,7 +234,7 @@
     <div>
         <div class="ltn__utilize-overlay"></div>
 
-        <!-- SLIDER AREA START (slider-3) -->
+        <!-- SLIDER AREA START (slider-3) -- THANH MENU Ở TRÊN-->
         <div class="ltn__slider-area ltn__slider-3---  section-bg-1--- mt-30">
             <div class="container">
                 <div class="row">
@@ -367,6 +367,8 @@
                 </div>
             </div>
         </div>
+
+        
         <!-- SLIDER AREA END -->
 
         <!-- FEATURE AREA START ( Feature - 3) -->
@@ -439,7 +441,7 @@
                                 <span class="char"> </span>
                                 <span class="char">t</span><span class="char">ô</span><span class="char">i</span>
                             </h1>
-                            <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.(nguồn chatGPT)</p>
+                            <p>Chữa bệnh bằng thuốc – Gìn giữ sức khỏe bằng niềm tin.</p>
                         </div>
                         <div class="ltn__tab-menu ltn__tab-menu-2 ltn__tab-menu-top-right-- text-uppercase text-center">
                             <div class="nav">
@@ -448,6 +450,7 @@
                                         class="{{ $loop->first ? 'active show' : '' }}">
                                         {{ $category->name }}
                                     </a>
+                                    
                                 @endforeach
                             </div>
                         </div>
@@ -520,14 +523,35 @@
                                                                 <a href="{{ route('products.productct', $product->id) }}"
                                                                     class="product-link">{{ $product->name }}</a>
                                                             </h2>
+                                                            <div class="product-ratting d-flex justify-content-center">
+                                                                @php
+                                                                    $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                                                    $fullStars = floor($avgRating);
+                                                                    $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                                                    $emptyStars = 5 - $fullStars - $halfStar;
+                                                                @endphp
+                                                                <ul>
+                                                                    @for ($i = 0; $i < $fullStars; $i++)
+                                                                        <li><i class="fas fa-star text-warning"></i></li>
+                                                                    @endfor
+                                                                    @if ($halfStar)
+                                                                        <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                                                    @endif
+                                                                    @for ($i = 0; $i < $emptyStars; $i++)
+                                                                        <li><i class="far fa-star text-warning"></i></li>
+                                                                    @endfor
+                                                                    <li class="ms-2 text-dark" style="font-size:14px;">({{ $avgRating }})</li>
+                                                                </ul>
+                                                            </div>
                                                             <div class="product-price">
                                                                 @if (!empty($salePrice) && $salePrice > 0)
-                                                                    <del class="text-danger fs-6 d-block mb-2">
-                                                                        {{ number_format($regularPrice) }} VND
-                                                                    </del>
+                                                                   
                                                                     <span class="text-success fs-6 d-block mb-2">
-                                                                        {{ number_format($salePrice) }} VND
+                                                                        {{ number_format($salePrice) }} đ
                                                                     </span>
+                                                                    <del class="text-danger fs-6 d-block mb-2">
+                                                                        {{ number_format($regularPrice) }} đ
+                                                                    </del>
                                                                 @else
                                                                     <span>{{ number_format($regularPrice) }}đ</span>
                                                                 @endif
@@ -611,8 +635,8 @@
                                 <h1 class="section-title">Mua thuốc với<br>giá giảm 50%</h1>
                                 <p>Nhận thêm tiền hoàn lại với các ưu đãi và giảm giá đặc biệt</p>
                             </div>
-                            <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
-                            </div>
+                            {{-- <div class="ltn__countdown ltn__countdown-3 bg-white--" data-countdown="2021/12/28">
+                            </div> --}}
                             <div class="btn-wrapper animated">
                                 <a href="{{ route('category.show') }}"
                                     class="theme-btn-1 btn btn-effect-1 text-uppercase">Mua
@@ -647,8 +671,8 @@
                                     <a href="{{ route('products.productct', $product->product->id) }}">
                                         <img src="{{ asset('upload/' . $product->product->thumbnail) }}"
                                             alt="{{ $product->name }} " width="250px" height="200px">
-
                                     </a>
+                                    
                                     <div class="product-badge">
                                         <ul>
                                             @if (!empty($product->sale_price) && $product->sale_price > 0)
@@ -678,9 +702,38 @@
                                 <div class="product-info">
                                     <h2 class="product-title">
                                         <a
-                                            href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
+                                            href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}
+                                        </a> 
                                     </h2>
-                                    <div class="product-price">
+                                    
+                                    <div class="product-ratting d-flex justify-content-center">
+                                        @php
+                                            $avgRating = 0;
+                                    
+                                            if ($product->reviews && $product->reviews->count()) {
+                                                $avgRating = round($product->reviews->avg('rating'), 1);
+                                            }
+                                    
+                                            $fullStars = floor($avgRating);
+                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                        @endphp
+                                        <ul>
+                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                <li><i class="fas fa-star text-warning"></i></li>
+                                            @endfor
+                                            @if ($halfStar)
+                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                            @endif
+                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                <li><i class="far fa-star text-warning"></i></li>
+                                            @endfor
+                                            <li class="ms-2 text-dark" style="font-size:14px;">({{$avgRating}})</li>
+                                        </ul>
+                                    </div>
+                                    
+
+                                    <div class="product-price  justify-content-center">
                                         @php
                                             $variants = $product->product->variants ?? collect();
                                             $salePrice = $variants->where('sale_price', '>', 0)->min('sale_price');
@@ -688,7 +741,7 @@
                                         @endphp
                                         @if (!empty($salePrice) && $salePrice > 0)
                                             <span>{{ number_format($salePrice) }}đ</span>
-                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                            <span><del style="color: red">{{ number_format($regularPrice) }}đ</del></span>
                                         @else
                                             <span>{{ number_format($regularPrice) }}đ</span>
                                         @endif
@@ -741,12 +794,40 @@
                                     <h2 class="product-title"><a
                                             href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                     </h2>
+                                    <div class="product-ratting d-flex justify-content-start">
+                                        @php
+                                            $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                            $fullStars = floor($avgRating);
+                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                        @endphp
+                                        <ul>
+                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                <li><i class="fas fa-star text-warning"></i></li>
+                                            @endfor
+                                            @if ($halfStar)
+                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                            @endif
+                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                <li><i class="far fa-star text-warning"></i></li>
+                                            @endfor
+                                            <li class="ms-2 text-dark" style="font-size:14px;">({{ $avgRating }})</li>
+                                        </ul>
+                                    </div>
                                     <div class="product-price">
 
 
-                                        @if (!empty($salePrice) && $salePrice > 0)
+                                        {{-- @if (!empty($salePrice) && $salePrice > 0)
                                             <span>{{ number_format($salePrice) }}đ</span>
                                             <del>{{ number_format($regularPrice) }}đ</del>
+                                        @else
+                                            <span>{{ number_format($regularPrice) }}đ</span>
+                                        @endif --}}
+
+                                       
+                                        @if (!empty($salePrice) && $salePrice > 0)
+                                            <span>{{ number_format($salePrice) }}đ</span>
+                                            <del style="color: red">{{  ($regularPrice)}}đ</del>
                                         @else
                                             <span>{{ number_format($regularPrice) }}đ</span>
                                         @endif

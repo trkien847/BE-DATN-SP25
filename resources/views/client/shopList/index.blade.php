@@ -118,6 +118,7 @@
                                                         <img src="{{ asset('upload/' . $product->thumbnail) }}"
                                                             alt="{{ $product->name }}"
                                                             style="width: 250px; height: 200px; object-fit: cover;">
+                                                            
                                                     </a>
 
                                                     <div class="product-badge">
@@ -129,7 +130,7 @@
                                                                             100,
                                                                     );
                                                                 @endphp
-                                                                <li class="sale-badge">-{{ $discount }}%</li>
+                                                                <li class="sale-badge bg-danger">-{{ $discount }}%</li>
                                                             @endif
                                                         </ul>
                                                     </div>
@@ -152,10 +153,30 @@
                                                         <a
                                                             href="{{ route('products.productct', $product->id) }}">{{ $product->name }}</a>
                                                     </h2>
+                                                    <div class="product-ratting d-flex justify-content-center">
+                                                        @php
+                                                            $avgRating = round($product->reviews->avg('rating') ?? 0, 1);
+                                                            $fullStars = floor($avgRating);
+                                                            $halfStar = $avgRating - $fullStars >= 0.5 ? 1 : 0;
+                                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                                        @endphp
+                                                        <ul>
+                                                            @for ($i = 0; $i < $fullStars; $i++)
+                                                                <li><i class="fas fa-star text-warning"></i></li>
+                                                            @endfor
+                                                            @if ($halfStar)
+                                                                <li><i class="fas fa-star-half-alt text-warning"></i></li>
+                                                            @endif
+                                                            @for ($i = 0; $i < $emptyStars; $i++)
+                                                                <li><i class="far fa-star text-warning"></i></li>
+                                                            @endfor
+                                                            <li class="ms-2 text-dark" style="font-size:13px;">({{ $avgRating }})</li>
+                                                        </ul>
+                                                    </div>
                                                     <div class="product-price">
                                                         @if (!empty($salePrice) && $salePrice > 0)
                                                             <span>{{ number_format($salePrice) }}đ</span>
-                                                            <del>{{ number_format($regularPrice) }}đ</del>
+                                                            <del style="color: red">{{ number_format($regularPrice) }}đ</del>
                                                         @else
                                                             <span>{{ number_format($regularPrice) }}đ</span>
                                                         @endif
@@ -215,12 +236,12 @@
                         <div class="widget ltn__tagcloud-widget ltn__size-widget">
                             <h4 class="ltn__widget-title ltn__widget-title-border">Giá tiền</h4>
                             <ul>
-                                @foreach ([
-            'under_100' => 'Dưới 100.000đ',
-            '100_300' => '100.000đ - 300.000đ',
-            '300_500' => '300.000đ - 500.000đ',
-            'above_500' => 'Trên 500.000đ',
-        ] as $value => $label)
+                             @foreach ([
+                            'under_100' => 'Dưới 100.000đ',
+                            '100_300' => '100.000đ - 300.000đ',
+                            '300_500' => '300.000đ - 500.000đ',
+                            'above_500' => 'Trên 500.000đ',
+                            ] as $value => $label)
                                     <li>
                                         <label>
                                             <input type="checkbox" name="price_range[]" value="{{ $value }}"
@@ -231,6 +252,9 @@
                                 @endforeach
                             </ul>
                         </div>
+
+
+                        
                         <!-- Top Rated Product Widget -->
                         <div class="widget ltn__top-rated-product-widget">
                             <h4 class="ltn__widget-title ltn__widget-title-border">Sản phẩm bán chạy</h4>
@@ -256,6 +280,7 @@
                                                 <h6><a
                                                         href="{{ route('products.productct', $product->product->id) }}">{{ $product->product->name }}</a>
                                                 </h6>
+                                                
                                                 <div class="product-price">
                                                     @php
                                                         $variants = $product->product->variants ?? collect();
@@ -277,11 +302,12 @@
                                 @endforeach
                             </ul>
                         </div>
+
                         <!-- Banner Widget -->
-                        <div class="widget ltn__banner-widget">
+                        {{-- <div class="widget ltn__banner-widget">
                             <a href="shop.html"><img src="{{ asset('client/img/banner/banner-2.jpg') }}"
                                     alt="#"></a>
-                        </div>
+                        </div> --}}
 
                     </aside>
                 </div>
@@ -301,7 +327,7 @@
                             <h1>Mua khẩu trang y tế dùng một lần <br> để bảo vệ người thân yêu của bạn</h1>
                         </div>
                         <div class="btn-wrapper">
-                            <a class="btn btn-effect-3 btn-white" href="shop.html">
+                            <a class="btn btn-effect-3 btn-white" href="{{ route('index') }}">
                                 Khám phá sản phẩm <i class="icon-next"></i>
                             </a>
                         </div>
