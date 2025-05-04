@@ -540,36 +540,53 @@
             });
 
             $(document).ready(function() {
-                const MAX_QUANTITY = 30; // Giới hạn số lượng tối đa
+                const MAX_QUANTITY = 30;
 
                 function checkCartQuantities() {
-                    $('#cart-items tr').each(function() {
+                    $('#cart-items tr:not(.cart-coupon-row)').each(function() {
                         const $row = $(this);
-                        const $tdCheckbox = $row.find(
-                        'td:first-child'); // Lấy td đầu tiên chứa checkbox
-                        const $input = $row.find('.cart-plus-minus-box');
+                        const $tdCheckbox = $row.find('td:first-child'); // Lấy td chứa checkbox
                         const $warning = $row.find('.quantity-warning');
-                        const quantity = parseInt($input.val());
+                        const quantity = parseInt($row.find('.cart-plus-minus-box').val());
                         const cartId = $row.data('cart-id');
                         const productId = $row.data('product-id');
 
-                        // Xóa checkbox cũ nếu có
-                        $tdCheckbox.find('.cart-item-checkbox').remove();
-
                         if (quantity > MAX_QUANTITY) {
-                            // Hiển thị cảnh báo khi vượt quá số lượng
-                            $warning.text('Tối đa 30 sản phẩm!').show();
-                        } else {
-                            // Tạo checkbox mới với các thuộc tính cần thiết
-                            const newCheckbox = $('<input>', {
+                            // Xóa checkbox cũ
+                            $tdCheckbox.find('.cart-item-checkbox').remove();
+
+                            // Thêm checkbox ẩn để giữ layout
+                            const hiddenCheckbox = $('<input>', {
                                 type: 'checkbox',
                                 class: 'cart-item-checkbox',
+                                disabled: true,
+                                style: 'visibility: hidden; pointer-events: none;',
                                 'data-cart-id': cartId,
-                                'data-product-id': productId
+                                'data-product-id': productId,
+                                'data-max-quantity': true // Đánh dấu checkbox đã vượt quá số lượng
                             });
+                            $tdCheckbox.append(hiddenCheckbox);
 
-                            // Thêm checkbox mới vào td
-                            $tdCheckbox.append(newCheckbox);
+                            $warning.text('Tối đa 30 sản phẩm!').show();
+                            removeFromCartDetails(cartId);
+                        } else {
+                            // Xóa checkbox cũ nếu tồn tại
+                            const $existingCheckbox = $tdCheckbox.find('.cart-item-checkbox');
+                            if ($existingCheckbox.length && $existingCheckbox.data(
+                                'max-quantity')) {
+                                $existingCheckbox.remove();
+                            }
+
+                            // Thêm checkbox mới nếu chưa có
+                            if ($tdCheckbox.find('.cart-item-checkbox').length === 0) {
+                                const newCheckbox = $('<input>', {
+                                    type: 'checkbox',
+                                    class: 'cart-item-checkbox',
+                                    'data-cart-id': cartId,
+                                    'data-product-id': productId
+                                });
+                                $tdCheckbox.append(newCheckbox);
+                            }
 
                             if (quantity === MAX_QUANTITY) {
                                 $warning.text('Tối đa 30 sản phẩm!').show();
@@ -579,22 +596,43 @@
                         }
                     });
 
-                    // Cập nhật tổng tiền sau khi kiểm tra
                     updateCartTotal();
+                    validateCheckboxStates();
                 }
+
+                // Hàm kiểm tra và xác thực trạng thái checkbox
+                function validateCheckboxStates() {
+                    $('.cart-item-checkbox').each(function() {
+                        const $checkbox = $(this);
+                        const $row = $checkbox.closest('tr');
+                        const quantity = parseInt($row.find('.cart-plus-minus-box').val());
+
+                        // Nếu số lượng vượt quá và checkbox vẫn được chọn
+                        if (quantity > MAX_QUANTITY && $checkbox.is(':checked')) {
+                            $checkbox.prop('checked', false);
+                            removeFromCartDetails($row.data('cart-id'));
+                        }
+                    });
+                }
+
+                // Chặn sự kiện click trên checkbox đã bị vô hiệu hóa
+                $(document).on('click', '.cart-item-checkbox[data-max-quantity]', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                // Kiểm tra định kỳ trạng thái checkbox
+                setInterval(validateCheckboxStates, 1000);
+
 
                 // Gọi hàm kiểm tra khi trang được tải
                 checkCartQuantities();
 
                 // Gọi lại hàm kiểm tra khi số lượng thay đổi
-                $(document).on('change', '.cart-plus-minus-box', function() {
-                    checkCartQuantities();
-                });
+                $(document).on('change', '.cart-plus-minus-box', checkCartQuantities);
 
                 // Gọi lại hàm kiểm tra khi nhấn nút tăng/giảm số lượng
-                $(document).on('click', '.qtybutton', function() {
-                    checkCartQuantities();
-                });
+                $(document).on('click', '.qtybutton', checkCartQuantities);
             });
 
 
